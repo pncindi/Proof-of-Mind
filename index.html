@@ -20,6 +20,9 @@
   <!-- Pi Network SDK 2.0 Anchor -->
   <script src="https://sdk.minepi.com/pi-sdk.js"></script>
 
+  <!-- TonConnect UI SDK -->
+  <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+
   <script>
     tailwind.config = {
       theme: {
@@ -51,7 +54,7 @@
     
     /* Touch-Safe Bottom Floating Dock (Elevated above Android System Keys) */
     .safe-nav-dock {
-      bottom: calc(env(safe-area-inset-bottom, 0px) + 36px);
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 38px);
     }
     .floating-gear-btn {
       bottom: calc(env(safe-area-inset-bottom, 0px) + 105px);
@@ -151,7 +154,7 @@
         <h2 id="mineHeading" class="text-sm sm:text-base font-bold text-center text-white mb-0.5">वर्ड पज़ल माइनिंग</h2>
         <p id="mineSubHeading" class="text-[11px] text-slate-400 text-center mb-4">ब्लॉक माइन करने के लिए सही अक्षरों का चयन करें</p>
 
-        <!-- Dynamic Puzzle Empty/Filled Boxes -->
+        <!-- Dynamic Puzzle Boxes -->
         <div id="boxesContainer" class="flex items-center justify-center gap-1.5 mb-5 min-h-[46px]"></div>
 
         <!-- Available Selectable Letter Tiles -->
@@ -239,7 +242,7 @@
         </div>
 
         <div class="mt-3 bg-slate-900 border border-slate-800 rounded-xl p-2 flex items-center justify-between">
-          <span class="text-[10px] text-slate-300 truncate max-w-[200px]">https://t.me/proof_of_mind_bot?start=ref</span>
+          <span id="referralLinkText" class="text-[10px] text-slate-300 truncate max-w-[200px]">https://t.me/proofofmind_bot?startapp=ref_pioneer</span>
           <button onclick="copyReferralLink()" class="bg-sky-500 hover:bg-sky-400 active:scale-95 text-slate-950 font-black text-[10px] px-2.5 py-1 rounded-lg transition-all">Copy</button>
         </div>
 
@@ -382,7 +385,7 @@
     </button>
   </nav>
 
-  <!-- ================= 0.3 TON ON-CHAIN VERIFICATION MODAL ================= -->
+  <!-- ================= 0.3 TON ON-CHAIN VERIFICATION & WALLET POPUP ================= -->
   <div id="tonVerifyModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-brand-card border border-brand-cardBorder rounded-2xl p-4 max-w-xs w-full shadow-2xl text-center relative">
       <button onclick="closeTonVerifyModal()" class="absolute top-2.5 right-3 text-slate-400 hover:text-white text-base">✕</button>
@@ -398,11 +401,26 @@
       </div>
 
       <div class="space-y-2">
-        <button onclick="copyAdminTonAddress()" class="w-full bg-slate-800 hover:bg-slate-700 active:scale-95 text-white font-bold text-xs py-2 rounded-xl border border-slate-700 transition-all">
-          <i class="fa-regular fa-copy mr-1"></i> Copy Address
+        <!-- Direct Tonkeeper Deep-Link -->
+        <button onclick="openTonkeeperPay()" class="w-full bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 active:scale-95 text-white font-bold text-xs py-2 rounded-xl shadow transition-all flex items-center justify-center space-x-1.5">
+          <i class="fa-solid fa-gem text-xs"></i>
+          <span>Pay via Tonkeeper App</span>
         </button>
+
+        <!-- Direct Telegram Wallet (@wallet) Deep-Link -->
+        <button onclick="openTelegramWalletPay()" class="w-full bg-slate-800 hover:bg-slate-700 active:scale-95 text-sky-400 font-bold text-xs py-2 rounded-xl border border-slate-700 transition-all flex items-center justify-center space-x-1.5">
+          <i class="fa-brands fa-telegram text-xs"></i>
+          <span>Pay via Telegram @wallet</span>
+        </button>
+
+        <!-- Copy Address & Confirm Manual -->
+        <button onclick="copyAdminTonAddress()" class="w-full bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 font-bold text-xs py-1.5 rounded-xl border border-slate-700 transition-all flex items-center justify-center space-x-1">
+          <i class="fa-regular fa-copy text-xs"></i>
+          <span>Copy Admin Address</span>
+        </button>
+
         <button onclick="completeTonVerificationTransaction()" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 active:scale-95 text-slate-950 font-black text-xs py-2.5 rounded-xl shadow transition-all">
-          Verify 0.3 TON Now
+          I Have Sent 0.3 TON (Confirm)
         </button>
       </div>
     </div>
@@ -479,6 +497,17 @@
           </div>
         </div>
 
+        <!-- Active Bot Handle Configuration -->
+        <div class="bg-slate-900 border border-slate-800 p-3 rounded-xl space-y-2">
+          <h4 class="font-bold text-amber-400 text-[10px] uppercase">Active Bot Handle Configuration</h4>
+          <div class="flex space-x-1.5">
+            <input type="text" id="adminBotHandleInput" value="proofofmind_bot" placeholder="Bot Username without @" class="w-full bg-slate-800 border border-slate-700 text-[11px] text-white px-2.5 py-1.5 rounded-lg outline-none font-mono">
+            <button onclick="adminSaveBotHandle()" class="bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-bold text-[11px] px-3 py-1.5 rounded-lg shrink-0">
+              Save
+            </button>
+          </div>
+        </div>
+
         <!-- Crowd Distribution Progress Bars -->
         <div class="bg-slate-900 border border-slate-800 p-3 rounded-xl space-y-2">
           <h4 class="font-bold text-sky-400 text-[10px] uppercase">Level Crowd Distribution</h4>
@@ -552,7 +581,8 @@
   <!-- ================= JAVASCRIPT CORE LOGIC ================= -->
   <script>
     const CONFIG = {
-      ADMIN_TON_WALLET: "UQD5ZiNy8-eV7l6Ny46c-f98USLg-JXPTRRIPMV-0YiadqJV"
+      ADMIN_TON_WALLET: "UQD5ZiNy8-eV7l6Ny46c-f98USLg-JXPTRRIPMV-0YiadqJV",
+      BOT_USERNAME: "proofofmind_bot"
     };
 
     let state = {
@@ -934,8 +964,20 @@
       renderDocsContent();
     }
 
+    // --- QUIZ TIMER CONTROLS (PREVENTS POPUP LEAK ON OTHER TABS) ---
+    function stopQuizTimer() {
+      if (quizTimer) {
+        clearInterval(quizTimer);
+        quizTimer = null;
+      }
+    }
+
     // --- TAB NAVIGATION ---
     function switchTab(tabId) {
+      if (tabId !== 'tabQuiz') {
+        stopQuizTimer();
+      }
+
       ['tabMine', 'tabQuiz', 'tabTasks', 'tabFriends', 'tabWallet'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.classList.add('hidden');
@@ -959,7 +1001,9 @@
       }
 
       updateHUD();
-      if (tabId === 'tabQuiz') startQuizRound();
+      if (tabId === 'tabQuiz') {
+        startQuizRound();
+      }
     }
 
     // --- WORD PUZZLE MINING ENGINE ---
@@ -1065,7 +1109,7 @@
 
     // --- TIMED QUIZ ENGINE ---
     function startQuizRound() {
-      clearInterval(quizTimer);
+      stopQuizTimer();
       const repo = QUIZ_REPOSITORY[state.lang] || QUIZ_REPOSITORY.en;
       const qIdx = (state.quizLevel - 1) % repo.length;
       const q = repo[qIdx];
@@ -1089,7 +1133,7 @@
         quizRemainingTime--;
         updateQuizTimerBar();
         if (quizRemainingTime <= 0) {
-          clearInterval(quizTimer);
+          stopQuizTimer();
           state.energy--;
           saveActiveState();
           updateHUD();
@@ -1107,7 +1151,7 @@
     }
 
     function submitQuizAnswer(selectedIdx, correctIdx) {
-      clearInterval(quizTimer);
+      stopQuizTimer();
       if (state.energy <= 0) {
         openEnergyModal();
         return;
@@ -1201,7 +1245,11 @@
       showToast(`+${state.tasks[idx].reward} POM Claimed!`, "🎁");
     }
 
-    // --- REFERRALS ---
+    // --- REFERRALS (MAPPED TO @proofofmind_bot) ---
+    function getReferralLink() {
+      return `https://t.me/${CONFIG.BOT_USERNAME}?startapp=ref_pioneer`;
+    }
+
     function creditReferralCommission(amount) {
       state.unclaimedCommission += (amount * 0.10) + (amount * 0.03) + (amount * 0.02);
       saveActiveState();
@@ -1222,24 +1270,21 @@
     }
 
     function copyReferralLink() {
-      navigator.clipboard.writeText("https://t.me/proof_of_mind_bot?start=ref");
+      const link = getReferralLink();
+      navigator.clipboard.writeText(link);
       showToast("Referral link copied!", "📋");
     }
 
     function shareReferralToTelegram() {
-      const url = encodeURIComponent("https://t.me/proof_of_mind_bot?start=ref");
+      const url = encodeURIComponent(getReferralLink());
       const text = encodeURIComponent("🧠 Join Proof of Mind! Mine POM tokens with your intellect on TON & Pi Network.");
       window.open(`https://t.me/share/url?url=${url}&text=${text}`, '_blank');
     }
 
-    // --- 0.3 TON ON-CHAIN VERIFICATION FLOW ---
+    // --- 0.3 TON ON-CHAIN VERIFICATION & WALLET INTEGRATION ---
     function handleWalletVerifyClick() {
       if (state.isVerified) {
         showToast("Account already verified with 2x Boost active!", "✔");
-        return;
-      }
-      if (!state.tonConnected) {
-        showToast("Please connect your TON wallet first!", "⚠️");
         return;
       }
       openTonVerifyModal();
@@ -1251,6 +1296,20 @@
     function copyAdminTonAddress() {
       navigator.clipboard.writeText(CONFIG.ADMIN_TON_WALLET);
       showToast("Admin TON Wallet copied!", "📋");
+    }
+
+    // Direct Tonkeeper Pay Deep-Link (0.3 TON = 300000000 nanotons)
+    function openTonkeeperPay() {
+      const transferUrl = `https://app.tonkeeper.com/transfer/${CONFIG.ADMIN_TON_WALLET}?amount=300000000&text=POM-Verify`;
+      window.open(transferUrl, '_blank');
+      showToast("Opening Tonkeeper...", "💎");
+    }
+
+    // Direct Telegram Wallet Pay Deep-Link
+    function openTelegramWalletPay() {
+      const tgWalletUrl = `https://t.me/wallet?startattach=ton_transfer_${CONFIG.ADMIN_TON_WALLET}_300000000`;
+      window.open(tgWalletUrl, '_blank');
+      showToast("Opening Telegram Wallet...", "💎");
     }
 
     function completeTonVerificationTransaction() {
@@ -1279,6 +1338,7 @@
     function updateHUD() {
       safeSetText('userBalanceDisplay', state.balance);
       safeSetText('walletTotalPomDisplay', `${state.balance} POM`);
+      safeSetText('referralLinkText', getReferralLink());
 
       const isQuizTab = !document.getElementById('tabQuiz').classList.contains('hidden');
       safeSetText('labelLevel', isQuizTab ? (state.lang === 'hi' ? 'क्विज़ लेवल' : 'Quiz Level') : (state.lang === 'hi' ? 'माइन लेवल' : 'Mine Level'));
@@ -1326,30 +1386,163 @@
       }
     }
 
-    // --- COMPLETE UNCLIPPED MULTILINGUAL WHITEPAPER ---
+    // --- COMPLETE UNCLIPPED MULTILINGUAL WHITEPAPER (ALL 10 LANGUAGES) ---
     function renderDocsContent() {
       const container = document.getElementById('docsBodyContainer');
       if (!container) return;
 
-      if (state.lang === 'hi') {
-        container.innerHTML = `
-          <div><h4 class="text-sky-400 font-bold uppercase text-[10px] mb-1">१. विज़न एवं प्रूफ ऑफ इंटेलेक्ट (PoI)</h4><p>प्रूफ ऑफ माइंड (POM) बिजली और हार्डवेयर की अनावश्यक बर्बादी के स्थान पर मानव बौद्धिक सर्वसम्मति को ऑन-चेन लागू करता है। उपयोगकर्ता शब्द पहेलियां और सत्यापित क्विज़ हल करके अपनी सक्रिय बौद्धिक क्षमता प्रमाणित करते हैं और विकेंद्रीकृत टोकन माइन करते हैं।</p></div>
-          <div><h4 class="text-sky-400 font-bold uppercase text-[10px] mb-1">२. १ अरब POM टोकनॉमिक्स</h4><div class="bg-slate-900 border border-slate-800 rounded-xl p-2.5 space-y-1 font-mono text-[9px]"><div class="flex justify-between"><span>• कम्युनिटी माइनिंग:</span><span class="text-amber-400 font-bold">50% (500M)</span></div><div class="flex justify-between"><span>• रेफरल व टास्क:</span><span class="text-sky-400 font-bold">15% (150M)</span></div><div class="flex justify-between"><span>• विकेंद्रीकृत कोर टीम:</span><span class="text-emerald-400 font-bold">10% (100M)</span></div><div class="flex justify-between"><span>• इंफ्रास्ट्रक्चर व सर्वर:</span><span class="text-indigo-400 font-bold">10% (100M)</span></div><div class="flex justify-between"><span>• लिक्विडिटी व DEX:</span><span class="text-rose-400 font-bold">10% (100M)</span></div><div class="flex justify-between"><span>• अर्ली एयरड्रॉप:</span><span class="text-purple-400 font-bold">5% (50M)</span></div></div></div>
-          <div><h4 class="text-sky-400 font-bold uppercase text-[10px] mb-1">३. विकेंद्रीकृत मेरिट कोर टीम (धारा 3.1)</h4><p>१०% कोर टीम आवंटन किसी निजी फाउंडर लॉबी के लिए आरक्षित नहीं है। यह पूरी तरह योग्यता (Merit) पर आधारित है। वैश्विक माइनिंग लीडरबोर्ड पर शीर्ष बौद्धिक प्रदर्शन करने वाले और सक्रिय समुदायिक डेवलपर्स को सीधे कोर टीम आवंटन में शामिल किया जाएगा।</p></div>
-          <div><h4 class="text-sky-400 font-bold uppercase text-[10px] mb-1">४. TON एवं Pi Network ट्विन आर्किटेक्चर</h4><p>POM एक साथ टेलीग्राम नेटिव ब्लॉकचेन (TON) और Pi Network के 60+ मिलियन पायनियर इकोसिस्टम को जोड़ता है। उपयोगकर्ता दोनों नेटवर्क्स के वॉलेट कनेक्ट करके दोनों इकोसिस्टम्स से टोकन क्लेम करने के पात्र बनते हैं।</p></div>
-          <div><h4 class="text-sky-400 font-bold uppercase text-[10px] mb-1">५. 0.3 TON ऑन-चेन सिबिल सुरक्षा एवं 2x बूस्ट</h4><p>स्वचालित बॉट्स और फेक एकाउंट्स से वास्तविक माइनर्स के रिवॉर्ड्स की रक्षा के लिए 0.3 TON का ऑन-चेन माइक्रोट्रांजैक्शन लागू किया गया है। यह सत्यापित पायनियर्स को स्थायी 2x माइनिंग और क्विज़ मल्टीप्लायर प्रदान करता है।</p></div>
-          <div><h4 class="text-sky-400 font-bold uppercase text-[10px] mb-1">६. रोडमैप एवं TGE लिस्टिंग</h4><p>फेज 1: टेलीग्राम मिनी ऐप लॉन्च एवं टास्क इकोसिस्टम। फेज 2: ऑन-चेन PoI सत्यापन और Pi ब्राउज़र सिंकिंग। फेज 3: TGE (टोकन जेनरेशन इवेंट) और प्रमुख DEX/CEX पर POM लिस्टिंग।</p></div>
-        `;
-      } else {
-        container.innerHTML = `
-          <div><h4 class="text-sky-400 font-bold uppercase text-[10px] mb-1">1. Abstract & Proof of Intellect (PoI)</h4><p>Proof of Mind (POM) replaces hardware electrical waste with decentralized human cognitive consensus. Pioneers solve on-chain intellect blocks and verified quizzes to validate genuine human intelligence and mint POM tokens.</p></div>
-          <div><h4 class="text-sky-400 font-bold uppercase text-[10px] mb-1">2. 1 Billion POM Hard-Cap Tokenomics</h4><div class="bg-slate-900 border border-slate-800 rounded-xl p-2.5 space-y-1 font-mono text-[9px]"><div class="flex justify-between"><span>• Community Mining:</span><span class="text-amber-400 font-bold">50% (500M)</span></div><div class="flex justify-between"><span>• Referrals & Tasks:</span><span class="text-sky-400 font-bold">15% (150M)</span></div><div class="flex justify-between"><span>• Merit Core Team:</span><span class="text-emerald-400 font-bold">10% (100M)</span></div><div class="flex justify-between"><span>• Infrastructure:</span><span class="text-indigo-400 font-bold">10% (100M)</span></div><div class="flex justify-between"><span>• Liquidity & DEX:</span><span class="text-rose-400 font-bold">10% (100M)</span></div><div class="flex justify-between"><span>• Early Airdrop:</span><span class="text-purple-400 font-bold">5% (50M)</span></div></div></div>
-          <div><h4 class="text-sky-400 font-bold uppercase text-[10px] mb-1">3. Decentralized Merit Core Team (Section 3.1)</h4><p>The 10% Core Team allocation is strictly non-custodial and meritocratic. Pioneers holding top positions on global intellect leaderboards are directly onboarded into decentralized governance and core rewards.</p></div>
-          <div><h4 class="text-sky-400 font-bold uppercase text-[10px] mb-1">4. Dual TON & Pi Network Architecture</h4><p>POM bridges Telegram's native TON blockchain with Pi Network's 60M+ verified web3 pioneer community. Dual-chain connectivity enables seamless verification and multi-chain liquidity.</p></div>
-          <div><h4 class="text-sky-400 font-bold uppercase text-[10px] mb-1">5. 0.3 TON Sybil Defense & 2x Multiplier</h4><p>To eliminate automated bot farms, 0.3 TON micro-verification confirms authentic human identity on-chain and grants verified pioneers a lifetime 2x reward boost on all mining and quiz activities.</p></div>
-          <div><h4 class="text-sky-400 font-bold uppercase text-[10px] mb-1">6. Roadmap & TGE DEX Listing</h4><p>Phase 1: Mini App Launch & Ecosystem Tasks. Phase 2: On-chain PoI Engine and Pi Browser Integration. Phase 3: Token Generation Event (TGE) and decentralized exchange liquidity pool deployment.</p></div>
-        `;
-      }
+      const whitepaperData = {
+        hi: {
+          s1: "१. विज़न एवं प्रूफ ऑफ इंटेलेक्ट (PoI)",
+          p1: "प्रूफ ऑफ माइंड (POM) बिजली और हार्डवेयर की अनावश्यक बर्बादी के स्थान पर मानव बौद्धिक सर्वसम्मति को ऑन-चेन लागू करता है। उपयोगकर्ता शब्द पहेलियां और सत्यापित क्विज़ हल करके अपनी सक्रिय बौद्धिक क्षमता प्रमाणित करते हैं और विकेंद्रीकृत टोकन माइन करते हैं।",
+          s2: "२. १ अरब POM टोकनॉमिक्स",
+          s3: "३. विकेंद्रीकृत मेरिट कोर टीम (धारा 3.1)",
+          p3: "१०% कोर टीम आवंटन किसी निजी फाउंडर लॉबी के लिए आरक्षित नहीं है। यह पूरी तरह योग्यता (Merit) पर आधारित है। वैश्विक माइनिंग लीडरबोर्ड पर शीर्ष बौद्धिक प्रदर्शन करने वाले और सक्रिय समुदायिक डेवलपर्स को सीधे कोर टीम आवंटन में शामिल किया जाएगा।",
+          s4: "४. TON एवं Pi Network ट्विन आर्किटेक्चर",
+          p4: "POM एक साथ टेलीग्राम नेटिव ब्लॉकचेन (TON) और Pi Network के 60+ मिलियन पायनियर इकोसिस्टम को जोड़ता है। उपयोगकर्ता दोनों नेटवर्क्स के वॉलेट कनेक्ट करके दोनों इकोसिस्टम्स से टोकन क्लेम करने के पात्र बनते हैं।",
+          s5: "५. 0.3 TON ऑन-चेन सिबिल सुरक्षा एवं 2x बूस्ट",
+          p5: "स्वचालित बॉट्स और फेक एकाउंट्स से वास्तविक माइनर्स के रिवॉर्ड्स की रक्षा के लिए 0.3 TON का ऑन-चेन माइक्रोट्रांजैक्शन लागू किया गया है। यह सत्यापित पायनियर्स को स्थायी 2x माइनिंग और क्विज़ मल्टीप्लायर प्रदान करता है।",
+          s6: "६. रोडमैप एवं TGE लिस्टिंग",
+          p6: "फेज 1: टेलीग्राम मिनी ऐप लॉन्च एवं टास्क इकोसिस्टम। फेज 2: ऑन-चेन PoI सत्यापन और Pi ब्राउज़र सिंकिंग। फेज 3: TGE (टोकन जेनरेशन इवेंट) और प्रमुख DEX/CEX पर POM लिस्टिंग।"
+        },
+        en: {
+          s1: "1. Abstract & Proof of Intellect (PoI)",
+          p1: "Proof of Mind (POM) replaces hardware electrical waste with decentralized human cognitive consensus. Pioneers solve on-chain intellect blocks and verified quizzes to validate genuine human intelligence and mint POM tokens.",
+          s2: "2. 1 Billion POM Hard-Cap Tokenomics",
+          s3: "3. Decentralized Merit Core Team (Section 3.1)",
+          p3: "The 10% Core Team allocation is strictly non-custodial and meritocratic. Pioneers holding top positions on global intellect leaderboards are directly onboarded into decentralized governance and core rewards.",
+          s4: "4. Dual TON & Pi Network Architecture",
+          p4: "POM bridges Telegram's native TON blockchain with Pi Network's 60M+ verified web3 pioneer community. Dual-chain connectivity enables seamless verification and multi-chain liquidity.",
+          s5: "5. 0.3 TON Sybil Defense & 2x Multiplier",
+          p5: "To eliminate automated bot farms, 0.3 TON micro-verification confirms authentic human identity on-chain and grants verified pioneers a lifetime 2x reward boost on all mining and quiz activities.",
+          s6: "6. Roadmap & TGE DEX Listing",
+          p6: "Phase 1: Mini App Launch & Ecosystem Tasks. Phase 2: On-chain PoI Engine and Pi Browser Integration. Phase 3: Token Generation Event (TGE) and decentralized exchange liquidity pool deployment."
+        },
+        ru: {
+          s1: "1. Концепция и Proof of Intellect (PoI)",
+          p1: "Proof of Mind заменяет затраты электроэнергии на децентрализованный человеческий интеллект. Пользователи решают головоломки и квизы для майнинга токенов POM.",
+          s2: "2. Токеномика 1 Миллиард POM",
+          s3: "3. Меритократическая Команда (Секция 3.1)",
+          p3: "10% для Core Team распределяются исключительно за заслуги среди лидеров майнинга.",
+          s4: "4. Архитектура TON и Pi Network",
+          p4: "Интеграция блокчейна TON и экосистемы Pi Network для 60М+ пользователей.",
+          s5: "5. Защита от ботов 0.3 TON",
+          p5: "Микротранзакция 0.3 TON подтверждает реального человека и дает вечный 2x буст.",
+          s6: "6. Дорожная карта и Листинг",
+          p6: "Запуск бота -> Интеграция Pi -> TGE и листинг на DEX биржах."
+        },
+        zh: {
+          s1: "1. 智力证明共识 (PoI)",
+          p1: "Proof of Mind 用人类认知共识取代高能耗硬件挖矿。先锋通过解开智力区块和问答验证真实智慧并挖取 POM 代币。",
+          s2: "2. 10 亿 POM 代币经济学",
+          s3: "3. 绩效核心团队机制 (第 3.1 节)",
+          p3: "10% 的团队份额严格基于智力贡献排行榜选拔，非私人预留。",
+          s4: "4. TON 与 Pi Network 双架构",
+          p4: "连接 Telegram 原生 TON 链与拥有 6000 万先锋的 Pi Network 生态。",
+          s5: "5. 0.3 TON 女巫防护与 2 倍加速",
+          p5: "通过 0.3 TON 链上验证杜绝假账号并永久激活 2 倍挖矿加速。",
+          s6: "6. 路线图与 TGE 上市",
+          p6: "Mini App 发布 -> 链上 PoI 引擎 -> 代币生成事件与 DEX 交易对部署。"
+        },
+        es: {
+          s1: "1. Resumen y Prueba de Intelecto (PoI)",
+          p1: "POM reemplaza el desperdicio de energía física con consenso cognitivo humano en la blockchain de TON y Pi Network.",
+          s2: "2. Tokenomics de 1 Mil Millones POM",
+          s3: "3. Equipo Central Meritocrático (Sección 3.1)",
+          p3: "El 10% del Core Team se asigna por mérito a los mineros líderes de la comunidad.",
+          s4: "4. Arquitectura Dual TON y Pi Network",
+          p4: "Puente entre TON Telegram y los 60 millones de pioneros de Pi Network.",
+          s5: "5. Defensa Sybil con 0.3 TON y Multiplicador 2x",
+          p5: "La verificación on-chain otorga un bono permanente de 2x.",
+          s6: "6. Hoja de Ruta y TGE",
+          p6: "Mini App -> Integración PoI -> Listado DEX y TGE oficial."
+        },
+        ar: {
+          s1: "١. إثبات الذكاء (PoI)",
+          p1: "يستبدل POM إهدار الطاقة بتعدين الذكاء البشري الموثق عبر بلوكتشين TON وشبكة Pi.",
+          s2: "٢. اقتصاديات التوكن (1 مليار POM)",
+          s3: "٣. فريق الجدارة اللامركزي (قسم 3.1)",
+          p3: "توزيع حصة 10% بناءً على أداء لوحة الصدارة الفعلي فقط.",
+          s4: "٤. الربط بين TON و Pi Network",
+          p4: "دمج بين مستخدمي تيليجرام وشبكة Pi الرائدة.",
+          s5: "٥. حماية سيبيل بـ 0.3 TON ومضاعف 2x",
+          p5: "توثيق الحساب بـ 0.3 TON يمنح مضاعف أرباح دائم.",
+          s6: "٦. خريطة الطريق والإدراج في المنصات",
+          p6: "إطلاق التطبيق المصغر -> محرك PoI -> الإدراج في البورصات اللامركزية."
+        },
+        bn: {
+          s1: "১. প্রমাণ বুদ্ধিমত্তা (PoI)",
+          p1: "বিদ্যুৎ অপচয়ের পরিবর্তে মানুষের বুদ্ধিভিত্তিক ঐক্যমত্য অন-চেইনে প্রমাণ করে POM টোকেন মাইন করা হয়।",
+          s2: "২. ১ বিলিয়ন POM টোকেনমিক্স",
+          s3: "৩. মেধাভিত্তিক কোর টিম (ধারা ৩.১)",
+          p3: "১০% কোর টিম বরাদ্দ সেরা মাইনারদের মেধার ভিত্তিতে বণ্টিত হয়।",
+          s4: "৪. TON ও Pi Network যুগ্ম নেটওয়ার্ক",
+          p4: "টেলিগ্রামের TON এবং Pi নেটওয়ার্কের ৬০ মিলিয়ন পাইওনিয়ারদের সংযোগ।",
+          s5: "৫. ০.৩ TON সিবিল সুরক্ষা ও ২x বুস্ট",
+          p5: "অন-চেন ভেরিফিকেশনের মাধ্যমে আজীবন দ্বিগুণ রিওয়ার্ড সক্রিয় হয়।",
+          s6: "৬. রোডম্যাপ ও TGE লিস্টিং",
+          p6: "মিনি অ্যাপ লঞ্চ -> PoI ইঞ্জিন -> TGE ও DEX এক্সচেঞ্জ লিস্টিং।"
+        },
+        vi: {
+          s1: "1. Bằng Chứng Trí Tuệ (PoI)",
+          p1: "Proof of Mind thay thế việc lãng phí điện năng bằng sự đồng thuận nhận thức của con người trên TON và Pi Network.",
+          s2: "2. Tokenomics 1 Tỷ POM",
+          s3: "3. Đội Ngũ Cốt Lõi Dựa Trên Năng Lực (Mục 3.1)",
+          p3: "Phân bổ 10% được trao dựa trên bảng xếp hạng đóng góp trí tuệ thực tế.",
+          s4: "4. Kiến Trúc Kép TON & Pi Network",
+          p4: "Kết nối hệ sinh thái TON Telegram và 60M+ người tiên phong Pi Network.",
+          s5: "5. Bảo Vệ Sybil 0.3 TON & Nhân Đôi 2x",
+          p5: "Xác minh ऑन-चेन 0.3 TON kích hoạt nhân đôi phần thưởng vĩnh viễn.",
+          s6: "6. Lộ Trình & Niêm Yết TGE",
+          p6: "Mini App -> Tích hợp PoI -> Sự kiện TGE và niêm yết trên các sàn DEX."
+        },
+        id: {
+          s1: "1. Bukti Intelek (Proof of Intellect)",
+          p1: "Proof of Mind menggantikan pemborosan energi perangkat keras dengan konsensus kognitif manusia di TON dan Pi Network.",
+          s2: "2. Tokenomics 1 Miliar POM",
+          s3: "3. Tim Inti Berbasis Prestasi (Bagian 3.1)",
+          p3: "Alokasi 10% diberikan murni berdasarkan performa papan peringkat penambangan.",
+          s4: "4. Arsitektur Ganda TON & Pi Network",
+          p4: "Menghubungkan ekosistem TON Telegram dengan 60 juta pionir Pi Network.",
+          s5: "5. Perlindungan Sybil 0.3 TON & Pengali 2x",
+          p5: "Verifikasi on-chain mengaktifkan pengali hadiah 2x permanen seumur hidup.",
+          s6: "6. Peta Jalan & Peluncuran TGE",
+          p6: "Peluncuran Mini App -> Mesin PoI -> TGE dan pencatatan bursa DEX."
+        },
+        fa: {
+          s1: "۱. اثبات هوش و ذهن (PoI)",
+          p1: "اثبات ذهن (POM) اتلاف برق سخت‌افزاری را با اجماع شناختی انسان روی TON و Pi Network جایگزین می‌کند.",
+          s2: "۲. توکنومیکس ۱ میلیارد POM",
+          s3: "۳. تیم اصلی مبتنی بر شایستگی (بخش ۳.۱)",
+          p3: "تخصیص ۱۰٪ تیم بر اساس شایستگی به رتبه‌های برتر لیدربورد تعلق می‌گیرد.",
+          s4: "۴. معماری دوگانه TON و Pi Network",
+          p4: "پل میان TON تلگرام و جامعه ۶۰ میلیونی پیشگامان پای نتورک.",
+          s5: "۵. دفاع سیبیل ۰.۳ TON و ضریب ۲ برابری",
+          p5: "تایید آن‌چین ضریب پاداش استخراج ۲ برابری دائمی را فعال می‌کند.",
+          s6: "۶. نقشه راه و لیست شدن در صرافی‌ها",
+          p6: "مینی‌اپلیکیشن تلگرام -> موتور PoI -> رویداد TGE و عرضه در DEX."
+        }
+      };
+
+      const d = whitepaperData[state.lang] || whitepaperData.en;
+
+      container.innerHTML = `
+        <div><h4 class="text-sky-400 font-bold uppercase text-[10px] mb-1">${d.s1}</h4><p>${d.p1}</p></div>
+        <div><h4 class="text-sky-400 font-bold uppercase text-[10px] mb-1">${d.s2}</h4>
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-2.5 space-y-1 font-mono text-[9px]">
+            <div class="flex justify-between"><span>• Community Mining:</span><span class="text-amber-400 font-bold">50% (500M)</span></div>
+            <div class="flex justify-between"><span>• Referrals & Tasks:</span><span class="text-sky-400 font-bold">15% (150M)</span></div>
+            <div class="flex justify-between"><span>• Merit Core Team:</span><span class="text-emerald-400 font-bold">10% (100M)</span></div>
+            <div class="flex justify-between"><span>• Infrastructure:</span><span class="text-indigo-400 font-bold">10% (100M)</span></div>
+            <div class="flex justify-between"><span>• Liquidity & DEX:</span><span class="text-rose-400 font-bold">10% (100M)</span></div>
+            <div class="flex justify-between"><span>• Early Airdrop:</span><span class="text-purple-400 font-bold">5% (50M)</span></div>
+          </div>
+        </div>
+        <div><h4 class="text-sky-400 font-bold uppercase text-[10px] mb-1">${d.s3}</h4><p>${d.p3}</p></div>
+        <div><h4 class="text-sky-400 font-bold uppercase text-[10px] mb-1">${d.s4}</h4><p>${d.p4}</p></div>
+        <div><h4 class="text-sky-400 font-bold uppercase text-[10px] mb-1">${d.s5}</h4><p>${d.p5}</p></div>
+        <div><h4 class="text-sky-400 font-bold uppercase text-[10px] mb-1">${d.s6}</h4><p>${d.p6}</p></div>
+      `;
     }
 
     function openDocsModal() {
@@ -1358,7 +1551,7 @@
     }
     function closeDocsModal() { document.getElementById('docsModal')?.classList.add('hidden'); }
 
-    // --- ADMIN CONTROL CONSOLE (FULL-PAGE RESTORATION) ---
+    // --- ADMIN CONTROL CONSOLE ---
     function openAdminModal() { document.getElementById('adminModal')?.classList.remove('hidden'); }
     function closeAdminModal() { document.getElementById('adminModal')?.classList.add('hidden'); }
 
@@ -1385,6 +1578,16 @@
       showToast("Admin session locked", "🔒");
     }
 
+    function adminSaveBotHandle() {
+      const handle = document.getElementById('adminBotHandleInput').value.trim().replace('@', '');
+      if (handle) {
+        CONFIG.BOT_USERNAME = handle;
+        updateHUD();
+        refreshAdminDashboard();
+        showToast(`Bot handle updated: @${handle}`, "✔");
+      }
+    }
+
     function refreshAdminDashboard() {
       const wordStr = currentTargetTiles.join('');
       const poolStr = currentScrambledTiles.join(', ');
@@ -1404,7 +1607,7 @@
 
     function copyTelegramChannelHint() {
       const wordStr = currentTargetTiles.join('');
-      const postText = `🧠 Proof of Mind (POM) Community Intellect Drop!\n\nSolve Level ${state.mineLevel} now.\nTarget Length: ${currentTargetTiles.length} Letters\nLetter Pool: ${currentScrambledTiles.join(' ')}\n\nMine block now 👉 https://t.me/proof_of_mind_bot?start=ref`;
+      const postText = `🧠 Proof of Mind (POM) Community Intellect Drop!\n\nSolve Level ${state.mineLevel} now.\nTarget Length: ${currentTargetTiles.length} Letters\nLetter Pool: ${currentScrambledTiles.join(' ')}\n\nMine block now 👉 https://t.me/${CONFIG.BOT_USERNAME}?startapp=ref_channel`;
       navigator.clipboard.writeText(postText);
       showToast("Telegram post copied to clipboard!", "📋");
     }
