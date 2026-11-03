@@ -3,7 +3,7 @@
 // ==========================================
 
 const CONFIG = {
-  BACKEND_API_URL: "", // Render URL बाद में यहाँ जोड़ें
+  BACKEND_API_URL: "https://proof-of-mind-api.onrender.com", // Render URL बाद में यहाँ जोड़ें
   ADMIN_TON_WALLET: "UQD5ZiNy8-eV7l6Ny46c-f98USLg-JXPTRRIPMV-0YiadqJV",
   BOT_USERNAME: "proofofmind_bot"
 };
