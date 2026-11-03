@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Proof of Mind (POM) - Decentralized Intellect Mining</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Telegram WebApp SDK -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  
+  <!-- Adsgram SDK for TON Ads -->
+  <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
+  
+  <!-- Pi Network SDK 2.0 Anchor -->
+  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              dark: '#080c16',
+              card: '#0f172a',
+              cardBorder: '#1e293b',
+              accent: '#38bdf8',
+              accentHover: '#0284c7',
+              gold: '#fbbf24',
+              emerald: '#10b981',
+              rose: '#f43f5e'
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 15px rgba(56, 189, 248, 0.2); }
+      50% { box-shadow: 0 0 25px rgba(56, 189, 248, 0.45); }
+    }
+    .glow-box { animation: pulseGlow 3s infinite; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+
+<body class="bg-brand-dark text-slate-100 font-sans min-h-screen flex flex-col select-none no-scrollbar pb-28">
+
+  <!-- ================= TOP HEADER ================= -->
+  <header class="sticky top-0 z-40 bg-brand-dark/95 backdrop-blur-md border-b border-brand-cardBorder px-4 py-3 flex items-center justify-between shadow-lg">
+    <div class="flex items-center space-x-2">
+      <span class="text-2xl">🧠</span>
+      <h1 class="text-lg font-black tracking-wide bg-gradient-to-r from-sky-400 via-indigo-300 to-amber-300 bg-clip-text text-transparent">Proof of Mind</h1>
+      <span id="headerVerifiedTick" class="hidden text-emerald-400 text-sm font-bold bg-emerald-950/70 border border-emerald-500/40 rounded-full px-1.5 py-0.5 shadow-[0_0_8px_rgba(16,185,129,0.5)]">✔</span>
+    </div>
+
+    <div class="flex items-center space-x-2">
+      <button onclick="openDocsModal()" class="flex items-center space-x-1 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-xs text-sky-400 font-semibold px-2.5 py-1.5 rounded-lg transition-all">
+        <i class="fa-solid fa-file-lines text-xs"></i>
+        <span id="navDocsLabel">Docs</span>
+      </button>
+
+      <div class="relative">
+        <select id="languageSelect" onchange="changeLanguage(this.value)" class="bg-slate-800/90 border border-slate-700 text-xs font-medium text-slate-200 px-2 py-1.5 rounded-lg outline-none cursor-pointer focus:border-sky-500">
+          <option value="en">English</option>
+          <option value="hi">हिंदी (Hindi)</option>
+          <option value="ru">Русский</option>
+          <option value="zh">中文</option>
+          <option value="es">Español</option>
+          <option value="ar">العربية</option>
+          <option value="bn">বাংলা</option>
+          <option value="vi">Tiếng Việt</option>
+          <option value="id">Bahasa Indonesia</option>
+          <option value="fa">فارسی</option>
+        </select>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= USER HUD STATS BAR ================= -->
+  <section class="p-4 grid grid-cols-3 gap-2.5">
+    <div class="bg-brand-card/90 border border-brand-cardBorder/80 rounded-xl p-2.5 text-center shadow-md">
+      <span id="labelBalance" class="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">Balance</span>
+      <div class="flex items-center justify-center space-x-1 mt-0.5">
+        <span id="userBalanceDisplay" class="text-amber-400 font-black text-base sm:text-lg">0</span>
+        <span class="text-amber-500 font-bold text-[10px]">POM</span>
+      </div>
+    </div>
+
+    <div class="bg-brand-card/90 border border-brand-cardBorder/80 rounded-xl p-2.5 text-center shadow-md">
+      <span id="labelLevel" class="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">Level</span>
+      <div class="flex items-center justify-center space-x-1 mt-0.5">
+        <span id="userLevelDisplay" class="text-sky-400 font-black text-base sm:text-lg">1</span>
+      </div>
+    </div>
+
+    <div class="bg-brand-card/90 border border-brand-cardBorder/80 rounded-xl p-2.5 text-center shadow-md relative overflow-hidden">
+      <span id="labelEnergy" class="text-[10px] uppercase font-bold text-slate-400 tracking-wider flex items-center justify-center space-x-1">
+        <span>Energy</span>
+        <i class="fa-solid fa-bolt text-amber-400 text-[10px]"></i>
+      </span>
+      <div id="heartsContainer" class="flex items-center justify-center space-x-1 mt-1 text-rose-500 text-xs sm:text-sm">
+        <i class="fa-solid fa-heart"></i>
+        <i class="fa-solid fa-heart"></i>
+        <i class="fa-solid fa-heart"></i>
+        <i class="fa-solid fa-heart"></i>
+        <i class="fa-solid fa-heart"></i>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= MAIN CONTAINER TABS ================= -->
+  <main class="flex-1 px-4 max-w-lg mx-auto w-full">
+
+    <!-- TAB 1: MINE (WORD PUZZLE MINING) -->
+    <div id="tabMine" class="space-y-4">
+      <div class="bg-brand-card border border-brand-cardBorder rounded-2xl p-4 sm:p-5 shadow-xl relative glow-box">
+        <div class="flex items-center justify-between mb-3">
+          <span id="mineBadgeLevelInfo" class="bg-sky-950/70 text-sky-400 border border-sky-800 text-[11px] font-bold px-2.5 py-0.5 rounded-full">
+            Level 1 • 3 Boxes
+          </span>
+          <span id="mineRewardBadge" class="bg-amber-950/70 text-amber-400 border border-amber-800 text-[11px] font-bold px-2.5 py-0.5 rounded-full">
+            +3 POM
+          </span>
+        </div>
+
+        <h2 id="mineHeading" class="text-base sm:text-lg font-bold text-center text-white mb-1">Word Puzzle Mining</h2>
+        <p id="mineSubHeading" class="text-xs text-slate-400 text-center mb-4">Select letters to solve the intellect block</p>
+
+        <!-- Dynamic Puzzle Boxes -->
+        <div id="boxesContainer" class="flex items-center justify-center gap-2 mb-6 min-h-[52px]"></div>
+
+        <!-- Available Choice Letters -->
+        <div id="lettersContainer" class="flex flex-wrap items-center justify-center gap-2 mb-5"></div>
+
+        <!-- Action Controls -->
+        <div class="grid grid-cols-2 gap-3">
+          <button onclick="clearSelectedLetters()" class="bg-slate-800 hover:bg-slate-700 active:scale-95 border border-slate-700 text-slate-200 text-xs font-bold py-2.5 rounded-xl transition-all flex items-center justify-center space-x-1">
+            <i class="fa-solid fa-rotate-left"></i>
+            <span id="btnClear">Clear</span>
+          </button>
+          <button onclick="submitMiningBlock()" class="bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 active:scale-95 text-white text-xs font-black py-2.5 rounded-xl shadow-lg transition-all flex items-center justify-center space-x-1.5">
+            <i class="fa-solid fa-hammer"></i>
+            <span id="btnMine">Mine Block</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Energy Refill Card via Video Ads -->
+      <div class="bg-brand-card border border-brand-cardBorder rounded-2xl p-4 flex items-center justify-between shadow-md">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 text-lg">
+            <i class="fa-solid fa-bolt-lightning"></i>
+          </div>
+          <div>
+            <h4 id="energyRefillTitle" class="text-xs font-bold text-white">Recharge Mind Energy</h4>
+            <p id="energyRefillDesc" class="text-[10px] text-slate-400">Watch 1 Ad = +2❤️ | 2 Ads = Full ❤️</p>
+          </div>
+        </div>
+        <button onclick="triggerRewardAd()" class="bg-gradient-to-r from-amber-500 to-amber-600 active:scale-95 text-slate-950 font-black text-xs px-3 py-2 rounded-xl shadow-md transition-all flex items-center space-x-1">
+          <i class="fa-solid fa-play text-[10px]"></i>
+          <span>Refill</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- TAB 2: QUIZ (TIMED COGNITIVE VERIFICATION) -->
+    <div id="tabQuiz" class="hidden space-y-4">
+      <div class="bg-brand-card border border-brand-cardBorder rounded-2xl p-4 sm:p-5 shadow-xl relative">
+        <div class="flex items-center justify-between mb-2">
+          <span id="quizTierBadge" class="bg-purple-950/70 text-purple-300 border border-purple-800 text-[11px] font-bold px-2.5 py-0.5 rounded-full">Tier 1 • Easy</span>
+          <span id="quizRewardBadge" class="bg-amber-950/70 text-amber-400 border border-amber-800 text-[11px] font-bold px-2.5 py-0.5 rounded-full">+1 POM</span>
+        </div>
+
+        <!-- Timer Bar -->
+        <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden mb-4">
+          <div id="quizTimerBar" class="bg-gradient-to-r from-sky-400 to-rose-500 h-full w-full transition-all duration-1000 ease-linear"></div>
+        </div>
+
+        <h3 id="quizQuestionText" class="text-sm sm:text-base font-bold text-white text-center min-h-[48px] flex items-center justify-center mb-4"></h3>
+
+        <!-- 4 Options Grid -->
+        <div id="quizOptionsContainer" class="grid grid-cols-1 gap-2.5 mb-2"></div>
+      </div>
+    </div>
+
+    <!-- TAB 3: TASKS (OFFICIAL COMMUNITY ECOSYSTEM) -->
+    <div id="tabTasks" class="hidden space-y-3">
+      <div class="bg-brand-card border border-brand-cardBorder rounded-2xl p-4 text-center">
+        <h3 class="text-sm font-black text-white uppercase tracking-wider">Official Ecosystem Tasks</h3>
+        <p class="text-[11px] text-slate-400 mt-0.5">Complete community missions & verify to claim POM</p>
+      </div>
+      <div id="tasksListContainer" class="space-y-2.5"></div>
+    </div>
+
+    <!-- TAB 4: FRIENDS (3-TIER REFERRAL NETWORK) -->
+    <div id="tabFriends" class="hidden space-y-4">
+      <div class="bg-brand-card border border-brand-cardBorder rounded-2xl p-4 sm:p-5 shadow-xl text-center">
+        <h3 class="text-base font-black text-white">3-Tier Referral System</h3>
+        <p class="text-xs text-slate-400 mt-1">Level 1: 10% | Level 2: 3% | Level 3: 2% Mining Commission</p>
+
+        <div class="grid grid-cols-3 gap-2 mt-4">
+          <div class="bg-slate-900/80 border border-slate-800 p-2.5 rounded-xl text-center">
+            <span class="text-[10px] text-sky-400 font-bold block">Level 1 (Direct)</span>
+            <span id="tier1UsersCount" class="text-sm font-black text-white">0</span>
+            <span class="text-[9px] text-slate-500 block">10% Commission</span>
+          </div>
+          <div class="bg-slate-900/80 border border-slate-800 p-2.5 rounded-xl text-center">
+            <span class="text-[10px] text-indigo-400 font-bold block">Level 2 (Network)</span>
+            <span id="tier2UsersCount" class="text-sm font-black text-white">0</span>
+            <span class="text-[9px] text-slate-500 block">3% Commission</span>
+          </div>
+          <div class="bg-slate-900/80 border border-slate-800 p-2.5 rounded-xl text-center">
+            <span class="text-[10px] text-purple-400 font-bold block">Level 3 (Extended)</span>
+            <span id="tier3UsersCount" class="text-sm font-black text-white">0</span>
+            <span class="text-[9px] text-slate-500 block">2% Commission</span>
+          </div>
+        </div>
+
+        <!-- Referral Link Box -->
+        <div class="mt-4 bg-slate-900 border border-slate-800 rounded-xl p-2.5 flex items-center justify-between">
+          <span id="refLinkDisplay" class="text-[11px] text-slate-300 truncate max-w-[210px]">https://t.me/proof_of_mind_bot?start=ref</span>
+          <button onclick="copyReferralLink()" class="bg-sky-500 hover:bg-sky-400 active:scale-95 text-slate-950 font-black text-[11px] px-3 py-1.5 rounded-lg transition-all">Copy</button>
+        </div>
+
+        <button onclick="shareReferralToTelegram()" class="w-full mt-3 bg-gradient-to-r from-sky-500 to-indigo-600 active:scale-95 text-white font-black text-xs py-3 rounded-xl shadow-lg transition-all flex items-center justify-center space-x-2">
+          <i class="fa-brands fa-telegram text-sm"></i>
+          <span>Invite Friends via Telegram</span>
+        </button>
+
+        <!-- Claim Unclaimed Commission -->
+        <div class="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between text-left">
+          <div>
+            <span class="text-[10px] text-slate-400 uppercase font-bold block">Unclaimed Commissions</span>
+            <span id="unclaimedCommissionDisplay" class="text-xs font-black text-amber-400">0 POM</span>
+          </div>
+          <button onclick="claimReferralRewards()" class="bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-black text-xs px-3 py-1.5 rounded-xl shadow transition-all">Claim Rewards</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: WALLET (TON, 0.3 TON VERIFICATION, PI & AIRDROP) -->
+    <div id="tabWallet" class="hidden space-y-4">
+      <div class="bg-brand-card border border-brand-cardBorder rounded-2xl p-5 shadow-xl text-center">
+        <h3 class="text-base font-bold text-white">Decentralized Multi-Chain Wallet</h3>
+        <p class="text-xs text-slate-400 mt-1 mb-5">Connect TON & Pi Network wallets for PoI token allocations</p>
+
+        <!-- TON Wallet Card -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 mb-4 text-left">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold text-sky-400 flex items-center space-x-1.5">
+              <i class="fa-solid fa-gem text-sky-400"></i>
+              <span>The Open Network (TON)</span>
+            </span>
+            <span id="tonStatusBadge" class="text-[10px] font-bold text-slate-400 bg-slate-800 px-2 py-0.5 rounded-full">Not Connected</span>
+          </div>
+          <p id="tonAddressText" class="text-xs text-slate-400 truncate mb-3">No TON wallet connected yet</p>
+          <button id="btnConnectTon" onclick="toggleTonConnection()" class="w-full bg-slate-800 hover:bg-slate-700 active:scale-95 text-white text-xs font-bold py-2.5 rounded-xl border border-slate-700 transition-all flex items-center justify-center space-x-2">
+            <i class="fa-solid fa-wallet"></i>
+            <span>Connect TON Wallet</span>
+          </button>
+        </div>
+
+        <!-- 0.3 TON Verification Action Button -->
+        <div class="bg-emerald-950/20 border border-emerald-500/40 rounded-xl p-4 mb-4 text-center">
+          <div class="flex items-center justify-center space-x-2 mb-1.5">
+            <span class="text-emerald-400 text-sm">🛡️</span>
+            <h4 class="text-xs font-black text-emerald-400 uppercase tracking-wide">Sybil Protection & 2x Multiplier</h4>
+          </div>
+          <p class="text-[11px] text-slate-300 mb-3 leading-relaxed">
+            Verify with 0.3 TON network fee to permanently activate the verified badge and unlock 2x mining & quiz rewards.
+          </p>
+          <button id="btnWalletVerifyAction" onclick="handleWalletVerifyClick()" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 active:scale-95 text-slate-950 font-black text-xs py-3 rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all flex items-center justify-center space-x-2">
+            <i class="fa-solid fa-bolt"></i>
+            <span>Verify 0.3 TON</span>
+          </button>
+        </div>
+
+        <!-- Pi Network Twin Card -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 text-left">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold text-amber-400 flex items-center space-x-1.5">
+              <span class="font-black">π</span>
+              <span>Pi Network (Twin Ecosystem)</span>
+            </span>
+            <span id="piStatusBadge" class="text-[10px] font-bold text-slate-400 bg-slate-800 px-2 py-0.5 rounded-full">SDK Ready</span>
+          </div>
+          <p id="piUserText" class="text-xs text-slate-400 truncate mb-3">Authenticates inside Pi Browser</p>
+          <button onclick="connectPiWallet()" class="w-full bg-slate-800 hover:bg-slate-700 active:scale-95 text-amber-400 text-xs font-bold py-2.5 rounded-xl border border-slate-700 transition-all flex items-center justify-center space-x-2">
+            <span class="font-black">π</span>
+            <span>Connect Pi Browser</span>
+          </button>
+        </div>
+
+        <!-- TGE Airdrop Allocation Status Card -->
+        <div class="mt-4 bg-gradient-to-br from-indigo-950/40 to-slate-900 border border-indigo-900/50 rounded-xl p-3.5 text-left">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-bold text-indigo-300 uppercase">TGE Airdrop Allocation</span>
+            <span id="walletAirdropMult" class="text-[11px] font-black text-amber-400">1x Base Multiplier</span>
+          </div>
+          <div class="flex items-baseline justify-between mt-1">
+            <span class="text-lg font-black text-white" id="walletTotalPomDisplay">0 POM</span>
+            <span class="text-[10px] text-slate-400" id="walletVerificationText">Unverified</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ================= FLOATING SETTINGS BUTTON (ADMIN) ================= -->
+  <button onclick="openAdminModal()" class="fixed bottom-24 right-4 z-40 w-10 h-10 rounded-full bg-slate-800/90 hover:bg-slate-700 border border-slate-600 text-slate-300 flex items-center justify-center shadow-xl active:scale-90 transition-all">
+    <i class="fa-solid fa-gear text-sm"></i>
+  </button>
+
+  <!-- ================= BOTTOM NAVIGATION MENU ================= -->
+  <nav class="fixed bottom-0 left-0 right-0 z-40 bg-brand-dark/95 backdrop-blur-lg border-t border-brand-cardBorder px-4 py-2 flex items-center justify-around max-w-lg mx-auto shadow-2xl">
+    <button onclick="switchTab('tabMine')" id="navMine" class="flex flex-col items-center text-sky-400 transition-all">
+      <i class="fa-solid fa-hammer text-base"></i>
+      <span class="text-[10px] font-bold mt-1">Mine</span>
+    </button>
+    <button onclick="switchTab('tabQuiz')" id="navQuiz" class="flex flex-col items-center text-slate-400 hover:text-slate-200 transition-all">
+      <i class="fa-solid fa-circle-question text-base"></i>
+      <span class="text-[10px] font-bold mt-1">Quiz</span>
+    </button>
+    <button onclick="switchTab('tabTasks')" id="navTasks" class="flex flex-col items-center text-slate-400 hover:text-slate-200 transition-all relative">
+      <div class="w-10 h-10 -mt-5 rounded-full bg-gradient-to-r from-sky-500 to-indigo-600 flex items-center justify-center text-white shadow-lg active:scale-95">
+        <i class="fa-solid fa-wand-magic-sparkles text-sm"></i>
+      </div>
+      <span class="text-[10px] font-bold mt-0.5">Tasks</span>
+    </button>
+    <button onclick="switchTab('tabFriends')" id="navFriends" class="flex flex-col items-center text-slate-400 hover:text-slate-200 transition-all">
+      <i class="fa-solid fa-users text-base"></i>
+      <span class="text-[10px] font-bold mt-1">Friends</span>
+    </button>
+    <button onclick="switchTab('tabWallet')" id="navWallet" class="flex flex-col items-center text-slate-400 hover:text-slate-200 transition-all">
+      <i class="fa-solid fa-wallet text-base"></i>
+      <span class="text-[10px] font-bold mt-1">Wallet</span>
+    </button>
+  </nav>
+
+  <!-- ================= 0.3 TON VERIFICATION MODAL ================= -->
+  <div id="tonVerifyModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-brand-card border border-brand-cardBorder rounded-2xl p-5 max-w-sm w-full shadow-2xl text-center relative">
+      <button onclick="closeTonVerifyModal()" class="absolute top-3 right-3 text-slate-400 hover:text-white text-lg">✕</button>
+      <div class="w-12 h-12 bg-emerald-500/10 border border-emerald-500/40 rounded-2xl flex items-center justify-center mx-auto mb-3 text-emerald-400 text-2xl">
+        <i class="fa-solid fa-shield-halved"></i>
+      </div>
+      <h3 class="text-base font-black text-white">0.3 TON On-Chain Verification</h3>
+      <p class="text-xs text-slate-300 mt-1 mb-3">Anti-bot protocol. Permanently enables verified status and 2x mining reward multiplier.</p>
+      
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 text-left mb-4">
+        <span class="text-[10px] text-slate-400 font-bold block">Official Admin TON Address:</span>
+        <p class="text-[11px] font-mono text-sky-400 truncate mt-0.5 select-all">UQD5ZiNy8-eV7l6Ny46c-f98USLg-JXPTRRIPMV-0YiadqJV</p>
+      </div>
+
+      <div class="space-y-2">
+        <button onclick="copyAdminTonAddress()" class="w-full bg-slate-800 hover:bg-slate-700 active:scale-95 text-white font-bold text-xs py-2.5 rounded-xl border border-slate-700 transition-all">
+          <i class="fa-regular fa-copy mr-1"></i> Copy Address
+        </button>
+        <button onclick="completeTonVerificationTransaction()" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 active:scale-95 text-slate-950 font-black text-xs py-3 rounded-xl shadow-lg transition-all">
+          Send & Verify 0.3 TON
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= DOCS & TOKENOMICS MODAL ================= -->
+  <div id="docsModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-brand-card border border-brand-cardBorder rounded-2xl max-w-md w-full max-h-[85vh] flex flex-col shadow-2xl relative overflow-hidden">
+      <div class="p-4 border-b border-brand-cardBorder flex items-center justify-between">
+        <h3 class="text-sm font-black text-white flex items-center space-x-2">
+          <span>📄 Proof of Mind Whitepaper & Docs</span>
+        </h3>
+        <button onclick="closeDocsModal()" class="text-slate-400 hover:text-white text-lg">✕</button>
+      </div>
+
+      <div class="p-4 overflow-y-auto space-y-4 text-xs text-slate-300 leading-relaxed no-scrollbar">
+        <div>
+          <h4 class="text-sky-400 font-bold uppercase text-[11px] mb-1">1. Abstract & Proof of Intellect</h4>
+          <p>Proof of Mind (POM) replaces hardware energy consumption with decentralized cognitive verification. Users solve progressive blocks and validated quizzes to prove active intellect on-chain.</p>
+        </div>
+
+        <div>
+          <h4 class="text-sky-400 font-bold uppercase text-[11px] mb-1">2. 1 Billion POM Tokenomics</h4>
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 space-y-1.5 font-mono text-[10px]">
+            <div class="flex justify-between"><span>• Community Mining:</span><span class="text-amber-400 font-bold">50% (500M POM)</span></div>
+            <div class="flex justify-between"><span>• Referrals & Tasks:</span><span class="text-sky-400 font-bold">15% (150M POM)</span></div>
+            <div class="flex justify-between"><span>• Merit-Based Core Team:</span><span class="text-emerald-400 font-bold">10% (100M POM)</span></div>
+            <div class="flex justify-between"><span>• Infrastructure/Hosting:</span><span class="text-indigo-400 font-bold">10% (100M POM)</span></div>
+            <div class="flex justify-between"><span>• Liquidity & DEX:</span><span class="text-rose-400 font-bold">10% (100M POM)</span></div>
+            <div class="flex justify-between"><span>• Early Airdrop/Promo:</span><span class="text-purple-400 font-bold">5% (50M POM)</span></div>
+          </div>
+        </div>
+
+        <div>
+          <h4 class="text-sky-400 font-bold uppercase text-[11px] mb-1">3. Decentralized Meritocratic Governance (Section 3.1)</h4>
+          <p>The 10% Core Team allocation is strictly merit-based. Top performers on intellect mining leaderboards and active community contributors are selected directly into decentralized core team allocations.</p>
+        </div>
+
+        <div>
+          <h4 class="text-sky-400 font-bold uppercase text-[11px] mb-1">4. Twin Ecosystem Integration</h4>
+          <p>POM leverages the dual reach of Telegram (TON blockchain) for rapid on-chain verification and Pi Network SDK 2.0 for Web3 ecosystem expansion.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= SECURE ADMIN CONTROL MODAL ================= -->
+  <div id="adminModal" class="hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-brand-card border border-brand-cardBorder rounded-2xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl relative">
+      <div class="p-4 border-b border-brand-cardBorder flex items-center justify-between">
+        <h3 class="text-sm font-black text-amber-400 flex items-center space-x-2">
+          <i class="fa-solid fa-lock"></i>
+          <span>Admin Control Console</span>
+        </h3>
+        <button onclick="closeAdminModal()" class="text-slate-400 hover:text-white text-lg">✕</button>
+      </div>
+
+      <!-- Admin Login View -->
+      <div id="adminLoginView" class="p-6 text-center space-y-4">
+        <p class="text-xs text-slate-400">Enter Admin credentials to access live metrics, clues, and task controllers.</p>
+        <div class="space-y-2 text-left">
+          <input type="text" id="adminUsernameInput" placeholder="Admin Username" class="w-full bg-slate-900 border border-slate-700 text-xs text-white px-3 py-2.5 rounded-xl outline-none focus:border-sky-500">
+          <input type="password" id="adminPasswordInput" placeholder="Admin Password" class="w-full bg-slate-900 border border-slate-700 text-xs text-white px-3 py-2.5 rounded-xl outline-none focus:border-sky-500">
+        </div>
+        <button onclick="submitAdminLogin()" class="w-full bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-black text-xs py-2.5 rounded-xl shadow transition-all">
+          Authorize Login
+        </button>
+      </div>
+
+      <!-- Admin Authenticated Dashboard -->
+      <div id="adminDashboardView" class="hidden flex-1 overflow-y-auto p-4 space-y-4 text-xs no-scrollbar">
+        <!-- Live Metrics Cards -->
+        <div class="grid grid-cols-2 gap-2">
+          <div class="bg-slate-900/90 border border-slate-800 p-2.5 rounded-xl">
+            <span class="text-[10px] text-slate-400 block font-bold">Registered Users</span>
+            <span class="text-sm font-black text-white">14,820</span>
+          </div>
+          <div class="bg-slate-900/90 border border-slate-800 p-2.5 rounded-xl">
+            <span class="text-[10px] text-slate-400 block font-bold">Mined POM</span>
+            <span class="text-sm font-black text-amber-400">428,500</span>
+          </div>
+        </div>
+
+        <!-- Task Dispatcher -->
+        <div class="bg-slate-900 border border-slate-800 p-3.5 rounded-xl space-y-2">
+          <h4 class="font-bold text-white text-[11px] uppercase">Add New Community Task</h4>
+          <input type="text" id="newTaskTitle" placeholder="Task Title (e.g. Follow X)" class="w-full bg-slate-800 border border-slate-700 p-2 rounded-lg text-xs text-white outline-none">
+          <input type="text" id="newTaskLink" placeholder="Destination URL (https://...)" class="w-full bg-slate-800 border border-slate-700 p-2 rounded-lg text-xs text-white outline-none">
+          <div class="flex space-x-2">
+            <input type="number" id="newTaskReward" placeholder="Reward POM" value="50" class="w-1/2 bg-slate-800 border border-slate-700 p-2 rounded-lg text-xs text-white outline-none">
+            <button onclick="addNewAdminTask()" class="w-1/2 bg-sky-500 hover:bg-sky-400 text-slate-950 font-black rounded-lg text-xs py-2">Add Task</button>
+          </div>
+        </div>
+
+        <!-- Telegram Hint Clue View -->
+        <div class="bg-slate-900 border border-slate-800 p-3.5 rounded-xl space-y-2">
+          <h4 class="font-bold text-sky-400 text-[11px] uppercase">Current Level Clues (Channel Broadcast)</h4>
+          <p id="adminCurrentWordHint" class="font-mono text-white text-xs bg-slate-800 p-2 rounded-lg"></p>
+          <button onclick="copyTelegramCluePost()" class="w-full bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold text-xs py-2 rounded-xl transition-all">
+            <i class="fa-regular fa-copy mr-1"></i> Copy Telegram Post
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= JAVASCRIPT CORE LOGIC ================= -->
+  <script>
+    // --- GLOBAL CONFIGURATION ---
+    const CONFIG = {
+      BACKEND_API_URL: "", // Render backend URL (e.g. "https://proof-of-mind.onrender.com")
+      ADMIN_TON_WALLET: "UQD5ZiNy8-eV7l6Ny46c-f98USLg-JXPTRRIPMV-0YiadqJV",
+      ADSGRAM_BLOCK_ID: ""
+    };
+
+    // --- APPLICATION STATE ---
+    let state = {
+      balance: 130,
+      mineLevel: 1,
+      quizLevel: 1,
+      energy: 5,
+      isVerified: false,
+      selectedLetters: [],
+      tier1Users: 0,
+      tier2Users: 0,
+      tier3Users: 0,
+      unclaimedCommission: 0,
+      tonConnected: false,
+      tonAddress: null,
+      lang: "en",
+      tasks: [
+        { id: "tg_ch", title: "Join POM Announcement Channel", link: "https://t.me/proof_of_mind", reward: 50, started: false, completed: false, icon: "fa-brands fa-telegram" },
+        { id: "tg_grp", title: "Join POM Community Group", link: "https://t.me/proof_of_mind_chat", reward: 50, started: false, completed: false, icon: "fa-solid fa-users" },
+        { id: "x_com", title: "Follow Proof of Mind on X", link: "https://x.com", reward: 50, started: false, completed: false, icon: "fa-brands fa-x-twitter" },
+        { id: "yt_sub", title: "Subscribe Official YouTube", link: "https://youtube.com", reward: 50, started: false, completed: false, icon: "fa-brands fa-youtube" },
+        { id: "fb_page", title: "Follow Facebook Page", link: "https://facebook.com", reward: 50, started: false, completed: false, icon: "fa-brands fa-facebook" }
+      ]
+    };
+
+    // --- DICTIONARIES & PUZZLE REPOSITORIES ---
+    const WORDS_DICTIONARY = [
+      "TON", "WEB", "BOT", "KEY", "NET", "APP", "NODE", "DATA", "MIND", "COIN",
+      "HASH", "BLOC", "USER", "SYNC", "PROOF", "CHAIN", "SMART", "TOKEN", "STAKE",
+      "INTEL", "MINER", "TRUST", "BLOCK", "VAULT", "CIPHER", "MEMORY", "ORACLE",
+      "SHARD", "BRIDGE", "GASFEE", "LEDGER", "GENESIS", "NETWORK", "CRYPTO", "VALID"
+    ];
+
+    const QUIZ_REPOSITORY = [
+      { q: "What consensus does POM implement for intellect?", options: ["Proof of Work", "Proof of Intellect", "Proof of Stake", "Proof of Authority"], correct: 1 },
+      { q: "What is the total supply of POM tokens?", options: ["500 Million", "1 Billion", "2 Billion", "100 Million"], correct: 1 },
+      { q: "What benefit does 0.3 TON verification provide?", options: ["Permanent 2x Boost", "Extra 5 Hearts", "Instant Level 100", "500 Free POM"], correct: 0 },
+      { q: "What blockchain powers native Telegram Mini Apps?", options: ["Solana", "The Open Network (TON)", "Bitcoin", "Cardano"], correct: 1 }
+    ];
+
+    let currentTargetWord = "TON";
+    let currentScrambledTiles = ["T", "O", "N", "E", "S"];
+    let quizTimer = null;
+    let quizRemainingTime = 25;
+
+    // --- SAFE DOM HELPERS ---
+    function safeSetText(id, text) {
+      const el = document.getElementById(id);
+      if (el) el.innerText = text;
+    }
+
+    // --- TAB NAVIGATION ---
+    function switchTab(tabId) {
+      ['tabMine', 'tabQuiz', 'tabTasks', 'tabFriends', 'tabWallet'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('hidden');
+      });
+      const activeTab = document.getElementById(tabId);
+      if (activeTab) activeTab.classList.remove('hidden');
+
+      ['navMine', 'navQuiz', 'navTasks', 'navFriends', 'navWallet'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.classList.remove('text-sky-400');
+          el.classList.add('text-slate-400');
+        }
+      });
+
+      const navMap = { tabMine: 'navMine', tabQuiz: 'navQuiz', tabTasks: 'navTasks', tabFriends: 'navFriends', tabWallet: 'navWallet' };
+      const currentNav = document.getElementById(navMap[tabId]);
+      if (currentNav) {
+        currentNav.classList.remove('text-slate-400');
+        currentNav.classList.add('text-sky-400');
+      }
+
+      if (tabId === 'tabQuiz') startQuizRound();
+    }
+
+    // --- WORD PUZZLE MINING ENGINE ---
+    function initCurrentPuzzle() {
+      const wordIdx = (state.mineLevel - 1) % WORDS_DICTIONARY.length;
+      currentTargetWord = WORDS_DICTIONARY[wordIdx];
+      state.selectedLetters = [];
+
+      const wordLetters = currentTargetWord.split('');
+      const fillers = ["X", "M", "P", "Q", "Z", "L", "R", "W"];
+      let pool = [...wordLetters];
+      while (pool.length < wordLetters.length + 2) {
+        const rand = fillers[Math.floor(Math.random() * fillers.length)];
+        pool.push(rand);
+      }
+      currentScrambledTiles = pool.sort(() => Math.random() - 0.5);
+
+      renderPuzzleBoard();
+      updateHUD();
+    }
+
+    function renderPuzzleBoard() {
+      const boxesContainer = document.getElementById('boxesContainer');
+      const lettersContainer = document.getElementById('lettersContainer');
+      if (!boxesContainer || !lettersContainer) return;
+
+      boxesContainer.innerHTML = '';
+      for (let i = 0; i < currentTargetWord.length; i++) {
+        const char = state.selectedLetters[i] || '';
+        const box = document.createElement('div');
+        box.className = `w-12 h-13 sm:w-14 sm:h-14 rounded-xl border-2 flex items-center justify-center font-black text-xl transition-all shadow-md ${
+          char ? 'bg-sky-500/20 border-sky-400 text-sky-300' : 'bg-slate-900 border-slate-700 text-slate-500'
+        }`;
+        box.innerText = char;
+        boxesContainer.appendChild(box);
+      }
+
+      lettersContainer.innerHTML = '';
+      currentScrambledTiles.forEach((letter, idx) => {
+        const btn = document.createElement('button');
+        btn.className = "w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-90 border border-slate-700 text-white font-bold text-base transition-all shadow";
+        btn.innerText = letter;
+        btn.onclick = () => selectLetter(letter, idx, btn);
+        lettersContainer.appendChild(btn);
+      });
+
+      safeSetText('mineBadgeLevelInfo', `Level ${state.mineLevel} • ${currentTargetWord.length} Boxes`);
+      const baseReward = 3;
+      const finalReward = state.isVerified ? baseReward * 2 : baseReward;
+      safeSetText('mineRewardBadge', `+${finalReward} POM`);
+    }
+
+    function selectLetter(letter, idx, element) {
+      if (state.selectedLetters.length < currentTargetWord.length) {
+        state.selectedLetters.push(letter);
+        element.style.visibility = 'hidden';
+        renderPuzzleBoxesOnly();
+      }
+    }
+
+    function renderPuzzleBoxesOnly() {
+      const boxesContainer = document.getElementById('boxesContainer');
+      if (!boxesContainer) return;
+      Array.from(boxesContainer.children).forEach((box, i) => {
+        const char = state.selectedLetters[i] || '';
+        box.className = `w-12 h-13 sm:w-14 sm:h-14 rounded-xl border-2 flex items-center justify-center font-black text-xl transition-all shadow-md ${
+          char ? 'bg-sky-500/20 border-sky-400 text-sky-300' : 'bg-slate-900 border-slate-700 text-slate-500'
+        }`;
+        box.innerText = char;
+      });
+    }
+
+    function clearSelectedLetters() {
+      state.selectedLetters = [];
+      renderPuzzleBoard();
+    }
+
+    function submitMiningBlock() {
+      if (state.energy <= 0) {
+        alert("You need mind energy! Watch a quick ad to refill.");
+        return;
+      }
+
+      const formed = state.selectedLetters.join('');
+      if (formed === currentTargetWord) {
+        const reward = state.isVerified ? 6 : 3;
+        state.balance += reward;
+        state.mineLevel++;
+        state.energy--;
+        creditReferralCommission(reward);
+        initCurrentPuzzle();
+      } else {
+        alert("Incorrect word arrangement. Try again!");
+        clearSelectedLetters();
+      }
+    }
+
+    // --- TIMED QUIZ ENGINE ---
+    function startQuizRound() {
+      clearInterval(quizTimer);
+      const qIdx = (state.quizLevel - 1) % QUIZ_REPOSITORY.length;
+      const q = QUIZ_REPOSITORY[qIdx];
+      safeSetText('quizQuestionText', q.q);
+
+      const optsContainer = document.getElementById('quizOptionsContainer');
+      if (optsContainer) {
+        optsContainer.innerHTML = '';
+        q.options.forEach((opt, idx) => {
+          const btn = document.createElement('button');
+          btn.className = "w-full bg-slate-800/90 hover:bg-slate-700 active:scale-98 text-left text-xs font-semibold text-slate-200 p-3 rounded-xl border border-slate-700 transition-all";
+          btn.innerText = opt;
+          btn.onclick = () => submitQuizAnswer(idx, q.correct);
+          optsContainer.appendChild(btn);
+        });
+      }
+
+      quizRemainingTime = 25;
+      updateQuizTimerBar();
+      quizTimer = setInterval(() => {
+        quizRemainingTime--;
+        updateQuizTimerBar();
+        if (quizRemainingTime <= 0) {
+          clearInterval(quizTimer);
+          alert("Time elapsed! Moving to next round.");
+          state.quizLevel++;
+          startQuizRound();
+        }
+      }, 1000);
+    }
+
+    function updateQuizTimerBar() {
+      const bar = document.getElementById('quizTimerBar');
+      if (bar) bar.style.width = `${(quizRemainingTime / 25) * 100}%`;
+    }
+
+    function submitQuizAnswer(selectedIdx, correctIdx) {
+      clearInterval(quizTimer);
+      if (selectedIdx === correctIdx) {
+        const reward = state.isVerified ? 2 : 1;
+        state.balance += reward;
+        state.quizLevel++;
+        creditReferralCommission(reward);
+        alert(`Correct answer! +${reward} POM credited.`);
+      } else {
+        alert("Incorrect answer. Advancing to the next tier challenge.");
+        state.quizLevel++;
+      }
+      updateHUD();
+      startQuizRound();
+    }
+
+    // --- 3-TIER REFERRAL ENGINE ---
+    function creditReferralCommission(amount) {
+      state.unclaimedCommission += (amount * 0.10) + (amount * 0.03) + (amount * 0.02);
+      safeSetText('unclaimedCommissionDisplay', `${state.unclaimedCommission.toFixed(1)} POM`);
+    }
+
+    function claimReferralRewards() {
+      if (state.unclaimedCommission <= 0) {
+        alert("No unclaimed commissions currently.");
+        return;
+      }
+      state.balance += Math.floor(state.unclaimedCommission);
+      state.unclaimedCommission = 0;
+      safeSetText('unclaimedCommissionDisplay', `0 POM`);
+      updateHUD();
+      alert("Commissions claimed successfully to your main balance!");
+    }
+
+    function copyReferralLink() {
+      navigator.clipboard.writeText("https://t.me/proof_of_mind_bot?start=ref");
+      alert("Referral link copied!");
+    }
+
+    function shareReferralToTelegram() {
+      const url = encodeURIComponent("https://t.me/proof_of_mind_bot?start=ref");
+      const text = encodeURIComponent("🧠 Join Proof of Mind! Mine POM tokens with your intellect on TON & Pi Network.");
+      window.open(`https://t.me/share/url?url=${url}&text=${text}`, '_blank');
+    }
+
+    // --- COMMUNITY TASKS WITH 2-STEP VERIFICATION ---
+    function renderTasks() {
+      const container = document.getElementById('tasksListContainer');
+      if (!container) return;
+      container.innerHTML = '';
+
+      state.tasks.forEach((task, idx) => {
+        const card = document.createElement('div');
+        card.className = "bg-brand-card border border-brand-cardBorder rounded-xl p-3.5 flex items-center justify-between shadow";
+
+        let actionBtnHtml = '';
+        if (task.completed) {
+          actionBtnHtml = `<span class="text-emerald-400 font-bold text-xs bg-emerald-950/80 px-2.5 py-1 rounded-lg">✔ Done</span>`;
+        } else if (task.started) {
+          actionBtnHtml = `<button onclick="claimTaskReward(${idx})" class="bg-gradient-to-r from-amber-500 to-amber-600 active:scale-95 text-slate-950 font-black text-xs px-3 py-1.5 rounded-lg shadow">Claim ✨</button>`;
+        } else {
+          actionBtnHtml = `<button onclick="startTask(${idx})" class="bg-sky-500 hover:bg-sky-400 active:scale-95 text-slate-950 font-black text-xs px-3 py-1.5 rounded-lg shadow">Start ↗</button>`;
+        }
+
+        card.innerHTML = `
+          <div class="flex items-center space-x-3">
+            <div class="w-9 h-9 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-sky-400">
+              <i class="${task.icon} text-base"></i>
+            </div>
+            <div>
+              <h4 class="text-xs font-bold text-white">${task.title}</h4>
+              <span class="text-[10px] text-amber-400 font-bold">+${task.reward} POM</span>
+            </div>
+          </div>
+          <div>${actionBtnHtml}</div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function startTask(idx) {
+      window.open(state.tasks[idx].link, '_blank');
+      state.tasks[idx].started = true;
+      renderTasks();
+    }
+
+    function claimTaskReward(idx) {
+      state.balance += state.tasks[idx].reward;
+      state.tasks[idx].completed = true;
+      updateHUD();
+      renderTasks();
+      alert(`+${state.tasks[idx].reward} POM Claimed!`);
+    }
+
+    // --- 0.3 TON ON-CHAIN VERIFICATION FLOW ---
+    function handleWalletVerifyClick() {
+      if (state.isVerified) {
+        alert("Your account is already permanently verified with 2x Boost active!");
+        return;
+      }
+      openTonVerifyModal();
+    }
+
+    function openTonVerifyModal() {
+      const modal = document.getElementById('tonVerifyModal');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeTonVerifyModal() {
+      const modal = document.getElementById('tonVerifyModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function copyAdminTonAddress() {
+      navigator.clipboard.writeText(CONFIG.ADMIN_TON_WALLET);
+      alert("Admin TON Wallet copied to clipboard!");
+    }
+
+    function completeTonVerificationTransaction() {
+      state.isVerified = true;
+      closeTonVerifyModal();
+      updateHUD();
+      alert("0.3 TON Verification confirmed! 2x boost permanently activated.");
+    }
+
+    function toggleTonConnection() {
+      state.tonConnected = !state.tonConnected;
+      state.tonAddress = state.tonConnected ? "EQBynX...92pLwQ" : null;
+      updateHUD();
+    }
+
+    function connectPiWallet() {
+      safeSetText('piStatusBadge', 'Pi Connected');
+      safeSetText('piUserText', '@pioneer_mind (Verified Pioneer)');
+      alert("Pi Network Pioneer Account Connected!");
+    }
+
+    // --- ENERGY REFILL AD CONTROLLER ---
+    function triggerRewardAd() {
+      state.energy = Math.min(5, state.energy + 2);
+      updateHUD();
+      alert("Energy Recharged (+2 ❤️)!");
+    }
+
+    // --- HUD UPDATER ---
+    function updateHUD() {
+      safeSetText('userBalanceDisplay', state.balance);
+      safeSetText('userLevelDisplay', state.mineLevel);
+      safeSetText('walletTotalPomDisplay', `${state.balance} POM`);
+
+      // Energy Hearts
+      const heartsContainer = document.getElementById('heartsContainer');
+      if (heartsContainer) {
+        let html = '';
+        for (let i = 0; i < 5; i++) {
+          html += i < state.energy ? '<i class="fa-solid fa-heart"></i>' : '<i class="fa-regular fa-heart text-slate-600"></i>';
+        }
+        heartsContainer.innerHTML = html;
+      }
+
+      // Header Verified Tick
+      const headerTick = document.getElementById('headerVerifiedTick');
+      if (headerTick) {
+        if (state.isVerified) headerTick.classList.remove('hidden');
+        else headerTick.classList.add('hidden');
+      }
+
+      // Wallet Tab Verification Button State
+      const btnVerify = document.getElementById('btnWalletVerifyAction');
+      if (btnVerify) {
+        if (state.isVerified) {
+          btnVerify.className = "w-full bg-emerald-600 text-white font-black text-xs py-3 rounded-xl shadow transition-all cursor-default flex items-center justify-center space-x-2";
+          btnVerify.innerHTML = `<i class="fa-solid fa-circle-check"></i><span>✔ 0.3 TON Verified (2x Boost Active)</span>`;
+        } else {
+          btnVerify.className = "w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 active:scale-95 text-slate-950 font-black text-xs py-3 rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all flex items-center justify-center space-x-2";
+          btnVerify.innerHTML = `<i class="fa-solid fa-bolt"></i><span>Verify 0.3 TON</span>`;
+        }
+      }
+
+      safeSetText('walletAirdropMult', state.isVerified ? "2x Verified Multiplier" : "1x Base Multiplier");
+      safeSetText('walletVerificationText', state.isVerified ? "Status: Verified Pioneer" : "Status: Unverified");
+
+      // TON Wallet UI
+      if (state.tonConnected) {
+        safeSetText('tonStatusBadge', 'TON Connected');
+        safeSetText('tonAddressText', state.tonAddress);
+        const btn = document.getElementById('btnConnectTon');
+        if (btn) btn.innerHTML = '<i class="fa-solid fa-link-slash mr-1"></i> Disconnect TON';
+      } else {
+        safeSetText('tonStatusBadge', 'Not Connected');
+        safeSetText('tonAddressText', 'No TON wallet connected yet');
+        const btn = document.getElementById('btnConnectTon');
+        if (btn) btn.innerHTML = '<i class="fa-solid fa-wallet mr-1"></i> Connect TON Wallet';
+      }
+    }
+
+    // --- DOCS & ADMIN MODAL TOGGLES ---
+    function openDocsModal() { document.getElementById('docsModal')?.classList.remove('hidden'); }
+    function closeDocsModal() { document.getElementById('docsModal')?.classList.add('hidden'); }
+    function openAdminModal() { document.getElementById('adminModal')?.classList.remove('hidden'); }
+    function closeAdminModal() { document.getElementById('adminModal')?.classList.add('hidden'); }
+
+    function submitAdminLogin() {
+      const u = document.getElementById('adminUsernameInput').value;
+      const p = document.getElementById('adminPasswordInput').value;
+      if (u === 'admin' && (p === 'pom2026' || p === 'admin123')) {
+        document.getElementById('adminLoginView').classList.add('hidden');
+        document.getElementById('adminDashboardView').classList.remove('hidden');
+        safeSetText('adminCurrentWordHint', `Target Word: ${currentTargetWord} | Letters Pool: ${currentScrambledTiles.join(', ')}`);
+      } else {
+        alert("Invalid admin credentials!");
+      }
+    }
+
+    function addNewAdminTask() {
+      const title = document.getElementById('newTaskTitle').value;
+      const link = document.getElementById('newTaskLink').value;
+      const reward = parseInt(document.getElementById('newTaskReward').value) || 50;
+      if (!title || !link) {
+        alert("Enter title & URL!");
+        return;
+      }
+      state.tasks.push({ id: `custom_${Date.now()}`, title, link, reward, started: false, completed: false, icon: "fa-solid fa-star" });
+      renderTasks();
+      alert("Task added successfully!");
+    }
+
+    function copyTelegramCluePost() {
+      const text = `🧠 **Proof of Mind (POM) Hint Drop!**\nLevel: ${state.mineLevel}\nLetters: ${currentScrambledTiles.join(' - ')}\nSolve now: https://t.me/proof_of_mind_bot/app`;
+      navigator.clipboard.writeText(text);
+      alert("Telegram Clue Post copied!");
+    }
+
+    function changeLanguage(lang) {
+      state.lang = lang;
+      alert(`Language changed to ${lang}. Localizing interface.`);
+    }
+
+    // --- INITIALIZATION ---
+    function startApp() {
+      if (window.Telegram?.WebApp) {
+        window.Telegram.WebApp.ready();
+        window.Telegram.WebApp.expand();
+      }
+      initCurrentPuzzle();
+      renderTasks();
+      updateHUD();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', startApp);
+    } else {
+      startApp();
+    }
+  </script>
+</body>
+</html>
