@@ -52,7 +52,6 @@
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     
-    /* Touch-Safe Bottom Floating Dock (Elevated above Android System Keys) */
     .safe-nav-dock {
       bottom: calc(env(safe-area-inset-bottom, 0px) + 38px);
     }
@@ -64,7 +63,7 @@
 
 <body class="bg-brand-dark text-slate-100 font-sans min-h-screen flex flex-col select-none no-scrollbar pb-36">
 
-  <!-- ================= IN-APP TOAST NOTIFICATION ================= -->
+  <!-- ================= TOAST NOTIFICATION ================= -->
   <div id="toastNotification" class="fixed top-3 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 opacity-0 pointer-events-none transform -translate-y-4 max-w-xs w-full px-4">
     <div class="bg-slate-900/95 border border-slate-700 text-white text-xs font-semibold py-2 px-3.5 rounded-xl shadow-2xl flex items-center justify-center space-x-2 backdrop-blur-md">
       <span id="toastIcon">ℹ️</span>
@@ -86,7 +85,6 @@
         <span id="navDocsLabel">Docs</span>
       </button>
 
-      <!-- 10 Languages Selector -->
       <div class="relative">
         <select id="languageSelect" onchange="changeLanguage(this.value)" class="bg-slate-800/90 border border-slate-700 text-[11px] font-medium text-slate-200 px-2 py-1 rounded-lg outline-none cursor-pointer focus:border-sky-500">
           <option value="hi" selected>हिंदी (Hindi)</option>
@@ -139,7 +137,7 @@
   <!-- ================= MAIN CONTAINER TABS ================= -->
   <main class="flex-1 px-3 max-w-lg mx-auto w-full">
 
-    <!-- TAB 1: MINE (WORD PUZZLE MINING) -->
+    <!-- TAB 1: MINE -->
     <div id="tabMine" class="space-y-3">
       <div class="bg-brand-card border border-brand-cardBorder rounded-2xl p-3.5 sm:p-4 shadow-xl relative glow-box">
         <div class="flex items-center justify-between mb-2">
@@ -154,13 +152,9 @@
         <h2 id="mineHeading" class="text-sm sm:text-base font-bold text-center text-white mb-0.5">वर्ड पज़ल माइनिंग</h2>
         <p id="mineSubHeading" class="text-[11px] text-slate-400 text-center mb-4">ब्लॉक माइन करने के लिए सही अक्षरों का चयन करें</p>
 
-        <!-- Dynamic Puzzle Boxes -->
         <div id="boxesContainer" class="flex items-center justify-center gap-1.5 mb-5 min-h-[46px]"></div>
-
-        <!-- Available Selectable Letter Tiles -->
         <div id="lettersContainer" class="flex flex-wrap items-center justify-center gap-1.5 mb-5"></div>
 
-        <!-- Action Controls -->
         <div class="grid grid-cols-2 gap-2.5">
           <button onclick="clearSelectedLetters()" class="bg-slate-800 hover:bg-slate-700 active:scale-95 border border-slate-700 text-slate-200 text-xs font-bold py-2 rounded-xl transition-all flex items-center justify-center space-x-1">
             <i class="fa-solid fa-rotate-left text-xs"></i>
@@ -173,7 +167,6 @@
         </div>
       </div>
 
-      <!-- Energy Refill Card via Video Ads -->
       <div class="bg-brand-card border border-brand-cardBorder rounded-2xl p-3 flex items-center justify-between shadow">
         <div class="flex items-center space-x-2.5">
           <div class="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 text-sm">
@@ -191,7 +184,7 @@
       </div>
     </div>
 
-    <!-- TAB 2: QUIZ (TIMED COGNITIVE VERIFICATION) -->
+    <!-- TAB 2: QUIZ -->
     <div id="tabQuiz" class="hidden space-y-3">
       <div class="bg-brand-card border border-brand-cardBorder rounded-2xl p-3.5 sm:p-4 shadow-xl relative">
         <div class="flex items-center justify-between mb-2">
@@ -208,7 +201,7 @@
       </div>
     </div>
 
-    <!-- TAB 3: TASKS (OFFICIAL COMMUNITY ECOSYSTEM) -->
+    <!-- TAB 3: TASKS -->
     <div id="tabTasks" class="hidden space-y-2.5">
       <div class="bg-brand-card border border-brand-cardBorder rounded-2xl p-3 text-center">
         <h3 id="tasksHeading" class="text-xs font-black text-white uppercase tracking-wider">कम्युनिटी टास्क</h3>
@@ -217,7 +210,7 @@
       <div id="tasksListContainer" class="space-y-2"></div>
     </div>
 
-    <!-- TAB 4: FRIENDS (3-TIER REFERRAL NETWORK) -->
+    <!-- TAB 4: FRIENDS -->
     <div id="tabFriends" class="hidden space-y-3">
       <div class="bg-brand-card border border-brand-cardBorder rounded-2xl p-3.5 sm:p-4 shadow-xl text-center">
         <h3 id="friendsHeading" class="text-sm font-black text-white">3-लेवल रेफरल सिस्टम</h3>
@@ -263,13 +256,12 @@
       </div>
     </div>
 
-    <!-- TAB 5: WALLET (TON, 0.3 TON VERIFICATION, PI & AIRDROP) -->
+    <!-- TAB 5: WALLET -->
     <div id="tabWallet" class="hidden space-y-3">
       <div class="bg-brand-card border border-brand-cardBorder rounded-2xl p-4 shadow-xl text-center">
         <h3 id="walletHeading" class="text-sm font-bold text-white">विकेंद्रीकृत मल्टी-चेन वॉलेट</h3>
         <p id="walletSubHeading" class="text-[10px] text-slate-400 mt-0.5 mb-3">POM रिवॉर्ड्स के लिए TON और Pi वॉलेट कनेक्ट करें</p>
 
-        <!-- TON Wallet Card with Real TonConnect Container -->
         <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 mb-3 text-left">
           <div class="flex items-center justify-between mb-1.5">
             <span class="text-[11px] font-bold text-sky-400 flex items-center space-x-1">
@@ -278,14 +270,13 @@
             </span>
             <span id="tonStatusBadge" class="text-[9px] font-bold text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded-full">Not Connected</span>
           </div>
-          <p id="tonAddressText" class="text-[10px] text-slate-400 truncate mb-2.5">No TON wallet connected yet</p>
+          <p id="tonAddressText" class="text-[10px] font-mono text-slate-300 truncate mb-2.5">No TON wallet connected yet</p>
           <button id="btnConnectTon" onclick="toggleTonConnection()" class="w-full bg-slate-800 hover:bg-slate-700 active:scale-95 text-white text-xs font-bold py-2 rounded-xl border border-slate-700 transition-all flex items-center justify-center space-x-1.5">
             <i class="fa-solid fa-wallet text-xs"></i>
             <span id="btnConnectTonText">TON वॉलेट कनेक्ट करें</span>
           </button>
         </div>
 
-        <!-- 0.3 TON Verification Action Button -->
         <div class="bg-emerald-950/20 border border-emerald-500/40 rounded-xl p-3 mb-3 text-center">
           <div class="flex items-center justify-center space-x-1.5 mb-1">
             <span class="text-emerald-400 text-xs">🛡️</span>
@@ -300,7 +291,6 @@
           </button>
         </div>
 
-        <!-- Pi Network Twin Card -->
         <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 text-left">
           <div class="flex items-center justify-between mb-1.5">
             <span class="text-[11px] font-bold text-amber-400 flex items-center space-x-1">
@@ -316,7 +306,6 @@
           </button>
         </div>
 
-        <!-- TGE Airdrop Allocation Status Card -->
         <div class="mt-3 bg-gradient-to-br from-indigo-950/40 to-slate-900 border border-indigo-900/50 rounded-xl p-3 text-left">
           <div class="flex items-center justify-between">
             <span class="text-[10px] font-bold text-indigo-300 uppercase">TGE Airdrop Allocation</span>
@@ -331,7 +320,7 @@
     </div>
   </main>
 
-  <!-- ================= AUTOMATIC OUT-OF-ENERGY POPUP MODAL ================= -->
+  <!-- ================= AUTOMATIC OUT-OF-ENERGY POPUP ================= -->
   <div id="energyModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-brand-card border border-brand-cardBorder rounded-2xl p-5 max-w-xs w-full shadow-2xl text-center relative">
       <button onclick="closeEnergyModal()" class="absolute top-2.5 right-3 text-slate-400 hover:text-white text-base">✕</button>
@@ -354,12 +343,12 @@
     </div>
   </div>
 
-  <!-- ================= FLOATING SETTINGS BUTTON (ADMIN) ================= -->
+  <!-- ================= FLOATING SETTINGS BUTTON ================= -->
   <button onclick="openAdminModal()" class="fixed right-3.5 z-40 w-9 h-9 rounded-full bg-slate-800/95 hover:bg-slate-700 border border-slate-600 text-slate-300 flex items-center justify-center shadow-xl active:scale-90 transition-all floating-gear-btn">
     <i class="fa-solid fa-gear text-xs"></i>
   </button>
 
-  <!-- ================= ELEVATED TOUCH-SAFE BOTTOM NAVIGATION DOCK ================= -->
+  <!-- ================= BOTTOM NAVIGATION DOCK ================= -->
   <nav class="fixed left-3 right-3 z-40 bg-brand-dark/95 backdrop-blur-lg border border-brand-cardBorder rounded-2xl px-2 py-1.5 flex items-center justify-around max-w-lg mx-auto shadow-2xl safe-nav-dock">
     <button onclick="switchTab('tabMine')" id="navMine" class="flex flex-col items-center py-1 px-3 text-sky-400 active:scale-95 transition-all">
       <i class="fa-solid fa-hammer text-sm"></i>
@@ -385,7 +374,7 @@
     </button>
   </nav>
 
-  <!-- ================= 0.3 TON ON-CHAIN VERIFICATION & WALLET POPUP ================= -->
+  <!-- ================= 0.3 TON MODAL ================= -->
   <div id="tonVerifyModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-brand-card border border-brand-cardBorder rounded-2xl p-4 max-w-xs w-full shadow-2xl text-center relative">
       <button onclick="closeTonVerifyModal()" class="absolute top-2.5 right-3 text-slate-400 hover:text-white text-base">✕</button>
@@ -401,29 +390,34 @@
       </div>
 
       <div class="space-y-2">
-        <button onclick="openTonkeeperPay()" class="w-full bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 active:scale-95 text-white font-bold text-xs py-2 rounded-xl shadow transition-all flex items-center justify-center space-x-1.5">
+        <button onclick="triggerTonConnectPayment()" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 active:scale-95 text-slate-950 font-black text-xs py-2.5 rounded-xl shadow transition-all flex items-center justify-center space-x-1.5">
+          <i class="fa-solid fa-bolt text-xs"></i>
+          <span>Pay 0.3 TON via Connected Wallet</span>
+        </button>
+
+        <button onclick="openTonkeeperPay()" class="w-full bg-slate-800 hover:bg-slate-700 active:scale-95 text-sky-400 font-bold text-xs py-2 rounded-xl border border-slate-700 transition-all flex items-center justify-center space-x-1.5">
           <i class="fa-solid fa-gem text-xs"></i>
-          <span>Pay via Tonkeeper App</span>
+          <span>Open Tonkeeper App</span>
         </button>
 
-        <button onclick="openTelegramWalletPay()" class="w-full bg-slate-800 hover:bg-slate-700 active:scale-95 text-sky-400 font-bold text-xs py-2 rounded-xl border border-slate-700 transition-all flex items-center justify-center space-x-1.5">
+        <button onclick="openTelegramWalletPay()" class="w-full bg-slate-800 hover:bg-slate-700 active:scale-95 text-sky-300 font-bold text-xs py-2 rounded-xl border border-slate-700 transition-all flex items-center justify-center space-x-1.5">
           <i class="fa-brands fa-telegram text-xs"></i>
-          <span>Pay via Telegram @wallet</span>
+          <span>Open Telegram @wallet</span>
         </button>
 
-        <button onclick="copyAdminTonAddress()" class="w-full bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 font-bold text-xs py-1.5 rounded-xl border border-slate-700 transition-all flex items-center justify-center space-x-1">
+        <button onclick="copyAdminTonAddress()" class="w-full bg-slate-800/60 hover:bg-slate-700 active:scale-95 text-slate-400 font-bold text-[11px] py-1.5 rounded-xl border border-slate-700 transition-all flex items-center justify-center space-x-1">
           <i class="fa-regular fa-copy text-xs"></i>
-          <span>Copy Admin Address</span>
+          <span>Copy Address (Manual)</span>
         </button>
 
-        <button onclick="completeTonVerificationTransaction()" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 active:scale-95 text-slate-950 font-black text-xs py-2.5 rounded-xl shadow transition-all">
-          I Have Sent 0.3 TON (Confirm)
+        <button onclick="completeTonVerificationTransaction()" class="w-full bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-600/50 text-emerald-300 font-bold text-[11px] py-1.5 rounded-xl transition-all">
+          I Have Sent 0.3 TON (Manual Confirm)
         </button>
       </div>
     </div>
   </div>
 
-  <!-- ================= UNCLIPPED FULL SCROLL DOCS / WHITEPAPER MODAL ================= -->
+  <!-- ================= DOCS MODAL ================= -->
   <div id="docsModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-3">
     <div class="bg-brand-card border border-brand-cardBorder rounded-2xl max-w-sm w-full h-[85vh] flex flex-col shadow-2xl relative overflow-hidden">
       <div class="p-3 border-b border-brand-cardBorder flex items-center justify-between shrink-0">
@@ -433,14 +427,11 @@
         </h3>
         <button onclick="closeDocsModal()" class="text-slate-400 hover:text-white text-base">✕</button>
       </div>
-      <!-- Unclipped Native Scrolling Body -->
-      <div id="docsBodyContainer" class="flex-1 min-h-0 overflow-y-auto overscroll-contain p-3.5 space-y-3.5 text-[11px] text-slate-300 leading-relaxed no-scrollbar">
-        <!-- Injected via i18n -->
-      </div>
+      <div id="docsBodyContainer" class="flex-1 min-h-0 overflow-y-auto overscroll-contain p-3.5 space-y-3.5 text-[11px] text-slate-300 leading-relaxed no-scrollbar"></div>
     </div>
   </div>
 
-  <!-- ================= UNCLIPPED FULL-PAGE ADMIN CONTROL CONSOLE ================= -->
+  <!-- ================= ADMIN MODAL ================= -->
   <div id="adminModal" class="hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3">
     <div class="bg-brand-card border border-brand-cardBorder rounded-2xl max-w-sm w-full h-[88vh] flex flex-col shadow-2xl relative overflow-hidden">
       <div class="p-3 border-b border-brand-cardBorder flex items-center justify-between shrink-0">
@@ -454,7 +445,6 @@
         </div>
       </div>
 
-      <!-- Admin Login View -->
       <div id="adminLoginView" class="p-5 text-center space-y-3.5 my-auto">
         <div class="w-12 h-12 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex items-center justify-center mx-auto text-amber-400 text-xl">
           <i class="fa-solid fa-shield-cat"></i>
@@ -472,9 +462,7 @@
         </button>
       </div>
 
-      <!-- Admin Full-Page Dashboard -->
       <div id="adminDashboardView" class="hidden flex-1 min-h-0 overflow-y-auto overscroll-contain p-3.5 space-y-3.5 text-xs no-scrollbar">
-        <!-- Live Metrics Grid -->
         <div class="grid grid-cols-2 gap-2">
           <div class="bg-slate-900/90 border border-slate-800 p-2.5 rounded-xl">
             <span class="text-[9px] text-slate-400 block font-bold">Total Pioneers</span>
@@ -494,7 +482,6 @@
           </div>
         </div>
 
-        <!-- Active Bot Handle Configuration -->
         <div class="bg-slate-900 border border-slate-800 p-3 rounded-xl space-y-2">
           <h4 class="font-bold text-amber-400 text-[10px] uppercase">Active Bot Handle Configuration</h4>
           <div class="flex space-x-1.5">
@@ -505,7 +492,6 @@
           </div>
         </div>
 
-        <!-- Crowd Distribution Progress Bars -->
         <div class="bg-slate-900 border border-slate-800 p-3 rounded-xl space-y-2">
           <h4 class="font-bold text-sky-400 text-[10px] uppercase">Level Crowd Distribution</h4>
           <div class="space-y-1.5 text-[10px]">
@@ -532,7 +518,6 @@
           </div>
         </div>
 
-        <!-- Live Puzzle & Telegram Broadcast Tool -->
         <div class="bg-slate-900 border border-slate-800 p-3 rounded-xl space-y-2">
           <h4 class="font-bold text-sky-400 text-[10px] uppercase">Live Puzzle & Telegram Broadcast</h4>
           <p id="adminCurrentWordHint" class="font-mono text-white text-[10px] bg-slate-800 p-2 rounded-lg leading-relaxed"></p>
@@ -542,7 +527,6 @@
           </button>
         </div>
 
-        <!-- Dynamic Community Task Dispatcher -->
         <div class="bg-slate-900 border border-slate-800 p-3 rounded-xl space-y-2">
           <h4 class="font-bold text-emerald-400 text-[10px] uppercase">Community Task Dispatcher</h4>
           <div class="space-y-1.5">
@@ -558,7 +542,6 @@
           <div id="adminTaskListSummary" class="space-y-1 pt-1"></div>
         </div>
 
-        <!-- Developer Quick Controls -->
         <div class="bg-slate-900 border border-slate-800 p-3 rounded-xl space-y-2">
           <h4 class="font-bold text-amber-400 text-[10px] uppercase">Developer Quick Controls</h4>
           <div class="grid grid-cols-2 gap-1.5">
@@ -576,1304 +559,8 @@
     </div>
   </div>
 
-  <!-- ================= JAVASCRIPT CORE LOGIC ================= -->
-  <script>
-    const CONFIG = {
-      BACKEND_API_URL: "", // Render URL तैयार होने पर यहाँ डालें (जैसे "https://pom-backend.onrender.com")
-      ADMIN_TON_WALLET: "UQD5ZiNy8-eV7l6Ny46c-f98USLg-JXPTRRIPMV-0YiadqJV",
-      BOT_USERNAME: "proofofmind_bot"
-    };
-
-    let tonConnectUI = null;
-
-    let state = {
-      telegram_id: "pioneer",
-      balance: 130,
-      mineLevel: 1,
-      quizLevel: 1,
-      energy: 5,
-      isVerified: false,
-      selectedLetters: [],
-      tier1Users: 0,
-      tier2Users: 0,
-      tier3Users: 0,
-      unclaimedCommission: 0,
-      tonConnected: false,
-      tonAddress: null,
-      lang: "hi",
-      tasks: [
-        { id: "tg_ch", title: "Join POM Announcement Channel", link: "https://t.me/+JpUnewC5FPEyMzNl", reward: 50, started: false, completed: false, icon: "fa-brands fa-telegram" },
-        { id: "tg_grp", title: "Join POM Public Community Group", link: "https://t.me/ProofOfMindPublicGroup", reward: 50, started: false, completed: false, icon: "fa-solid fa-users" },
-        { id: "x_com", title: "Follow Proof of Mind on X", link: "https://x.com/kuku56309", reward: 50, started: false, completed: false, icon: "fa-brands fa-x-twitter" },
-        { id: "yt_sub", title: "Subscribe Official YouTube Channel", link: "https://www.youtube.com/@proof-of-mind_bot", reward: 50, started: false, completed: false, icon: "fa-brands fa-youtube" },
-        { id: "fb_page", title: "Follow Official Facebook Page", link: "https://www.facebook.com/share/19nMDW2gSJ/", reward: 50, started: false, completed: false, icon: "fa-brands fa-facebook" }
-      ]
-    };
-
-    // --- FULL MULTILINGUAL VOCABULARIES ---
-    const TRANSLATIONS = {
-      hi: {
-        balance: "बैलेंस", level: "लेवल", energy: "एनर्जी",
-        mineHeading: "वर्ड पज़ल माइनिंग", mineSubHeading: "ब्लॉक माइन करने के लिए सही अक्षरों का चयन करें",
-        clear: "हटाएं", mineBlock: "माइन ब्लॉक",
-        rechargeTitle: "माइंड ऊर्जा रिचार्ज करें", rechargeDesc: "1 ऐड = +2❤️ | 2 ऐड्स = फुल ❤️", refill: "रिफिल",
-        tasksHeading: "कम्युनिटी टास्क", tasksSubHeading: "मिशन पूरा करें और POM टोकन प्राप्त करें",
-        friendsHeading: "3-लेवल रेफरल सिस्टम", friendsSubHeading: "लेवल 1: 10% | लेवल 2: 3% | लेवल 3: 2% माइनिंग कमीशन",
-        invite: "मित्रों को आमंत्रित करें", unclaimed: "अर्जित रेफरल कमीशन", claimRewards: "क्लेम",
-        walletHeading: "विकेंद्रीकृत मल्टी-चेन वॉलेट", walletSubHeading: "POM रिवॉर्ड्स के लिए TON और Pi वॉलेट कनेक्ट करें",
-        connectTon: "TON वॉलेट कनेक्ट करें", verifyTitle: "एंटी-सिबिल सुरक्षा एवं 2x बूस्ट",
-        verifyDesc: "0.3 TON नेटवर्क शुल्क से खाता सत्यापित करें और स्थायी 2x रिवॉर्ड बूस्ट सक्रिय करें।",
-        verifyBtn: "0.3 TON से वेरीफाई करें",
-        navMine: "माइन", navQuiz: "क्विज़", navTasks: "टास्क", navFriends: "मित्र", navWallet: "वॉलेट", docs: "दस्तावेज़"
-      },
-      en: {
-        balance: "Balance", level: "Level", energy: "Energy",
-        mineHeading: "Word Puzzle Mining", mineSubHeading: "Select letters to solve the intellect block",
-        clear: "Clear", mineBlock: "Mine Block",
-        rechargeTitle: "Recharge Mind Energy", rechargeDesc: "Watch 1 Ad = +2❤️ | 2 Ads = Full ❤️", refill: "Refill",
-        tasksHeading: "Official Ecosystem Tasks", tasksSubHeading: "Complete community missions & verify to claim POM",
-        friendsHeading: "3-Tier Referral System", friendsSubHeading: "Level 1: 10% | Level 2: 3% | Level 3: 2% Mining Commission",
-        invite: "Invite Friends via Telegram", unclaimed: "Unclaimed Commissions", claimRewards: "Claim",
-        walletHeading: "Decentralized Multi-Chain Wallet", walletSubHeading: "Connect TON & Pi Network wallets for PoI token allocations",
-        connectTon: "Connect TON Wallet", verifyTitle: "Sybil Protection & 2x Multiplier",
-        verifyDesc: "Verify with 0.3 TON network fee to permanently activate the verified badge and unlock 2x mining & quiz rewards.",
-        verifyBtn: "Verify 0.3 TON",
-        navMine: "Mine", navQuiz: "Quiz", navTasks: "Tasks", navFriends: "Friends", navWallet: "Wallet", docs: "Docs"
-      },
-      ru: {
-        balance: "Баланс", level: "Уровень", energy: "Энергия",
-        mineHeading: "Интеллект Майнинг", mineSubHeading: "Соберите слово для подтверждения блока",
-        clear: "Сброс", mineBlock: "Майнить Блок",
-        rechargeTitle: "Восстановить Энергию", rechargeDesc: "1 реклама = +2❤️ | 2 = Полная ❤️", refill: "Пополнить",
-        tasksHeading: "Официальные Задания", tasksSubHeading: "Выполняйте задания сообщества за POM",
-        friendsHeading: "3-Уровневая Реферальная Система", friendsSubHeading: "Ур.1: 10% | Ур.2: 3% | Ур.3: 2%",
-        invite: "Пригласить друзей", unclaimed: "Доступные Награды", claimRewards: "Забрать",
-        walletHeading: "Децентрализованный Кошелек", walletSubHeading: "Подключите TON и Pi кошельки",
-        connectTon: "Подключить TON", verifyTitle: "Защита от ботов и 2x Буст",
-        verifyDesc: "Верификация за 0.3 TON дает постоянный 2x буст.", verifyBtn: "0.3 TON Верификация",
-        navMine: "Майнинг", navQuiz: "Квиз", navTasks: "Задания", navFriends: "Друзья", navWallet: "Кошелек", docs: "Документы"
-      },
-      zh: {
-        balance: "余额", level: "等级", energy: "体力",
-        mineHeading: "智慧单词挖矿", mineSubHeading: "选择字母以验证智力区块",
-        clear: "清除", mineBlock: "开采区块",
-        rechargeTitle: "恢复脑力", rechargeDesc: "看1次广告 = +2❤️ | 2次 = 满格 ❤️", refill: "补充",
-        tasksHeading: "官方生态任务", tasksSubHeading: "完成社区任务领取POM代币",
-        friendsHeading: "三级推荐网络", friendsSubHeading: "1级: 10% | 2级: 3% | 3级: 2%",
-        invite: "邀请好友", unclaimed: "未提取奖励", claimRewards: "领取",
-        walletHeading: "去中心化多链钱包", walletSubHeading: "连接 TON 与 Pi 钱包",
-        connectTon: "连接 TON 钱包", verifyTitle: "女巫防护与双倍加速",
-        verifyDesc: "支付 0.3 TON 验证以永久激活 2x 挖矿奖励。", verifyBtn: "验证 0.3 TON",
-        navMine: "挖矿", navQuiz: "答题", navTasks: "任务", navFriends: "好友", navWallet: "钱包", docs: "白皮书"
-      },
-      es: {
-        balance: "Balance", level: "Nivel", energy: "Energía",
-        mineHeading: "Minería de Palabras", mineSubHeading: "Selecciona letras para resolver el bloque",
-        clear: "Borrar", mineBlock: "Minar Bloque",
-        rechargeTitle: "Recargar Energía Mental", rechargeDesc: "1 Anuncio = +2❤️ | 2 Anuncios = Lleno ❤️", refill: "Recargar",
-        tasksHeading: "Tareas de la Comunidad", tasksSubHeading: "Completa misiones y reclama POM",
-        friendsHeading: "Sistema de 3 Niveles", friendsSubHeading: "Nivel 1: 10% | Nivel 2: 3% | Nivel 3: 2%",
-        invite: "Invitar amigos", unclaimed: "Comisiones Pendientes", claimRewards: "Reclamar",
-        walletHeading: "Billetera Multicadena", walletSubHeading: "Conecta billeteras TON y Pi",
-        connectTon: "Conectar TON", verifyTitle: "Protección Sybil y 2x Multiplicador",
-        verifyDesc: "Verifica con 0.3 TON para duplicar tus recompensas.", verifyBtn: "Verificar 0.3 TON",
-        navMine: "Minar", navQuiz: "Quiz", navTasks: "Tareas", navFriends: "Amigos", navWallet: "Billetera", docs: "Docs"
-      },
-      ar: {
-        balance: "الرصيد", level: "المستوى", energy: "الطاقة",
-        mineHeading: "تعدين الألغاز الذهنية", mineSubHeading: "اختر الحروف لحل كتلة الذكاء",
-        clear: "مسح", mineBlock: "تعدين الكتلة",
-        rechargeTitle: "إعادة شحن الطاقة", rechargeDesc: "إعلان = +2❤️ | إعلانان = ممتلئ ❤️", refill: "شحن",
-        tasksHeading: "مهام المجتمع الرسمية", tasksSubHeading: "أكمل المهام للمطالبة بـ POM",
-        friendsHeading: "نظام الإحالة ثلاثي المستويات", friendsSubHeading: "المستوى 1: 10% | 2: 3% | 3: 2%",
-        invite: "دعوة الأصدقاء", unclaimed: "العمولات غير المطالب بها", claimRewards: "مطالبة",
-        walletHeading: "محفظة لا مركزية", walletSubHeading: "اربط محفظتي TON و Pi Network",
-        connectTon: "ربط محفظة TON", verifyTitle: "حماية سيبيل ومضاعف 2x",
-        verifyDesc: "توثيق بـ 0.3 TON لتفعيل المضاعف الدائم.", verifyBtn: "توثيق 0.3 TON",
-        navMine: "تعدين", navQuiz: "اختبار", navTasks: "مهام", navFriends: "أصدقاء", navWallet: "محفظة", docs: "وثائق"
-      },
-      bn: {
-        balance: "ব্যালেন্স", level: "লেভেল", energy: "শক্তি",
-        mineHeading: "ওয়ার্ড পাজল মাইনিং", mineSubHeading: "ব্লক সমাধান করতে সঠিক অক্ষর নির্বাচন করুন",
-        clear: "মুছুন", mineBlock: "ব্লক মাইন করুন",
-        rechargeTitle: "শক্তি রিচার্জ করুন", rechargeDesc: "১টি বিজ্ঞাপন = +২❤️ | ২টি = পূর্ণ ❤️", refill: "রিফিল",
-        tasksHeading: "অফিসিয়াল টাস্ক", tasksSubHeading: "মিশন সম্পন্ন করে POM দাবি করুন",
-        friendsHeading: "৩-স্তর রেফারেল সিস্টেম", friendsSubHeading: "লেভেল ১: ১০% | ২: ৩% | ৩: ২%",
-        invite: "বন্ধুদের আমন্ত্রণ জানান", unclaimed: "অদাবিকৃত কমিশন", claimRewards: "দাবি করুন",
-        walletHeading: "মাল্টি-চেন ওয়ালেট", walletSubHeading: "TON এবং Pi ওয়ালেট সংযুক্ত করুন",
-        connectTon: "TON ওয়ালেট সংযুক্ত করুন", verifyTitle: "সিবিল সুরক্ষা ও ২x গুণক",
-        verifyDesc: "০.৩ TON ফি দিয়ে যাচাই করে দ্বিগুণ রিওয়ার্ড আনলক করুন।", verifyBtn: "০.৩ TON যাচাই",
-        navMine: "মাইন", navQuiz: "কুইজ", navTasks: "টাস্ক", navFriends: "বন্ধু", navWallet: "ওয়ালেট", docs: "ডকুমেন্টস"
-      },
-      vi: {
-        balance: "Số dư", level: "Cấp độ", energy: "Năng lượng",
-        mineHeading: "Đào Khối Trí Tuệ", mineSubHeading: "Chọn các chữ cái để giải khối",
-        clear: "Xóa", mineBlock: "Đào Khối",
-        rechargeTitle: "Nạp Năng Lượng", rechargeDesc: "1 Quảng cáo = +2❤️ | 2 = Đầy ❤️", refill: "Nạp",
-        tasksHeading: "Nhiệm Vụ Cộng Đồng", tasksSubHeading: "Hoàn thành nhiệm vụ nhận POM",
-        friendsHeading: "Hệ Thống Giới Thiệu 3 Tầng", friendsSubHeading: "Tầng 1: 10% | Tầng 2: 3% | Tầng 3: 2%",
-        invite: "Mời Bạn Bè", unclaimed: "Hoa Hồng Chưa Nhận", claimRewards: "Nhận",
-        walletHeading: "Ví Đa Chuỗi", walletSubHeading: "Kết nối ví TON & Pi Network",
-        connectTon: "Kết Nối TON", verifyTitle: "Bảo Vệ Sybil & Nhân Đôi 2x",
-        verifyDesc: "Xác minh on-chain 0.3 TON kích hoạt nhân đôi phần thưởng vĩnh viễn.", verifyBtn: "Xác Minh 0.3 TON",
-        navMine: "Đào", navQuiz: "Đố Vui", navTasks: "Nhiệm Vụ", navFriends: "Bạn Bè", navWallet: "Ví", docs: "Tài Liệu"
-      },
-      id: {
-        balance: "Saldo", level: "Level", energy: "Energi",
-        mineHeading: "Penambangan Kata", mineSubHeading: "Pilih huruf untuk menyelesaikan blok",
-        clear: "Hapus", mineBlock: "Tambang Blok",
-        rechargeTitle: "Isi Ulang Energi", rechargeDesc: "1 Iklan = +2❤️ | 2 Iklan = Penuh ❤️", refill: "Isi",
-        tasksHeading: "Tugas Resmi", tasksSubHeading: "Selesaikan misi & klaim token POM",
-        friendsHeading: "Sistem Rujukan 3 Tingkat", friendsSubHeading: "Level 1: 10% | Level 2: 3% | Level 3: 2%",
-        invite: "Undang Teman", unclaimed: "Komisi Belum Diklaim", claimRewards: "Klaim",
-        walletHeading: "Dompet Multi-Rantai", walletSubHeading: "Hubungkan dompet TON & Pi",
-        connectTon: "Hubungkan TON", verifyTitle: "Perlindungan Sybil & Pengali 2x",
-        verifyDesc: "Verifikasi biaya 0.3 TON untuk pengali 2x permanen.", verifyBtn: "Verifikasi 0.3 TON",
-        navMine: "Tambang", navQuiz: "Kuis", navTasks: "Tugas", navFriends: "Teman", navWallet: "Dompet", docs: "Dokumen"
-      },
-      fa: {
-        balance: "موجودی", level: "سطح", energy: "انرژی",
-        mineHeading: "استخراج پازل کلمات", mineSubHeading: "حروف را برای حل بلوک انتخاب کنید",
-        clear: "پاک کردن", mineBlock: "استخراج بلوک",
-        rechargeTitle: "شارژ مجدد انرژی", rechargeDesc: "۱ تبلیغ = +۲❤️ | ۲ تبلیغ = پر ❤️", refill: "شارژ",
-        tasksHeading: "ماموریت‌های رسمی", tasksSubHeading: "ماموریت‌ها را تکمیل و POM دریافت کنید",
-        friendsHeading: "سیستم ارجاع ۳ سطحی", friendsSubHeading: "سطح ۱: ۱۰٪ | سطح ۲: ۳٪ | سطح ۳: ۲٪",
-        invite: "دعوت از دوستان", unclaimed: "پاداش‌های مطالبه نشده", claimRewards: "دریافت",
-        walletHeading: "کیف پول چند زنجیره‌ای", walletSubHeading: "اتصال کیف پول‌های TON و Pi",
-        connectTon: "اتصال به TON", verifyTitle: "محافظت سیبیل و ضریب ۲ برابری",
-        verifyDesc: "تایید با ۰.۳ TON برای ضریب ۲ برابری دائمی.", verifyBtn: "تایید ۰.۳ TON",
-        navMine: "استخراج", navQuiz: "کوییز", navTasks: "ماموریت", navFriends: "دوستان", navWallet: "کیف پول", docs: "مستندات"
-      }
-    };
-
-    // --- TASK TITLES IN ALL 10 LANGUAGES ---
-    const TASK_TRANSLATIONS = {
-      hi: {
-        tg_ch: "आधिकारिक घोषणा चैनल से जुड़ें",
-        tg_grp: "पब्लिक कम्युनिटी ग्रुप में शामिल हों",
-        x_com: "Proof of Mind को X पर फॉलो करें",
-        yt_sub: "यूट्यूब चैनल सब्सक्राइब करें",
-        fb_page: "फेसबुक पेज को फॉलो करें"
-      },
-      en: {
-        tg_ch: "Join POM Announcement Channel",
-        tg_grp: "Join POM Public Community Group",
-        x_com: "Follow Proof of Mind on X",
-        yt_sub: "Subscribe Official YouTube Channel",
-        fb_page: "Follow Official Facebook Page"
-      },
-      ru: {
-        tg_ch: "Подписаться на канал анонсов",
-        tg_grp: "Вступить в группу сообщества",
-        x_com: "Подписаться на X (Twitter)",
-        yt_sub: "Подписаться на YouTube канал",
-        fb_page: "Подписаться на страницу Facebook"
-      },
-      zh: {
-        tg_ch: "加入官方公告频道",
-        tg_grp: "加入官方社区讨论群",
-        x_com: "在 X 上关注 Proof of Mind",
-        yt_sub: "订阅官方 YouTube 频道",
-        fb_page: "关注官方 Facebook 页面"
-      },
-      es: {
-        tg_ch: "Unirse al canal de anuncios oficial",
-        tg_grp: "Unirse al grupo de la comunidad",
-        x_com: "Seguir Proof of Mind en X",
-        yt_sub: "Suscribirse al canal de YouTube",
-        fb_page: "Seguir la página de Facebook"
-      },
-      ar: {
-        tg_ch: "الانضمام إلى قناة الإعلانات الرسمية",
-        tg_grp: "الانضمام إلى مجموعة المجتمع العامة",
-        x_com: "متابعة Proof of Mind على X",
-        yt_sub: "الاشتراك في قناة يوتيوب الرسمية",
-        fb_page: "متابعة صفحة فيسبوك الرسمية"
-      },
-      bn: {
-        tg_ch: "অফিসিয়াল ঘোষণা চ্যানেলে যোগ দিন",
-        tg_grp: "পাবলিক কমিউনিটি গ্রুপে যোগ দিন",
-        x_com: "X-এ Proof of Mind অনুসরণ করুন",
-        yt_sub: "অফিসিয়াল ইউটিউব চ্যানেল সাবস্ক্রাইব করুন",
-        fb_page: "অফিসিয়াল ফেসবুক পেজ ফলো করুন"
-      },
-      vi: {
-        tg_ch: "Tham gia Kênh thông báo chính thức",
-        tg_grp: "Tham gia Nhóm cộng đồng công khai",
-        x_com: "Theo dõi Proof of Mind trên X",
-        yt_sub: "Đăng ký Kênh YouTube chính thức",
-        fb_page: "Theo dõi Trang Facebook chính thức"
-      },
-      id: {
-        tg_ch: "Gabung Saluran Pengumuman Resmi",
-        tg_grp: "Gabung Grup Komunitas Publik",
-        x_com: "Ikuti Proof of Mind di X",
-        yt_sub: "Langganan Saluran YouTube Resmi",
-        fb_page: "Ikuti Halaman Facebook Resmi"
-      },
-      fa: {
-        tg_ch: "عضویت در کانال رسمی اطلاعیه‌ها",
-        tg_grp: "عضویت در گروه عمومی جامعه",
-        x_com: "دنبال کردن Proof of Mind در X",
-        yt_sub: "اشتراک در کانال رسمی یوتیوب",
-        fb_page: "دنبال کردن صفحه رسمی فیس‌بوک"
-      }
-    };
-
-    // --- NATIVE WORDS & TILES DICTIONARY FOR ALL 10 LANGUAGES ---
-    const LOCAL_WORDS = {
-      hi: [
-        { word: ["म", "न"], fillers: ["क", "ल", "र", "स"] },
-        { word: ["ट", "न"], fillers: ["प", "य", "व", "द"] },
-        { word: ["वे", "ब"], fillers: ["स", "ग", "ल", "ज"] },
-        { word: ["ज्ञा", "न"], fillers: ["भा", "र", "त", "व"] }
-      ],
-      en: [
-        { word: ["T", "O", "N"], fillers: ["E", "P", "L", "X"] },
-        { word: ["W", "E", "B"], fillers: ["R", "A", "Z", "Q"] },
-        { word: ["B", "O", "T"], fillers: ["K", "N", "M", "S"] },
-        { word: ["N", "O", "D", "E"], fillers: ["L", "Q", "Y", "P"] }
-      ],
-      ru: [
-        { word: ["Т", "О", "Н"], fillers: ["К", "Б", "В", "Д"] },
-        { word: ["С", "Е", "Т", "Ь"], fillers: ["У", "М", "Р", "Л"] },
-        { word: ["У", "М"], fillers: ["З", "Н", "А", "Я"] }
-      ],
-      zh: [
-        { word: ["智", "能"], fillers: ["块", "链", "心", "网"] },
-        { word: ["区", "块"], fillers: ["通", "信", "币", "力"] },
-        { word: ["脑", "力"], fillers: ["学", "天", "道", "算"] }
-      ],
-      es: [
-        { word: ["R", "E", "D"], fillers: ["A", "L", "M", "T"] },
-        { word: ["M", "E", "N", "T", "E"], fillers: ["P", "Q", "S", "O"] },
-        { word: ["N", "O", "D", "O"], fillers: ["B", "C", "K", "Y"] }
-      ],
-      ar: [
-        { word: ["ع", "ق", "ل"], fillers: ["ب", "ت", "ك", "و"] },
-        { word: ["ش", "ب", "ك", "ة"], fillers: ["م", "ن", "ل", "ر"] },
-        { word: ["ك", "ت", "ل", "ة"], fillers: ["س", "د", "ف", "ي"] }
-      ],
-      bn: [
-        { word: ["ম", "ন"], fillers: ["ক", "ল", "ব", "র"] },
-        { word: ["জ্ঞান"], fillers: ["ভা", "ব", "ন", "দ"] },
-        { word: ["জাল"], fillers: ["প", "ঠ", "স", "হ"] }
-      ],
-      vi: [
-        { word: ["T", "R", "I"], fillers: ["A", "O", "N", "K"] },
-        { word: ["M", "A", "N", "G"], fillers: ["E", "P", "U", "L"] },
-        { word: ["K", "H", "O", "I"], fillers: ["C", "B", "T", "D"] }
-      ],
-      id: [
-        { word: ["A", "K", "A", "L"], fillers: ["P", "S", "B", "D"] },
-        { word: ["B", "L", "O", "K"], fillers: ["M", "N", "T", "R"] },
-        { word: ["J", "A", "R", "I", "N", "G"], fillers: ["O", "P", "K", "L"] }
-      ],
-      fa: [
-        { word: ["ذ", "ه", "ن"], fillers: ["ك", "ت", "ب", "ل"] },
-        { word: ["ش", "ب", "ک", "ه"], fillers: ["م", "ر", "د", "و"] },
-        { word: ["ب", "ل", "و", "ک"], fillers: ["س", "ف", "ی", "ن"] }
-      ]
-    };
-
-    // --- MULTILINGUAL QUIZ DATABASE ---
-    const QUIZ_REPOSITORY = {
-      hi: [
-        { q: "POM बौद्धिक सत्यापन के लिए किस सर्वसम्मति का उपयोग करता है?", options: ["Proof of Work", "Proof of Intellect", "Proof of Stake", "Proof of Authority"], correct: 1 },
-        { q: "POM टोकन की कुल आपूर्ति (Total Supply) कितनी है?", options: ["500 मिलियन", "1 अरब (1 Billion)", "2 अरब", "100 मिलियन"], correct: 1 },
-        { q: "0.3 TON ऑन-चेन सत्यापन से क्या स्थायी लाभ मिलता है?", options: ["स्थायी 2x रिवॉर्ड मल्टीप्लायर", "अतिरिक्त 5 हार्ट्स", "तुरंत 100 लेवल", "500 मुफ्त POM"], correct: 0 },
-        { q: "टेलीग्राम मिनी ऐप्स को कौन सा ब्लॉकचेन सपोर्ट करता है?", options: ["Solana", "The Open Network (TON)", "Bitcoin L1", "Cardano"], correct: 1 }
-      ],
-      en: [
-        { q: "What consensus protocol does Proof of Mind implement?", options: ["Proof of Work", "Proof of Intellect", "Proof of Stake", "Proof of Authority"], correct: 1 },
-        { q: "What is the total hard-cap supply of POM tokens?", options: ["500 Million", "1 Billion (POM)", "2 Billion", "100 Million"], correct: 1 },
-        { q: "What permanent benefit does 0.3 TON verification grant?", options: ["Permanent 2x Multiplier", "Extra 5 Hearts", "Instant Level 100", "500 Free POM"], correct: 0 },
-        { q: "Which native blockchain directly powers Telegram Mini Apps?", options: ["Solana", "The Open Network (TON)", "Bitcoin L1", "Cardano"], correct: 1 }
-      ],
-      ru: [
-        { q: "Какой консенсус использует проект Proof of Mind?", options: ["Proof of Work", "Proof of Intellect", "Proof of Stake", "Proof of Authority"], correct: 1 },
-        { q: "Какова общая эмиссия токенов POM?", options: ["500 Миллионов", "1 Миллиард", "2 Миллиарда", "100 Миллионов"], correct: 1 },
-        { q: "Что дает верификация за 0.3 TON?", options: ["Постоянный 2x множитель", "5 бесплатных сердец", "100-й уровень", "500 POM"], correct: 0 }
-      ],
-      zh: [
-        { q: "Proof of Mind (POM) 采用何种共识机制？", options: ["工作量证明 (PoW)", "智力证明 (PoI)", "权益证明 (PoS)", "权威证明 (PoA)"], correct: 1 },
-        { q: "POM 代币的总供应量是多少？", options: ["5亿", "10亿 (1 Billion)", "20亿", "1亿"], correct: 1 },
-        { q: "0.3 TON 链上验证提供什么核心权益？", options: ["永久 2x 奖励加速", "额外 5 颗心", "直升 100 级", "500 空投代币"], correct: 0 }
-      ],
-      es: [
-        { q: "¿Qué consenso implementa Proof of Mind?", options: ["Proof of Work", "Proof of Intellect", "Proof of Stake", "Proof of Authority"], correct: 1 },
-        { q: "¿Cuál es el suministro total de POM?", options: ["500 Millones", "1 Mil Millones (1B)", "2 Mil Millones", "100 Millones"], correct: 1 },
-        { q: "¿Qué beneficio otorga la verificación de 0.3 TON?", options: ["Multiplicador 2x Permanente", "5 Corazones Extra", "Nivel 100 Instantáneo", "500 POM Gratis"], correct: 0 }
-      ],
-      ar: [
-        { q: "ما هو بروتوكول الإجماع الذي يطبقه POM؟", options: ["Proof of Work", "Proof of Intellect", "Proof of Stake", "Proof of Authority"], correct: 1 },
-        { q: "ما هو إجمالي المعروض من عملة POM؟", options: ["500 مليون", "1 مليار (1 Billion)", "2 مليار", "100 مليون"], correct: 1 },
-        { q: "ما الميزة الدائمة لتوثيق 0.3 TON؟", options: ["مضاعف 2x دائم", "5 قلوب إضافية", "المستوى 100 فوراً", "500 POM مجاناً"], correct: 0 }
-      ],
-      bn: [
-        { q: "POM কোন ঐক্যমত্য প্রোটোকল প্রয়োগ করে?", options: ["Proof of Work", "Proof of Intellect", "Proof of Stake", "Proof of Authority"], correct: 1 },
-        { q: "POM টোকেনের মোট সরবরাহ কত?", options: ["৫০০ মিলিয়ন", "১ বিলিয়ন (1 Billion)", "২ বিলিয়ন", "১০০ মিলিয়ন"], correct: 1 },
-        { q: "০.৩ TON যাচাইকরণ কী স্থায়ী সুবিধা দেয়?", options: ["স্থায়ী ২x গুণক বুস্ট", "অতিরিক্ত ৫ হার্ট", "তাত্ক্ষণিক লেভেল ১০০", "৫০০ বিনামূল্যের POM"], correct: 0 }
-      ],
-      vi: [
-        { q: "Proof of Mind triển khai giao thức đồng thuận nào?", options: ["Proof of Work", "Proof of Intellect", "Proof of Stake", "Proof of Authority"], correct: 1 },
-        { q: "Tổng cung tối đa của token POM là bao nhiêu?", options: ["500 Triệu", "1 Tỷ (1 Billion)", "2 Tỷ", "100 Triệu"], correct: 1 },
-        { q: "Xác minh on-chain 0.3 TON mang lại lợi ích vĩnh viễn gì?", options: ["Nhân đôi 2x vĩnh viễn", "Thêm 5 Tim", "Cấp 100 ngay lập tức", "500 POM miễn phí"], correct: 0 }
-      ],
-      id: [
-        { q: "Protokol konsensus apa yang diterapkan oleh POM?", options: ["Proof of Work", "Proof of Intellect", "Proof of Stake", "Proof of Authority"], correct: 1 },
-        { q: "Berapa total pasokan maksimal token POM?", options: ["500 Juta", "1 Miliar (1 Billion)", "2 Miliar", "100 Juta"], correct: 1 },
-        { q: "Manfaat permanen apa yang diberikan verifikasi 0.3 TON?", options: ["Pengali 2x Permanen", "Ekstra 5 Hati", "Level 100 Instan", "500 POM Gratis"], correct: 0 }
-      ],
-      fa: [
-        { q: "پروتکل اجماع اثبات ذهن (POM) چیست؟", options: ["Proof of Work", "Proof of Intellect", "Proof of Stake", "Proof of Authority"], correct: 1 },
-        { q: "مجموع کل عرضه توکن POM چقدر است؟", options: ["۵۰۰ میلیون", "۱ میلیارد (1 Billion)", "۲ میلیارد", "۱۰۰ میلیون"], correct: 1 },
-        { q: "تایید ۰.۳ TON چه مزیت دائمی دارد؟", options: ["ضریب دائمی ۲ برابری", "۵ قلب اضافی", "سطح ۱۰۰ آنی", "۵۰۰ توکن رایگان"], correct: 0 }
-      ]
-    };
-
-    let currentTargetTiles = ["म", "न"];
-    let currentScrambledTiles = ["म", "न", "क", "ल", "र", "स"];
-    let quizTimer = null;
-    let quizRemainingTime = 25;
-
-    // --- STORAGE PERSISTENCE ---
-    function loadSavedState() {
-      try {
-        const saved = localStorage.getItem('POM_USER_STATE');
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          state = Object.assign(state, parsed);
-        }
-      } catch(e) {}
-    }
-
-    function saveActiveState() {
-      try {
-        localStorage.setItem('POM_USER_STATE', JSON.stringify({
-          balance: state.balance,
-          mineLevel: state.mineLevel,
-          quizLevel: state.quizLevel,
-          energy: state.energy,
-          isVerified: state.isVerified,
-          lang: state.lang,
-          tonConnected: state.tonConnected,
-          tonAddress: state.tonAddress,
-          tasks: state.tasks,
-          tier1Users: state.tier1Users,
-          tier2Users: state.tier2Users,
-          tier3Users: state.tier3Users,
-          unclaimedCommission: state.unclaimedCommission
-        }));
-      } catch(e) {}
-    }
-
-    function safeSetText(id, text) {
-      const el = document.getElementById(id);
-      if (el) el.innerText = text;
-    }
-
-    function showToast(message, icon = "ℹ️") {
-      const toast = document.getElementById('toastNotification');
-      const toastMsg = document.getElementById('toastMessage');
-      const toastIcon = document.getElementById('toastIcon');
-      if (!toast || !toastMsg) return;
-
-      toastMsg.innerText = message;
-      if (toastIcon) toastIcon.innerText = icon;
-
-      toast.classList.remove('opacity-0', 'pointer-events-none', '-translate-y-4');
-      toast.classList.add('opacity-100', 'translate-y-0');
-
-      setTimeout(() => {
-        toast.classList.remove('opacity-100', 'translate-y-0');
-        toast.classList.add('opacity-0', 'pointer-events-none', '-translate-y-4');
-      }, 2500);
-    }
-
-    // --- LANGUAGE SYSTEM ---
-    function changeLanguage(lang) {
-      state.lang = lang;
-      saveActiveState();
-      applyCurrentLanguage();
-      initCurrentPuzzle();
-      renderTasks();
-      if (!document.getElementById('tabQuiz').classList.contains('hidden')) {
-        startQuizRound();
-      }
-      showToast(`Language: ${document.getElementById('languageSelect')?.selectedOptions[0]?.text || lang}`, "🌐");
-    }
-
-    function applyCurrentLanguage() {
-      const dict = TRANSLATIONS[state.lang] || TRANSLATIONS.en;
-      safeSetText('labelBalance', dict.balance);
-      safeSetText('labelEnergy', dict.energy);
-      safeSetText('mineHeading', dict.mineHeading);
-      safeSetText('mineSubHeading', dict.mineSubHeading);
-      safeSetText('btnClear', dict.clear);
-      safeSetText('btnMine', dict.mineBlock);
-      safeSetText('energyRefillTitle', dict.rechargeTitle);
-      safeSetText('energyRefillDesc', dict.rechargeDesc);
-      safeSetText('btnRefill', dict.refill);
-      safeSetText('tasksHeading', dict.tasksHeading);
-      safeSetText('tasksSubHeading', dict.tasksSubHeading);
-      safeSetText('friendsHeading', dict.friendsHeading);
-      safeSetText('friendsSubHeading', dict.friendsSubHeading);
-      safeSetText('btnInvite', dict.invite);
-      safeSetText('lblUnclaimed', dict.unclaimed);
-      safeSetText('btnClaimRewards', dict.claimRewards);
-      safeSetText('walletHeading', dict.walletHeading);
-      safeSetText('walletSubHeading', dict.walletSubHeading);
-      safeSetText('btnConnectTonText', dict.connectTon);
-      safeSetText('verifyTitle', dict.verifyTitle);
-      safeSetText('verifyDesc', dict.verifyDesc);
-      safeSetText('btnVerifyText', dict.verifyBtn);
-      safeSetText('navTextMine', dict.navMine);
-      safeSetText('navTextQuiz', dict.navQuiz);
-      safeSetText('navTextTasks', dict.navTasks);
-      safeSetText('navTextFriends', dict.navFriends);
-      safeSetText('navTextWallet', dict.navWallet);
-      safeSetText('navDocsLabel', dict.docs);
-
-      const langSelect = document.getElementById('languageSelect');
-      if (langSelect && langSelect.value !== state.lang) {
-        langSelect.value = state.lang;
-      }
-
-      renderDocsContent();
-    }
-
-    // --- QUIZ TIMER CONTROLS ---
-    function stopQuizTimer() {
-      if (quizTimer) {
-        clearInterval(quizTimer);
-        quizTimer = null;
-      }
-    }
-
-    // --- TAB NAVIGATION ---
-    function switchTab(tabId) {
-      if (tabId !== 'tabQuiz') {
-        stopQuizTimer();
-      }
-
-      ['tabMine', 'tabQuiz', 'tabTasks', 'tabFriends', 'tabWallet'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.classList.add('hidden');
-      });
-      const activeTab = document.getElementById(tabId);
-      if (activeTab) activeTab.classList.remove('hidden');
-
-      ['navMine', 'navQuiz', 'navTasks', 'navFriends', 'navWallet'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-          el.classList.remove('text-sky-400');
-          el.classList.add('text-slate-400');
-        }
-      });
-
-      const navMap = { tabMine: 'navMine', tabQuiz: 'navQuiz', tabTasks: 'navTasks', tabFriends: 'navFriends', tabWallet: 'navWallet' };
-      const currentNav = document.getElementById(navMap[tabId]);
-      if (currentNav) {
-        currentNav.classList.remove('text-slate-400');
-        currentNav.classList.add('text-sky-400');
-      }
-
-      updateHUD();
-      if (tabId === 'tabQuiz') {
-        startQuizRound();
-      }
-    }
-
-    // --- WORD PUZZLE MINING ENGINE ---
-    function initCurrentPuzzle() {
-      const langWords = LOCAL_WORDS[state.lang] || LOCAL_WORDS.en;
-      const puzzleObj = langWords[(state.mineLevel - 1) % langWords.length];
-      currentTargetTiles = [...puzzleObj.word];
-      state.selectedLetters = [];
-
-      let pool = [...currentTargetTiles, ...puzzleObj.fillers];
-      currentScrambledTiles = pool.sort(() => Math.random() - 0.5);
-
-      renderPuzzleBoard();
-      updateHUD();
-    }
-
-    function renderPuzzleBoard() {
-      const boxesContainer = document.getElementById('boxesContainer');
-      const lettersContainer = document.getElementById('lettersContainer');
-      if (!boxesContainer || !lettersContainer) return;
-
-      boxesContainer.innerHTML = '';
-      for (let i = 0; i < currentTargetTiles.length; i++) {
-        const char = state.selectedLetters[i] || '';
-        const box = document.createElement('div');
-        box.className = `w-11 h-12 sm:w-12 sm:h-13 rounded-xl border-2 flex items-center justify-center font-black text-lg transition-all shadow ${
-          char ? 'bg-sky-500/20 border-sky-400 text-sky-300' : 'bg-slate-900 border-slate-700 text-slate-500'
-        }`;
-        box.innerText = char;
-        boxesContainer.appendChild(box);
-      }
-
-      lettersContainer.innerHTML = '';
-      currentScrambledTiles.forEach((letter, idx) => {
-        const btn = document.createElement('button');
-        btn.className = "w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-90 border border-slate-700 text-white font-bold text-sm transition-all shadow";
-        btn.innerText = letter;
-        btn.onclick = () => selectLetter(letter, idx, btn);
-        lettersContainer.appendChild(btn);
-      });
-
-      safeSetText('mineBadgeLevelInfo', `Level ${state.mineLevel} • ${currentTargetTiles.length} Boxes`);
-      const baseReward = 3;
-      const finalReward = state.isVerified ? baseReward * 2 : baseReward;
-      safeSetText('mineRewardBadge', `+${finalReward} POM`);
-    }
-
-    function selectLetter(letter, idx, element) {
-      if (state.selectedLetters.length < currentTargetTiles.length) {
-        state.selectedLetters.push(letter);
-        element.style.visibility = 'hidden';
-        renderPuzzleBoxesOnly();
-      }
-    }
-
-    function renderPuzzleBoxesOnly() {
-      const boxesContainer = document.getElementById('boxesContainer');
-      if (!boxesContainer) return;
-      Array.from(boxesContainer.children).forEach((box, i) => {
-        const char = state.selectedLetters[i] || '';
-        box.className = `w-11 h-12 sm:w-12 sm:h-13 rounded-xl border-2 flex items-center justify-center font-black text-lg transition-all shadow ${
-          char ? 'bg-sky-500/20 border-sky-400 text-sky-300' : 'bg-slate-900 border-slate-700 text-slate-500'
-        }`;
-        box.innerText = char;
-      });
-    }
-
-    function clearSelectedLetters() {
-      state.selectedLetters = [];
-      renderPuzzleBoard();
-    }
-
-    function submitMiningBlock() {
-      if (state.energy <= 0) {
-        openEnergyModal();
-        return;
-      }
-
-      const isCorrect = state.selectedLetters.length === currentTargetTiles.length &&
-        state.selectedLetters.every((val, index) => val === currentTargetTiles[index]);
-
-      if (isCorrect) {
-        const reward = state.isVerified ? 6 : 3;
-        state.balance += reward;
-        state.mineLevel++;
-        state.energy--;
-        creditReferralCommission(reward);
-        saveActiveState();
-        showToast(`Block Mined! +${reward} POM credited`, "🎉");
-
-        if (CONFIG.BACKEND_API_URL) {
-          fetch(`${CONFIG.BACKEND_API_URL}/api/game/mine-reward`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ telegram_id: state.telegram_id })
-          }).catch(e => console.log(e));
-        }
-
-        initCurrentPuzzle();
-      } else {
-        state.energy--;
-        saveActiveState();
-        updateHUD();
-        showToast("Incorrect word! -1 ❤️ lost", "❌");
-        clearSelectedLetters();
-      }
-
-      if (state.energy <= 0) {
-        openEnergyModal();
-      }
-    }
-
-    // --- TIMED QUIZ ENGINE (FIXED: NO ENERGY CUT ON CORRECT ANSWER) ---
-    function startQuizRound() {
-      stopQuizTimer();
-      const repo = QUIZ_REPOSITORY[state.lang] || QUIZ_REPOSITORY.en;
-      const qIdx = (state.quizLevel - 1) % repo.length;
-      const q = repo[qIdx];
-      safeSetText('quizQuestionText', q.q);
-
-      const optsContainer = document.getElementById('quizOptionsContainer');
-      if (optsContainer) {
-        optsContainer.innerHTML = '';
-        q.options.forEach((opt, idx) => {
-          const btn = document.createElement('button');
-          btn.className = "w-full bg-slate-800/90 hover:bg-slate-700 active:scale-98 text-left text-xs font-semibold text-slate-200 p-2.5 rounded-xl border border-slate-700 transition-all";
-          btn.innerText = opt;
-          btn.onclick = () => submitQuizAnswer(idx, q.correct);
-          optsContainer.appendChild(btn);
-        });
-      }
-
-      quizRemainingTime = 25;
-      updateQuizTimerBar();
-      quizTimer = setInterval(() => {
-        quizRemainingTime--;
-        updateQuizTimerBar();
-        if (quizRemainingTime <= 0) {
-          stopQuizTimer();
-          state.energy--; // टाइमर खत्म होने पर 1 हार्ट कटेगा
-          saveActiveState();
-          updateHUD();
-          showToast("Time up! -1 ❤️ lost", "⏳");
-          if (state.energy <= 0) openEnergyModal();
-          state.quizLevel++;
-          startQuizRound();
-        }
-      }, 1000);
-    }
-
-    function updateQuizTimerBar() {
-      const bar = document.getElementById('quizTimerBar');
-      if (bar) bar.style.width = `${(quizRemainingTime / 25) * 100}%`;
-    }
-
-    function submitQuizAnswer(selectedIdx, correctIdx) {
-      stopQuizTimer();
-      if (state.energy <= 0) {
-        openEnergyModal();
-        return;
-      }
-
-      if (selectedIdx === correctIdx) {
-        const reward = state.isVerified ? 2 : 1;
-        state.balance += reward;
-        state.quizLevel++;
-        // ध्यान दें: सही उत्तर पर कोई हार्ट (❤️) नहीं कटेगा
-        creditReferralCommission(reward);
-        saveActiveState();
-        showToast(`Correct Answer! +${reward} POM`, "🌟");
-      } else {
-        state.energy--; // केवल गलत उत्तर पर 1 हार्ट कटेगा
-        saveActiveState();
-        showToast("Incorrect answer! -1 ❤️ lost", "❌");
-        state.quizLevel++;
-      }
-
-      updateHUD();
-      if (state.energy <= 0) openEnergyModal();
-      startQuizRound();
-    }
-
-    // --- AUTOMATIC OUT-OF-ENERGY POPUP ---
-    function openEnergyModal() {
-      document.getElementById('energyModal')?.classList.remove('hidden');
-    }
-
-    function closeEnergyModal() {
-      document.getElementById('energyModal')?.classList.add('hidden');
-    }
-
-    function watchAdAndRefill(amount) {
-      state.energy = Math.min(5, state.energy + amount);
-      saveActiveState();
-      closeEnergyModal();
-      updateHUD();
-      showToast(`Energy Recharged (+${amount} ❤️)!`, "⚡");
-    }
-
-    // --- COMMUNITY TASKS (FIXED: ALL TITLES TRANSLATE DYNAMICALLY) ---
-    function renderTasks() {
-      const container = document.getElementById('tasksListContainer');
-      if (!container) return;
-      container.innerHTML = '';
-
-      const activeLangTasks = TASK_TRANSLATIONS[state.lang] || TASK_TRANSLATIONS.en;
-
-      state.tasks.forEach((task, idx) => {
-        const card = document.createElement('div');
-        card.className = "bg-brand-card border border-brand-cardBorder rounded-xl p-3 flex items-center justify-between shadow";
-
-        const localizedTitle = activeLangTasks[task.id] || task.title;
-
-        let actionBtnHtml = '';
-        if (task.completed) {
-          actionBtnHtml = `<span class="text-emerald-400 font-bold text-xs bg-emerald-950/80 px-2.5 py-1 rounded-lg">✔ Done</span>`;
-        } else if (task.started) {
-          actionBtnHtml = `<button onclick="claimTaskReward(${idx})" class="bg-gradient-to-r from-amber-500 to-amber-600 active:scale-95 text-slate-950 font-black text-xs px-2.5 py-1 rounded-lg shadow">Claim ✨</button>`;
-        } else {
-          actionBtnHtml = `<button onclick="startTask(${idx})" class="bg-sky-500 hover:bg-sky-400 active:scale-95 text-slate-950 font-black text-xs px-2.5 py-1 rounded-lg shadow">Start ↗</button>`;
-        }
-
-        card.innerHTML = `
-          <div class="flex items-center space-x-2.5">
-            <div class="w-8 h-8 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-sky-400">
-              <i class="${task.icon} text-sm"></i>
-            </div>
-            <div>
-              <h4 class="text-xs font-bold text-white truncate max-w-[190px]">${localizedTitle}</h4>
-              <span class="text-[9px] text-amber-400 font-bold">+${task.reward} POM</span>
-            </div>
-          </div>
-          <div>${actionBtnHtml}</div>
-        `;
-        container.appendChild(card);
-      });
-    }
-
-    function startTask(idx) {
-      window.open(state.tasks[idx].link, '_blank');
-      state.tasks[idx].started = true;
-      saveActiveState();
-      renderTasks();
-    }
-
-    function claimTaskReward(idx) {
-      state.balance += state.tasks[idx].reward;
-      state.tasks[idx].completed = true;
-      saveActiveState();
-      updateHUD();
-      renderTasks();
-      showToast(`+${state.tasks[idx].reward} POM Claimed!`, "🎁");
-    }
-
-    // --- REFERRALS (MAPPED TO @proofofmind_bot WITH UNIQUE TELEGRAM ID) ---
-    function getReferralLink() {
-      return `https://t.me/${CONFIG.BOT_USERNAME}?startapp=ref_${state.telegram_id}`;
-    }
-
-    function creditReferralCommission(amount) {
-      state.unclaimedCommission += (amount * 0.10) + (amount * 0.03) + (amount * 0.02);
-      saveActiveState();
-      safeSetText('unclaimedCommissionDisplay', `${state.unclaimedCommission.toFixed(1)} POM`);
-    }
-
-    function claimReferralRewards() {
-      if (state.unclaimedCommission <= 0) {
-        showToast("No unclaimed commissions right now.", "ℹ️");
-        return;
-      }
-      state.balance += Math.floor(state.unclaimedCommission);
-      state.unclaimedCommission = 0;
-      saveActiveState();
-      safeSetText('unclaimedCommissionDisplay', `0.0 POM`);
-      updateHUD();
-      showToast("Commissions claimed to balance!", "💰");
-    }
-
-    function copyReferralLink() {
-      const link = getReferralLink();
-      navigator.clipboard.writeText(link);
-      showToast("Referral link copied!", "📋");
-    }
-
-    function shareReferralToTelegram() {
-      const url = encodeURIComponent(getReferralLink());
-      const text = encodeURIComponent("🧠 Join Proof of Mind! Mine POM tokens with your intellect on TON & Pi Network.");
-      window.open(`https://t.me/share/url?url=${url}&text=${text}`, '_blank');
-    }
-
-    // --- TONCONNECT 2.0 INITIALIZATION & REAL WALLET POPUP ---
-    function initRealTonConnect() {
-      try {
-        if (window.TON_CONNECT_UI) {
-          const manifestUrl = window.location.origin.includes('http')
-            ? `${window.location.origin}/tonconnect-manifest.json`
-            : 'https://proof-of-mind-vvnd.vercel.app/tonconnect-manifest.json';
-
-          tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
-            manifestUrl: manifestUrl
-          });
-
-          tonConnectUI.onStatusChange(wallet => {
-            if (wallet && wallet.account) {
-              state.tonConnected = true;
-              state.tonAddress = wallet.account.address;
-              saveActiveState();
-              updateHUD();
-              showToast("TON Wallet Connected!", "💎");
-            } else {
-              state.tonConnected = false;
-              state.tonAddress = null;
-              saveActiveState();
-              updateHUD();
-            }
-          });
-        }
-      } catch (err) {
-        console.error("TonConnect error:", err);
-      }
-    }
-
-    async function toggleTonConnection() {
-      if (state.tonConnected) {
-        if (tonConnectUI) {
-          try { await tonConnectUI.disconnect(); } catch (e) {}
-        }
-        state.tonConnected = false;
-        state.tonAddress = null;
-        saveActiveState();
-        updateHUD();
-        showToast("TON Wallet Disconnected", "💎");
-      } else {
-        if (tonConnectUI) {
-          try {
-            await tonConnectUI.openModal();
-          } catch (e) {
-            openTonVerifyModal();
-          }
-        } else {
-          openTonVerifyModal();
-        }
-      }
-    }
-
-    function handleWalletVerifyClick() {
-      if (state.isVerified) {
-        showToast("Account already verified with 2x Boost active!", "✔");
-        return;
-      }
-      openTonVerifyModal();
-    }
-
-    function openTonVerifyModal() { document.getElementById('tonVerifyModal')?.classList.remove('hidden'); }
-    function closeTonVerifyModal() { document.getElementById('tonVerifyModal')?.classList.add('hidden'); }
-
-    function copyAdminTonAddress() {
-      navigator.clipboard.writeText(CONFIG.ADMIN_TON_WALLET);
-      showToast("Admin TON Wallet copied!", "📋");
-    }
-
-    function openTonkeeperPay() {
-      const transferUrl = `https://app.tonkeeper.com/transfer/${CONFIG.ADMIN_TON_WALLET}?amount=300000000&text=POM-Verify`;
-      window.open(transferUrl, '_blank');
-      showToast("Opening Tonkeeper...", "💎");
-    }
-
-    function openTelegramWalletPay() {
-      const tgWalletUrl = `https://t.me/wallet?startattach=ton_transfer_${CONFIG.ADMIN_TON_WALLET}_300000000`;
-      window.open(tgWalletUrl, '_blank');
-      showToast("Opening Telegram Wallet...", "💎");
-    }
-
-    function completeTonVerificationTransaction() {
-      state.isVerified = true;
-      saveActiveState();
-      closeTonVerifyModal();
-      updateHUD();
-
-      if (CONFIG.BACKEND_API_URL) {
-        fetch(`${CONFIG.BACKEND_API_URL}/api/wallet/verify-ton`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            telegram_id: state.telegram_id,
-            tonAddress: state.tonAddress || "Tonkeeper_Verified"
-          })
-        }).catch(e => console.log(e));
-      }
-
-      showToast("0.3 TON Verification confirmed! 2x boost active.", "🛡️");
-    }
-
-    function connectPiWallet() {
-      safeSetText('piStatusBadge', 'Pi Connected');
-      safeSetText('piUserText', '@pioneer_mind (Verified)');
-      showToast("Pi Network Pioneer Connected!", "π");
-    }
-
-    // --- HUD UPDATER ---
-    function updateHUD() {
-      safeSetText('userBalanceDisplay', state.balance);
-      safeSetText('walletTotalPomDisplay', `${state.balance} POM`);
-      safeSetText('referralLinkText', getReferralLink());
-      safeSetText('tier1UsersCount', state.tier1Users);
-      safeSetText('tier2UsersCount', state.tier2Users);
-      safeSetText('tier3UsersCount', state.tier3Users);
-
-      const isQuizTab = !document.getElementById('tabQuiz').classList.contains('hidden');
-      safeSetText('labelLevel', isQuizTab ? (state.lang === 'hi' ? 'क्विज़ लेवल' : 'Quiz Level') : (state.lang === 'hi' ? 'माइन लेवल' : 'Mine Level'));
-      safeSetText('userLevelDisplay', isQuizTab ? state.quizLevel : state.mineLevel);
-
-      const heartsContainer = document.getElementById('heartsContainer');
-      if (heartsContainer) {
-        let html = '';
-        for (let i = 0; i < 5; i++) {
-          html += i < state.energy ? '<i class="fa-solid fa-heart"></i>' : '<i class="fa-regular fa-heart text-slate-600"></i>';
-        }
-        heartsContainer.innerHTML = html;
-      }
-
-      const headerTick = document.getElementById('headerVerifiedTick');
-      if (headerTick) {
-        if (state.isVerified) headerTick.classList.remove('hidden');
-        else headerTick.classList.add('hidden');
-      }
-
-      const btnVerify = document.getElementById('btnWalletVerifyAction');
-      if (btnVerify) {
-        if (state.isVerified) {
-          btnVerify.className = "w-full bg-emerald-600 text-white font-black text-xs py-2 rounded-xl shadow transition-all cursor-default flex items-center justify-center space-x-1.5";
-          btnVerify.innerHTML = `<i class="fa-solid fa-circle-check"></i><span>✔ 0.3 TON Verified (2x Boost Active)</span>`;
-        } else {
-          btnVerify.className = "w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 active:scale-95 text-slate-950 font-black text-xs py-2 rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all flex items-center justify-center space-x-1.5";
-          btnVerify.innerHTML = `<i class="fa-solid fa-bolt text-xs"></i><span id="btnVerifyText">${TRANSLATIONS[state.lang]?.verifyBtn || "Verify 0.3 TON"}</span>`;
-        }
-      }
-
-      safeSetText('walletAirdropMult', state.isVerified ? "2x Verified Multiplier" : "1x Base Multiplier");
-      safeSetText('walletVerificationText', state.isVerified ? "Status: Verified Pioneer" : "Status: Unverified");
-
-      if (state.tonConnected) {
-        safeSetText('tonStatusBadge', 'TON Connected');
-        safeSetText('tonAddressText', state.tonAddress ? `${state.tonAddress.slice(0, 8)}...${state.tonAddress.slice(-6)}` : "Connected");
-        const btn = document.getElementById('btnConnectTon');
-        if (btn) btn.innerHTML = '<i class="fa-solid fa-link-slash mr-1"></i> Disconnect TON';
-      } else {
-        safeSetText('tonStatusBadge', 'Not Connected');
-        safeSetText('tonAddressText', 'No TON wallet connected yet');
-        const btn = document.getElementById('btnConnectTon');
-        if (btn) btn.innerHTML = `<i class="fa-solid fa-wallet mr-1"></i> <span id="btnConnectTonText">${TRANSLATIONS[state.lang]?.connectTon || "Connect TON"}</span>`;
-      }
-    }
-
-    // --- COMPLETE MULTILINGUAL WHITEPAPER ---
-    function renderDocsContent() {
-      const container = document.getElementById('docsBodyContainer');
-      if (!container) return;
-
-      const whitepaperData = {
-        hi: {
-          s1: "१. विज़न एवं प्रूफ ऑफ इंटेलेक्ट (PoI)",
-          p1: "प्रूफ ऑफ माइंड (POM) बिजली और हार्डवेयर की अनावश्यक बर्बादी के स्थान पर मानव बौद्धिक सर्वसम्मति को ऑन-चेन लागू करता है। उपयोगकर्ता शब्द पहेलियां और सत्यापित क्विज़ हल करके अपनी सक्रिय बौद्धिक क्षमता प्रमाणित करते हैं और विकेंद्रीकृत टोकन माइन करते हैं।",
-          s2: "२. १ अरब POM टोकनॉमिक्स",
-          s3: "३. विकेंद्रीकृत मेरिट कोर टीम (धारा 3.1)",
-          p3: "१०% कोर टीम आवंटन किसी निजी फाउंडर लॉबी के लिए आरक्षित नहीं है। यह पूरी तरह योग्यता (Merit) पर आधारित है। वैश्विक माइनिंग लीडरबोर्ड पर शीर्ष बौद्धिक प्रदर्शन करने वाले और सक्रिय समुदायिक डेवलपर्स को सीधे कोर टीम आवंटन में शामिल किया जाएगा।",
-          s4: "४. TON एवं Pi Network ट्विन आर्किटेक्चर",
-          p4: "POM एक साथ टेलीग्राम नेटिव ब्लॉकचेन (TON) और Pi Network के 60+ मिलियन पायनियर इकोसिस्टम को जोड़ता है। उपयोगकर्ता दोनों नेटवर्क्स के वॉलेट कनेक्ट करके दोनों इकोसिस्टम्स से टोकन क्लेम करने के पात्र बनते हैं।",
-          s5: "५. 0.3 TON ऑन-चेन सिबिल सुरक्षा एवं 2x बूस्ट",
-          p5: "स्वचालित बॉट्स और फेक एकाउंट्स से वास्तविक माइनर्स के रिवॉर्ड्स की रक्षा के लिए 0.3 TON का ऑन-चेन माइक्रोट्रांजैक्शन लागू किया गया है। यह सत्यापित पायनियर्स को स्थायी 2x माइनिंग और क्विज़ मल्टीप्लायर प्रदान करता है।",
-          s6: "६. रोडमैप एवं TGE लिस्टिंग",
-          p6: "फेज 1: टेलीग्राम मिनी ऐप लॉन्च एवं टास्क इकोसिस्टम। फेज 2: ऑन-चेन PoI सत्यापन और Pi ब्राउज़र सिंकिंग। फेज 3: TGE (टोकन जेनरेशन इवेंट) और प्रमुख DEX/CEX पर POM लिस्टिंग।"
-        },
-        en: {
-          s1: "1. Abstract & Proof of Intellect (PoI)",
-          p1: "Proof of Mind (POM) replaces hardware electrical waste with decentralized human cognitive consensus. Pioneers solve on-chain intellect blocks and verified quizzes to validate genuine human intelligence and mint POM tokens.",
-          s2: "2. 1 Billion POM Hard-Cap Tokenomics",
-          s3: "3. Decentralized Merit Core Team (Section 3.1)",
-          p3: "The 10% Core Team allocation is strictly non-custodial and meritocratic. Pioneers holding top positions on global intellect leaderboards are directly onboarded into decentralized governance and core rewards.",
-          s4: "4. Dual TON & Pi Network Architecture",
-          p4: "POM bridges Telegram's native TON blockchain with Pi Network's 60M+ verified web3 pioneer community. Dual-chain connectivity enables seamless verification and multi-chain liquidity.",
-          s5: "5. 0.3 TON Sybil Defense & 2x Multiplier",
-          p5: "To eliminate automated bot farms, 0.3 TON micro-verification confirms authentic human identity on-chain and grants verified pioneers a lifetime 2x reward boost on all mining and quiz activities.",
-          s6: "6. Roadmap & TGE DEX Listing",
-          p6: "Phase 1: Mini App Launch & Ecosystem Tasks. Phase 2: On-chain PoI Engine and Pi Browser Integration. Phase 3: Token Generation Event (TGE) and decentralized exchange liquidity pool deployment."
-        },
-        ru: {
-          s1: "1. Концепция и Proof of Intellect (PoI)",
-          p1: "Proof of Mind заменяет затраты электроэнергии на децентрализованный человеческий интеллект. Пользователи решают головоломки и квизы для майнинга токенов POM.",
-          s2: "2. Токеномика 1 Миллиард POM",
-          s3: "3. Меритократическая Команда (Секция 3.1)",
-          p3: "10% для Core Team распределяются исключительно за заслуги среди лидеров майнинга.",
-          s4: "4. Архитектура TON и Pi Network",
-          p4: "Интеграция блокчейна TON и экосистемы Pi Network для 60М+ пользователей.",
-          s5: "5. Защита от ботов 0.3 TON",
-          p5: "Микротранзакция 0.3 TON подтверждает реального человека и дает вечный 2x буст.",
-          s6: "6. Дорожная карта и Листинг",
-          p6: "Запуск бота -> Интеграция Pi -> TGE и листинг на DEX биржах."
-        },
-        zh: {
-          s1: "1. 智力证明共识 (PoI)",
-          p1: "Proof of Mind 用人类认知共识取代高能耗硬件挖矿。先锋通过解开智力区块和问答验证真实智慧并挖取 POM 代币。",
-          s2: "2. 10 亿 POM 代币经济学",
-          s3: "3. 绩效核心团队机制 (第 3.1 节)",
-          p3: "10% 的团队份额严格基于智力贡献排行榜选拔，非私人预留。",
-          s4: "4. TON 与 Pi Network 双架构",
-          p4: "连接 Telegram 原生 TON 链与拥有 6000 万先锋的 Pi Network 生态。",
-          s5: "5. 0.3 TON 女巫防护与 2 倍加速",
-          p5: "通过 0.3 TON 链上验证杜绝假账号并永久激活 2 倍挖矿加速。",
-          s6: "6. 路线图与 TGE 上市",
-          p6: "Mini App 发布 -> 链上 PoI 引擎 -> 代币生成事件与 DEX 交易对部署。"
-        },
-        es: {
-          s1: "1. Resumen y Prueba de Intelecto (PoI)",
-          p1: "POM reemplaza el desperdicio de energía física con consenso cognitivo humano en la blockchain de TON y Pi Network.",
-          s2: "2. Tokenomics de 1 Mil Millones POM",
-          s3: "3. Equipo Central Meritocrático (Sección 3.1)",
-          p3: "El 10% del Core Team se asigna por mérito a los mineros líderes de la comunidad.",
-          s4: "4. Arquitectura Dual TON y Pi Network",
-          p4: "Puente entre TON Telegram y los 60 millones de pioneros de Pi Network.",
-          s5: "5. Defensa Sybil con 0.3 TON y Multiplicador 2x",
-          p5: "La verificación on-chain otorga un bono permanente de 2x.",
-          s6: "6. Hoja de Ruta y TGE",
-          p6: "Mini App -> Integración PoI -> Listado DEX y TGE oficial."
-        },
-        ar: {
-          s1: "١. إثبات الذكاء (PoI)",
-          p1: "يستبدل POM إهدار الطاقة بتعدين الذكاء البشري الموثق عبر بلوكتشين TON وشبكة Pi.",
-          s2: "٢. اقتصاديات التوكن (1 مليار POM)",
-          s3: "٣. فريق الجدارة اللامركزي (قسم 3.1)",
-          p3: "توزيع حصة 10% بناءً على أداء لوحة الصدارة الفعلي فقط.",
-          s4: "٤. الربط بين TON و Pi Network",
-          p4: "دمج بين مستخدمي تيليجرام وشبكة Pi الرائدة.",
-          s5: "٥. حماية سيبيل بـ 0.3 TON ومضاعف 2x",
-          p5: "توثيق الحساب بـ 0.3 TON يمنح مضاعف أرباح دائم.",
-          s6: "٦. خريطة الطريق والإدراج في المنصات",
-          p6: "إطلاق التطبيق المصغر -> محرك PoI -> الإدراج في البورصات اللامركزية."
-        },
-        bn: {
-          s1: "১. প্রমাণ বুদ্ধিমত্তা (PoI)",
-          p1: "বিদ্যুৎ অপচয়ের পরিবর্তে মানুষের বুদ্ধিভিত্তিক ঐক্যমত্য অন-চেইনে প্রমাণ করে POM টোকেন মাইন করা হয়।",
-          s2: "২. ১ বিলিয়ন POM টোকেনমিক্স",
-          s3: "৩. মেধাভিত্তিক কোর টিম (ধারা ৩.১)",
-          p3: "১০% কোর টিম বরাদ্দ সেরা মাইনারদের মেধার ভিত্তিতে বণ্টিত হয়।",
-          s4: "৪. TON ও Pi Network যুগ্ম নেটওয়ার্ক",
-          p4: "টেলিগ্রামের TON এবং Pi নেটওয়ার্কের ৬০ মিলিয়ন পাইওনিয়ারদের সংযোগ।",
-          s5: "৫. ০.৩ TON সিবিল সুরক্ষা ও ২x বুস্ট",
-          p5: "অন-চেন ভেরিফিকেশনের মাধ্যমে আজীবন দ্বিগুণ রিওয়ার্ড সক্রিয় হয়।",
-          s6: "৬. রোডম্যাপ ও TGE লিস্টিং",
-          p6: "মিনি অ্যাপ লঞ্চ -> PoI ইঞ্জিন -> TGE ও DEX এক্সচেঞ্জ লিস্টিং।"
-        },
-        vi: {
-          s1: "1. Bằng Chứng Trí Tuệ (PoI)",
-          p1: "Proof of Mind thay thế việc lãng phí điện năng bằng sự đồng thuận nhận thức của con người trên TON và Pi Network.",
-          s2: "2. Tokenomics 1 Tỷ POM",
-          s3: "3. Đội Ngũ Cốt Lõi Dựa Trên Năng Lực (Mục 3.1)",
-          p3: "Phân bổ 10% được trao dựa trên bảng xếp hạng đóng góp trí tuệ thực tế.",
-          s4: "4. Kiến Trúc Kép TON & Pi Network",
-          p4: "Kết nối hệ sinh thái TON Telegram và 60M+ người tiên phong Pi Network.",
-          s5: "5. Bảo Vệ Sybil 0.3 TON & Nhân Đôi 2x",
-          p5: "Xác minh on-chain 0.3 TON kích hoạt nhân đôi phần thưởng vĩnh viễn.",
-          s6: "6. Lộ Trình & Niêm Yết TGE",
-          p6: "Mini App -> Tích hợp PoI -> Sự kiện TGE và niêm yết trên các sàn DEX."
-        },
-        id: {
-          s1: "1. Bukti Intelek (Proof of Intellect)",
-          p1: "Proof of Mind menggantikan pemborosan energi perangkat keras dengan konsensus kognitif manusia di TON dan Pi Network.",
-          s2: "2. Tokenomics 1 Miliar POM",
-          s3: "3. Tim Inti Berbasis Prestasi (Bagian 3.1)",
-          p3: "Alokasi 10% diberikan murni berdasarkan performa papan peringkat penambangan.",
-          s4: "4. Arsitektur Ganda TON & Pi Network",
-          p4: "Menghubungkan ekosistem TON Telegram dengan 60 juta pionir Pi Network.",
-          s5: "5. Perlindungan Sybil 0.3 TON & Pengali 2x",
-          p5: "Verifikasi on-chain mengaktifkan pengali hadiah 2x permanen seumur hidup.",
-          s6: "6. Peta Jalan & Peluncuran TGE",
-          p6: "Peluncuran Mini App -> Mesin PoI -> TGE dan pencatatan bursa DEX."
-        },
-        fa: {
-          s1: "۱. اثبات هوش و ذهن (PoI)",
-          p1: "اثبات ذهن (POM) اتلاف برق سخت‌افزاری را با اجماع شناختی انسان روی TON و Pi Network جایگزین می‌کند.",
-          s2: "۲. توکنومیکس ۱ میلیارد POM",
-          s3: "۳. تیم اصلی مبتنی بر شایستگی (بخش ۳.۱)",
-          p3: "تخصیص ۱۰٪ تیم بر اساس شایستگی به رتبه‌های برتر لیدربورد تعلق می‌گیرد.",
-          s4: "۴. معماری دوگانه TON و Pi Network",
-          p4: "پل میان TON تلگرام و جامعه ۶۰ میلیونی پیشگامان پای نتورک.",
-          s5: "۵. دفاع سیبیل ۰.۳ TON و ضریب ۲ برابری",
-          p5: "تایید آن‌چین ضریب پاداش استخراج ۲ برابری دائمی را فعال می‌کند.",
-          s6: "۶. نقشه راه و لیست شدن در صرافی‌ها",
-          p6: "مینی‌اپلیکیشن تلگرام -> موتور PoI -> رویداد TGE و عرضه در DEX."
-        }
-      };
-
-      const d = whitepaperData[state.lang] || whitepaperData.en;
-
-      container.innerHTML = `
-        <div><h4 class="text-sky-400 font-bold uppercase text-[10px] mb-1">${d.s1}</h4><p>${d.p1}</p></div>
-        <div><h4 class="text-sky-400 font-bold uppercase text-[10px] mb-1">${d.s2}</h4>
-          <div class="bg-slate-900 border border-slate-800 rounded-xl p-2.5 space-y-1 font-mono text-[9px]">
-            <div class="flex justify-between"><span>• Community Mining:</span><span class="text-amber-400 font-bold">50% (500M)</span></div>
-            <div class="flex justify-between"><span>• Referrals & Tasks:</span><span class="text-sky-400 font-bold">15% (150M)</span></div>
-            <div class="flex justify-between"><span>• Merit Core Team:</span><span class="text-emerald-400 font-bold">10% (100M)</span></div>
-            <div class="flex justify-between"><span>• Infrastructure:</span><span class="text-indigo-400 font-bold">10% (100M)</span></div>
-            <div class="flex justify-between"><span>• Liquidity & DEX:</span><span class="text-rose-400 font-bold">10% (100M)</span></div>
-            <div class="flex justify-between"><span>• Early Airdrop:</span><span class="text-purple-400 font-bold">5% (50M)</span></div>
-          </div>
-        </div>
-        <div><h4 class="text-sky-400 font-bold uppercase text-[10px] mb-1">${d.s3}</h4><p>${d.p3}</p></div>
-        <div><h4 class="text-sky-400 font-bold uppercase text-[10px] mb-1">${d.s4}</h4><p>${d.p4}</p></div>
-        <div><h4 class="text-sky-400 font-bold uppercase text-[10px] mb-1">${d.s5}</h4><p>${d.p5}</p></div>
-        <div><h4 class="text-sky-400 font-bold uppercase text-[10px] mb-1">${d.s6}</h4><p>${d.p6}</p></div>
-      `;
-    }
-
-    function openDocsModal() {
-      renderDocsContent();
-      document.getElementById('docsModal')?.classList.remove('hidden');
-    }
-    function closeDocsModal() { document.getElementById('docsModal')?.classList.add('hidden'); }
-
-    // --- ADMIN CONTROL CONSOLE ---
-    function openAdminModal() { document.getElementById('adminModal')?.classList.remove('hidden'); }
-    function closeAdminModal() { document.getElementById('adminModal')?.classList.add('hidden'); }
-
-    function submitAdminLogin() {
-      const u = document.getElementById('adminUsernameInput').value;
-      const p = document.getElementById('adminPasswordInput').value;
-      if (u === 'admin' && (p === 'pom2026' || p === 'admin123')) {
-        document.getElementById('adminLoginView').classList.add('hidden');
-        document.getElementById('adminDashboardView').classList.remove('hidden');
-        document.getElementById('adminLogoutBtn').classList.remove('hidden');
-        refreshAdminDashboard();
-        showToast("Master Admin Authorized!", "🛡️");
-      } else {
-        showToast("Invalid admin credentials!", "❌");
-      }
-    }
-
-    function logoutAdmin() {
-      document.getElementById('adminLoginView').classList.remove('hidden');
-      document.getElementById('adminDashboardView').classList.add('hidden');
-      document.getElementById('adminLogoutBtn').classList.add('hidden');
-      document.getElementById('adminUsernameInput').value = '';
-      document.getElementById('adminPasswordInput').value = '';
-      showToast("Admin session locked", "🔒");
-    }
-
-    function adminSaveBotHandle() {
-      const handle = document.getElementById('adminBotHandleInput').value.trim().replace('@', '');
-      if (handle) {
-        CONFIG.BOT_USERNAME = handle;
-        updateHUD();
-        refreshAdminDashboard();
-        showToast(`Bot handle updated: @${handle}`, "✔");
-      }
-    }
-
-    function refreshAdminDashboard() {
-      const wordStr = currentTargetTiles.join('');
-      const poolStr = currentScrambledTiles.join(', ');
-      safeSetText('adminCurrentWordHint', `Target: ${wordStr} | Tiles Pool: [ ${poolStr} ] | Current Lang: ${state.lang.toUpperCase()}`);
-
-      const summary = document.getElementById('adminTaskListSummary');
-      if (summary) {
-        summary.innerHTML = '';
-        state.tasks.forEach((t, i) => {
-          const row = document.createElement('div');
-          row.className = "flex items-center justify-between bg-slate-800 p-1.5 rounded text-[10px]";
-          row.innerHTML = `<span class="truncate max-w-[200px] text-slate-300">${t.title} (+${t.reward})</span><button onclick="adminRemoveTask(${i})" class="text-rose-400 font-bold hover:text-rose-300">✕</button>`;
-          summary.appendChild(row);
-        });
-      }
-    }
-
-    function copyTelegramChannelHint() {
-      const wordStr = currentTargetTiles.join('');
-      const postText = `🧠 Proof of Mind (POM) Community Intellect Drop!\n\nSolve Level ${state.mineLevel} now.\nTarget Length: ${currentTargetTiles.length} Letters\nLetter Pool: ${currentScrambledTiles.join(' ')}\n\nMine block now 👉 https://t.me/${CONFIG.BOT_USERNAME}?startapp=ref_channel`;
-      navigator.clipboard.writeText(postText);
-      showToast("Telegram post copied to clipboard!", "📋");
-    }
-
-    function adminAddTask() {
-      const title = document.getElementById('adminNewTaskTitle').value;
-      const link = document.getElementById('adminNewTaskLink').value;
-      const reward = parseInt(document.getElementById('adminNewTaskReward').value) || 50;
-      if (!title || !link) {
-        showToast("Fill title & link", "⚠️");
-        return;
-      }
-      state.tasks.push({
-        id: "task_" + Date.now(),
-        title: title,
-        link: link,
-        reward: reward,
-        started: false,
-        completed: false,
-        icon: "fa-solid fa-star"
-      });
-      saveActiveState();
-      renderTasks();
-      refreshAdminDashboard();
-      document.getElementById('adminNewTaskTitle').value = '';
-      document.getElementById('adminNewTaskLink').value = '';
-      showToast("Task dispatched live!", "🚀");
-    }
-
-    function adminRemoveTask(index) {
-      state.tasks.splice(index, 1);
-      saveActiveState();
-      renderTasks();
-      refreshAdminDashboard();
-      showToast("Task removed", "🗑️");
-    }
-
-    function adminDevBoostPOM(amt) {
-      state.balance += amt;
-      saveActiveState();
-      updateHUD();
-      showToast(`Added +${amt} POM!`, "💰");
-    }
-
-    function adminDevBoostLevel(levels) {
-      state.mineLevel += levels;
-      state.quizLevel += levels;
-      saveActiveState();
-      initCurrentPuzzle();
-      showToast(`Advanced +${levels} Levels!`, "⚡");
-    }
-
-    function adminDevRefillHearts() {
-      state.energy = 5;
-      saveActiveState();
-      updateHUD();
-      showToast("Hearts refilled to 5 ❤️!", "❤️");
-    }
-
-    function adminDevToggleVerify() {
-      state.isVerified = !state.isVerified;
-      saveActiveState();
-      updateHUD();
-      showToast(`2x Boost is now ${state.isVerified ? 'ENABLED' : 'DISABLED'}`, "🛡️");
-    }
-
-    function adminSimulateReferral() {
-      state.tier1Users += 1;
-      saveActiveState();
-      updateHUD();
-      showToast("Added +1 Tier 1 Referral!", "👥");
-    }
-
-    function adminResetAllData() {
-      localStorage.removeItem('POM_USER_STATE');
-      state.balance = 130;
-      state.mineLevel = 1;
-      state.quizLevel = 1;
-      state.energy = 5;
-      state.isVerified = false;
-      state.tier1Users = 0;
-      state.tier2Users = 0;
-      state.tier3Users = 0;
-      state.unclaimedCommission = 0;
-      initCurrentPuzzle();
-      renderTasks();
-      updateHUD();
-      refreshAdminDashboard();
-      showToast("State reset to defaults", "🔄");
-    }
-
-    // --- APPLICATION STARTUP ---
-    function startApp() {
-      if (window.Telegram?.WebApp) {
-        window.Telegram.WebApp.ready();
-        window.Telegram.WebApp.expand();
-        
-        const tgUser = window.Telegram.WebApp.initDataUnsafe?.user;
-        if (tgUser && tgUser.id) {
-          state.telegram_id = String(tgUser.id);
-        }
-      }
-      loadSavedState();
-      applyCurrentLanguage();
-      initCurrentPuzzle();
-      renderTasks();
-      updateHUD();
-      initRealTonConnect();
-    }
-
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', startApp);
-    } else {
-      startApp();
-    }
-  </script>
+  <!-- ================= LOAD MODULAR SCRIPTS ================= -->
+  <script src="languages.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
