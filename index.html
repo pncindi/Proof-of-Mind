@@ -581,11 +581,13 @@
   <!-- ================= JAVASCRIPT CORE LOGIC ================= -->
   <script>
     const CONFIG = {
+      BACKEND_API_URL: "", // Render URL जोड़ें (जैसे: "https://pom-backend.onrender.com")
       ADMIN_TON_WALLET: "UQD5ZiNy8-eV7l6Ny46c-f98USLg-JXPTRRIPMV-0YiadqJV",
       BOT_USERNAME: "proofofmind_bot"
     };
 
     let state = {
+      telegram_id: "pioneer",
       balance: 130,
       mineLevel: 1,
       quizLevel: 1,
@@ -739,7 +741,7 @@
         invite: "دعوت از دوستان", unclaimed: "پاداش‌های مطالبه نشده", claimRewards: "دریافت",
         walletHeading: "کیف پول چند زنجیره‌ای", walletSubHeading: "اتصال کیف پول‌های TON و Pi",
         connectTon: "اتصال به TON", verifyTitle: "محافظت سیبیل و ضریب ۲ برابری",
-        verifyDesc: "تایید با ۰.۳ TON برای ضریب ۲ برابری دائمی.", verifyBtn: "تایید ۰.۳ TON",
+        verifyDesc: "تایید با ۰.۳ TON برای ضریب ۲ برابری دائمی.", verifyBtn: "تایید ۰.३ TON",
         navMine: "استخراج", navQuiz: "کوییز", navTasks: "ماموریت", navFriends: "دوستان", navWallet: "کیف پول", docs: "مستندات"
       }
     };
@@ -861,7 +863,7 @@
     let quizTimer = null;
     let quizRemainingTime = 25;
 
-    // --- STORAGE PERSISTENCE ---
+    // --- STORAGE & BACKEND SYNC ---
     function loadSavedState() {
       try {
         const saved = localStorage.getItem('POM_USER_STATE');
@@ -887,6 +889,43 @@
           unclaimedCommission: state.unclaimedCommission
         }));
       } catch(e) {}
+    }
+
+    // ऑटोमेटिक बैकएंड सिंक (Render से कनेक्ट होने पर सक्रिय)
+    async function syncWithBackendServer() {
+      if (!CONFIG.BACKEND_API_URL) return;
+      try {
+        const startParam = window.Telegram?.WebApp?.initDataUnsafe?.start_param || "";
+        const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+        const res = await fetch(`${CONFIG.BACKEND_API_URL}/api/user/sync`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            telegram_id: state.telegram_id,
+            username: tgUser?.username || "",
+            first_name: tgUser?.first_name || "",
+            start_param: startParam
+          })
+        });
+        const data = await res.json();
+        if (data && data.user) {
+          state.balance = data.user.balance;
+          state.mineLevel = data.user.mineLevel;
+          state.isVerified = data.user.isVerified;
+          state.unclaimedCommission = data.user.unclaimedCommission || 0;
+          if (data.user.referrals) {
+            state.tier1Users = data.user.referrals.tier1?.length || 0;
+            state.tier2Users = data.user.referrals.tier2?.length || 0;
+            state.tier3Users = data.user.referrals.tier3?.length || 0;
+          }
+          safeSetText('tier1UsersCount', state.tier1Users);
+          safeSetText('tier2UsersCount', state.tier2Users);
+          safeSetText('tier3UsersCount', state.tier3Users);
+          updateHUD();
+        }
+      } catch (err) {
+        console.log("Backend offline, running in local state.");
+      }
     }
 
     function safeSetText(id, text) {
@@ -964,7 +1003,7 @@
       renderDocsContent();
     }
 
-    // --- QUIZ TIMER CONTROLS (PREVENTS POPUP LEAK ON OTHER TABS) ---
+    // --- QUIZ TIMER CONTROLS ---
     function stopQuizTimer() {
       if (quizTimer) {
         clearInterval(quizTimer);
@@ -1093,6 +1132,15 @@
         creditReferralCommission(reward);
         saveActiveState();
         showToast(`Block Mined! +${reward} POM credited`, "🎉");
+
+        if (CONFIG.BACKEND_API_URL) {
+          fetch(`${CONFIG.BACKEND_API_URL}/api/game/mine-reward`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ telegram_id: state.telegram_id })
+          }).catch(e => console.log(e));
+        }
+
         initCurrentPuzzle();
       } else {
         state.energy--;
@@ -1245,9 +1293,9 @@
       showToast(`+${state.tasks[idx].reward} POM Claimed!`, "🎁");
     }
 
-    // --- REFERRALS (MAPPED TO @proofofmind_bot) ---
+    // --- REFERRALS (MAPPED TO @proofofmind_bot WITH UNIQUE TELEGRAM ID) ---
     function getReferralLink() {
-      return `https://t.me/${CONFIG.BOT_USERNAME}?startapp=ref_pioneer`;
+      return `https://t.me/${CONFIG.BOT_USERNAME}?startapp=ref_${state.telegram_id}`;
     }
 
     function creditReferralCommission(amount) {
@@ -1317,6 +1365,18 @@
       saveActiveState();
       closeTonVerifyModal();
       updateHUD();
+
+      if (CONFIG.BACKEND_API_URL) {
+        fetch(`${CONFIG.BACKEND_API_URL}/api/wallet/verify-ton`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            telegram_id: state.telegram_id,
+            tonAddress: state.tonAddress || "Tonkeeper_Verified"
+          })
+        }).catch(e => console.log(e));
+      }
+
       showToast("0.3 TON Verification confirmed! 2x boost active.", "🛡️");
     }
 
@@ -1492,7 +1552,7 @@
           s4: "4. Kiến Trúc Kép TON & Pi Network",
           p4: "Kết nối hệ sinh thái TON Telegram và 60M+ người tiên phong Pi Network.",
           s5: "5. Bảo Vệ Sybil 0.3 TON & Nhân Đôi 2x",
-          p5: "Xác minh ऑन-चेन 0.3 TON kích hoạt nhân đôi phần thưởng vĩnh viễn.",
+          p5: "Xác minh on-chain 0.3 TON kích hoạt nhân đôi phần thưởng vĩnh viễn.",
           s6: "6. Lộ Trình & Niêm Yết TGE",
           p6: "Mini App -> Tích hợp PoI -> Sự kiện TGE và niêm yết trên các sàn DEX."
         },
@@ -1694,12 +1754,19 @@
       if (window.Telegram?.WebApp) {
         window.Telegram.WebApp.ready();
         window.Telegram.WebApp.expand();
+        
+        // टेलीग्राम यूज़र की असली आईडी डिटेक्ट करें
+        const tgUser = window.Telegram.WebApp.initDataUnsafe?.user;
+        if (tgUser && tgUser.id) {
+          state.telegram_id = String(tgUser.id);
+        }
       }
       loadSavedState();
       applyCurrentLanguage();
       initCurrentPuzzle();
       renderTasks();
       updateHUD();
+      syncWithBackendServer();
     }
 
     if (document.readyState === 'loading') {
