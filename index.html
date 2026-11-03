@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Proof of Mind (POM) - Decentralized Intellect Mining</title>
   
   <!-- Tailwind CSS CDN -->
@@ -30,7 +30,6 @@
               card: '#0f172a',
               cardBorder: '#1e293b',
               accent: '#38bdf8',
-              accentHover: '#0284c7',
               gold: '#fbbf24',
               emerald: '#10b981',
               rose: '#f43f5e'
@@ -43,71 +42,88 @@
 
   <style>
     @keyframes pulseGlow {
-      0%, 100% { box-shadow: 0 0 15px rgba(56, 189, 248, 0.2); }
-      50% { box-shadow: 0 0 25px rgba(56, 189, 248, 0.45); }
+      0%, 100% { box-shadow: 0 0 10px rgba(56, 189, 248, 0.15); }
+      50% { box-shadow: 0 0 20px rgba(56, 189, 248, 0.35); }
     }
     .glow-box { animation: pulseGlow 3s infinite; }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    /* Touch-Safe Bottom Floating Dock (Elevated above Android System Keys) */
+    .safe-nav-dock {
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 36px);
+    }
+    .floating-gear-btn {
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 105px);
+    }
   </style>
 </head>
 
-<body class="bg-brand-dark text-slate-100 font-sans min-h-screen flex flex-col select-none no-scrollbar pb-28">
+<body class="bg-brand-dark text-slate-100 font-sans min-h-screen flex flex-col select-none no-scrollbar pb-36">
+
+  <!-- ================= IN-APP TOAST NOTIFICATION ================= -->
+  <div id="toastNotification" class="fixed top-3 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 opacity-0 pointer-events-none transform -translate-y-4 max-w-xs w-full px-4">
+    <div class="bg-slate-900/95 border border-slate-700 text-white text-xs font-semibold py-2 px-3.5 rounded-xl shadow-2xl flex items-center justify-center space-x-2 backdrop-blur-md">
+      <span id="toastIcon">ℹ️</span>
+      <span id="toastMessage">Notification</span>
+    </div>
+  </div>
 
   <!-- ================= TOP HEADER ================= -->
-  <header class="sticky top-0 z-40 bg-brand-dark/95 backdrop-blur-md border-b border-brand-cardBorder px-4 py-3 flex items-center justify-between shadow-lg">
-    <div class="flex items-center space-x-2">
-      <span class="text-2xl">🧠</span>
-      <h1 class="text-lg font-black tracking-wide bg-gradient-to-r from-sky-400 via-indigo-300 to-amber-300 bg-clip-text text-transparent">Proof of Mind</h1>
-      <span id="headerVerifiedTick" class="hidden text-emerald-400 text-sm font-bold bg-emerald-950/70 border border-emerald-500/40 rounded-full px-1.5 py-0.5 shadow-[0_0_8px_rgba(16,185,129,0.5)]">✔</span>
+  <header class="sticky top-0 z-40 bg-brand-dark/95 backdrop-blur-md border-b border-brand-cardBorder px-3.5 py-2.5 flex items-center justify-between shadow-md">
+    <div class="flex items-center space-x-1.5 shrink-0">
+      <span class="text-xl">🧠</span>
+      <h1 class="text-sm sm:text-base font-black tracking-wide whitespace-nowrap bg-gradient-to-r from-sky-400 via-indigo-300 to-amber-300 bg-clip-text text-transparent">Proof of Mind</h1>
+      <span id="headerVerifiedTick" class="hidden text-emerald-400 text-[10px] font-bold bg-emerald-950/70 border border-emerald-500/40 rounded-full px-1.5 py-0.2 shadow-[0_0_8px_rgba(16,185,129,0.5)]">✔</span>
     </div>
 
-    <div class="flex items-center space-x-2">
-      <button onclick="openDocsModal()" class="flex items-center space-x-1 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-xs text-sky-400 font-semibold px-2.5 py-1.5 rounded-lg transition-all">
-        <i class="fa-solid fa-file-lines text-xs"></i>
+    <div class="flex items-center space-x-1.5">
+      <button onclick="openDocsModal()" class="flex items-center space-x-1 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-[11px] text-sky-400 font-semibold px-2 py-1 rounded-lg transition-all">
+        <i class="fa-solid fa-file-lines text-[10px]"></i>
         <span id="navDocsLabel">Docs</span>
       </button>
 
+      <!-- 10 Full Languages Selector -->
       <div class="relative">
-        <select id="languageSelect" onchange="changeLanguage(this.value)" class="bg-slate-800/90 border border-slate-700 text-xs font-medium text-slate-200 px-2 py-1.5 rounded-lg outline-none cursor-pointer focus:border-sky-500">
+        <select id="languageSelect" onchange="changeLanguage(this.value)" class="bg-slate-800/90 border border-slate-700 text-[11px] font-medium text-slate-200 px-2 py-1 rounded-lg outline-none cursor-pointer focus:border-sky-500">
+          <option value="hi" selected>हिंदी (Hindi)</option>
           <option value="en">English</option>
-          <option value="hi">हिंदी (Hindi)</option>
           <option value="ru">Русский</option>
-          <option value="zh">中文</option>
+          <option value="zh">中文 (Chinese)</option>
           <option value="es">Español</option>
-          <option value="ar">العربية</option>
-          <option value="bn">বাংলা</option>
+          <option value="ar">العربية (Arabic)</option>
+          <option value="bn">বাংলা (Bengali)</option>
           <option value="vi">Tiếng Việt</option>
           <option value="id">Bahasa Indonesia</option>
-          <option value="fa">فارسی</option>
+          <option value="fa">فارسی (Persian)</option>
         </select>
       </div>
     </div>
   </header>
 
   <!-- ================= USER HUD STATS BAR ================= -->
-  <section class="p-4 grid grid-cols-3 gap-2.5">
-    <div class="bg-brand-card/90 border border-brand-cardBorder/80 rounded-xl p-2.5 text-center shadow-md">
-      <span id="labelBalance" class="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">Balance</span>
+  <section class="p-3 grid grid-cols-3 gap-2">
+    <div class="bg-brand-card/90 border border-brand-cardBorder/80 rounded-xl p-2 text-center shadow">
+      <span id="labelBalance" class="text-[9px] uppercase font-bold text-slate-400 tracking-wider block">बैलेंस</span>
       <div class="flex items-center justify-center space-x-1 mt-0.5">
-        <span id="userBalanceDisplay" class="text-amber-400 font-black text-base sm:text-lg">0</span>
-        <span class="text-amber-500 font-bold text-[10px]">POM</span>
+        <span id="userBalanceDisplay" class="text-amber-400 font-black text-sm sm:text-base">0</span>
+        <span class="text-amber-500 font-bold text-[9px]">POM</span>
       </div>
     </div>
 
-    <div class="bg-brand-card/90 border border-brand-cardBorder/80 rounded-xl p-2.5 text-center shadow-md">
-      <span id="labelLevel" class="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">Level</span>
+    <div class="bg-brand-card/90 border border-brand-cardBorder/80 rounded-xl p-2 text-center shadow">
+      <span id="labelLevel" class="text-[9px] uppercase font-bold text-slate-400 tracking-wider block">लेवल</span>
       <div class="flex items-center justify-center space-x-1 mt-0.5">
-        <span id="userLevelDisplay" class="text-sky-400 font-black text-base sm:text-lg">1</span>
+        <span id="userLevelDisplay" class="text-sky-400 font-black text-sm sm:text-base">1</span>
       </div>
     </div>
 
-    <div class="bg-brand-card/90 border border-brand-cardBorder/80 rounded-xl p-2.5 text-center shadow-md relative overflow-hidden">
-      <span id="labelEnergy" class="text-[10px] uppercase font-bold text-slate-400 tracking-wider flex items-center justify-center space-x-1">
-        <span>Energy</span>
-        <i class="fa-solid fa-bolt text-amber-400 text-[10px]"></i>
+    <div class="bg-brand-card/90 border border-brand-cardBorder/80 rounded-xl p-2 text-center shadow relative overflow-hidden">
+      <span id="labelEnergy" class="text-[9px] uppercase font-bold text-slate-400 tracking-wider flex items-center justify-center space-x-1">
+        <span>एनर्जी</span>
+        <i class="fa-solid fa-bolt text-amber-400 text-[9px]"></i>
       </span>
-      <div id="heartsContainer" class="flex items-center justify-center space-x-1 mt-1 text-rose-500 text-xs sm:text-sm">
+      <div id="heartsContainer" class="flex items-center justify-center space-x-1 mt-0.5 text-rose-500 text-xs">
         <i class="fa-solid fa-heart"></i>
         <i class="fa-solid fa-heart"></i>
         <i class="fa-solid fa-heart"></i>
@@ -118,355 +134,415 @@
   </section>
 
   <!-- ================= MAIN CONTAINER TABS ================= -->
-  <main class="flex-1 px-4 max-w-lg mx-auto w-full">
+  <main class="flex-1 px-3 max-w-lg mx-auto w-full">
 
     <!-- TAB 1: MINE (WORD PUZZLE MINING) -->
-    <div id="tabMine" class="space-y-4">
-      <div class="bg-brand-card border border-brand-cardBorder rounded-2xl p-4 sm:p-5 shadow-xl relative glow-box">
-        <div class="flex items-center justify-between mb-3">
-          <span id="mineBadgeLevelInfo" class="bg-sky-950/70 text-sky-400 border border-sky-800 text-[11px] font-bold px-2.5 py-0.5 rounded-full">
-            Level 1 • 3 Boxes
+    <div id="tabMine" class="space-y-3">
+      <div class="bg-brand-card border border-brand-cardBorder rounded-2xl p-3.5 sm:p-4 shadow-xl relative glow-box">
+        <div class="flex items-center justify-between mb-2">
+          <span id="mineBadgeLevelInfo" class="bg-sky-950/70 text-sky-400 border border-sky-800 text-[10px] font-bold px-2 py-0.5 rounded-full">
+            Level 1
           </span>
-          <span id="mineRewardBadge" class="bg-amber-950/70 text-amber-400 border border-amber-800 text-[11px] font-bold px-2.5 py-0.5 rounded-full">
+          <span id="mineRewardBadge" class="bg-amber-950/70 text-amber-400 border border-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full">
             +3 POM
           </span>
         </div>
 
-        <h2 id="mineHeading" class="text-base sm:text-lg font-bold text-center text-white mb-1">Word Puzzle Mining</h2>
-        <p id="mineSubHeading" class="text-xs text-slate-400 text-center mb-4">Select letters to solve the intellect block</p>
+        <h2 id="mineHeading" class="text-sm sm:text-base font-bold text-center text-white mb-0.5">वर्ड पज़ल माइनिंग</h2>
+        <p id="mineSubHeading" class="text-[11px] text-slate-400 text-center mb-4">ब्लॉक माइन करने के लिए सही अक्षरों का चयन करें</p>
 
-        <!-- Dynamic Puzzle Boxes -->
-        <div id="boxesContainer" class="flex items-center justify-center gap-2 mb-6 min-h-[52px]"></div>
+        <!-- Dynamic Puzzle Empty/Filled Boxes -->
+        <div id="boxesContainer" class="flex items-center justify-center gap-1.5 mb-5 min-h-[46px]"></div>
 
-        <!-- Available Choice Letters -->
-        <div id="lettersContainer" class="flex flex-wrap items-center justify-center gap-2 mb-5"></div>
+        <!-- Available Selectable Letter Tiles -->
+        <div id="lettersContainer" class="flex flex-wrap items-center justify-center gap-1.5 mb-5"></div>
 
         <!-- Action Controls -->
-        <div class="grid grid-cols-2 gap-3">
-          <button onclick="clearSelectedLetters()" class="bg-slate-800 hover:bg-slate-700 active:scale-95 border border-slate-700 text-slate-200 text-xs font-bold py-2.5 rounded-xl transition-all flex items-center justify-center space-x-1">
-            <i class="fa-solid fa-rotate-left"></i>
-            <span id="btnClear">Clear</span>
+        <div class="grid grid-cols-2 gap-2.5">
+          <button onclick="clearSelectedLetters()" class="bg-slate-800 hover:bg-slate-700 active:scale-95 border border-slate-700 text-slate-200 text-xs font-bold py-2 rounded-xl transition-all flex items-center justify-center space-x-1">
+            <i class="fa-solid fa-rotate-left text-xs"></i>
+            <span id="btnClear">हटाएं</span>
           </button>
-          <button onclick="submitMiningBlock()" class="bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 active:scale-95 text-white text-xs font-black py-2.5 rounded-xl shadow-lg transition-all flex items-center justify-center space-x-1.5">
-            <i class="fa-solid fa-hammer"></i>
-            <span id="btnMine">Mine Block</span>
+          <button onclick="submitMiningBlock()" class="bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 active:scale-95 text-white text-xs font-black py-2 rounded-xl shadow-lg transition-all flex items-center justify-center space-x-1.5">
+            <i class="fa-solid fa-hammer text-xs"></i>
+            <span id="btnMine">माइन ब्लॉक</span>
           </button>
         </div>
       </div>
 
       <!-- Energy Refill Card via Video Ads -->
-      <div class="bg-brand-card border border-brand-cardBorder rounded-2xl p-4 flex items-center justify-between shadow-md">
-        <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 text-lg">
+      <div class="bg-brand-card border border-brand-cardBorder rounded-2xl p-3 flex items-center justify-between shadow">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 text-sm">
             <i class="fa-solid fa-bolt-lightning"></i>
           </div>
           <div>
-            <h4 id="energyRefillTitle" class="text-xs font-bold text-white">Recharge Mind Energy</h4>
-            <p id="energyRefillDesc" class="text-[10px] text-slate-400">Watch 1 Ad = +2❤️ | 2 Ads = Full ❤️</p>
+            <h4 id="energyRefillTitle" class="text-[11px] font-bold text-white">माइंड ऊर्जा रिचार्ज करें</h4>
+            <p id="energyRefillDesc" class="text-[9px] text-slate-400">1 ऐड = +2❤️ | 2 ऐड्स = फुल ❤️</p>
           </div>
         </div>
-        <button onclick="triggerRewardAd()" class="bg-gradient-to-r from-amber-500 to-amber-600 active:scale-95 text-slate-950 font-black text-xs px-3 py-2 rounded-xl shadow-md transition-all flex items-center space-x-1">
-          <i class="fa-solid fa-play text-[10px]"></i>
-          <span>Refill</span>
+        <button onclick="openEnergyModal()" class="bg-gradient-to-r from-amber-500 to-amber-600 active:scale-95 text-slate-950 font-black text-[11px] px-2.5 py-1.5 rounded-xl shadow transition-all flex items-center space-x-1">
+          <i class="fa-solid fa-play text-[9px]"></i>
+          <span id="btnRefill">रिफिल</span>
         </button>
       </div>
     </div>
 
     <!-- TAB 2: QUIZ (TIMED COGNITIVE VERIFICATION) -->
-    <div id="tabQuiz" class="hidden space-y-4">
-      <div class="bg-brand-card border border-brand-cardBorder rounded-2xl p-4 sm:p-5 shadow-xl relative">
+    <div id="tabQuiz" class="hidden space-y-3">
+      <div class="bg-brand-card border border-brand-cardBorder rounded-2xl p-3.5 sm:p-4 shadow-xl relative">
         <div class="flex items-center justify-between mb-2">
-          <span id="quizTierBadge" class="bg-purple-950/70 text-purple-300 border border-purple-800 text-[11px] font-bold px-2.5 py-0.5 rounded-full">Tier 1 • Easy</span>
-          <span id="quizRewardBadge" class="bg-amber-950/70 text-amber-400 border border-amber-800 text-[11px] font-bold px-2.5 py-0.5 rounded-full">+1 POM</span>
+          <span id="quizTierBadge" class="bg-purple-950/70 text-purple-300 border border-purple-800 text-[10px] font-bold px-2 py-0.5 rounded-full">Tier 1 • Easy</span>
+          <span id="quizRewardBadge" class="bg-amber-950/70 text-amber-400 border border-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full">+1 POM</span>
         </div>
 
-        <!-- Timer Bar -->
-        <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden mb-4">
+        <div class="w-full bg-slate-800 h-1 rounded-full overflow-hidden mb-3">
           <div id="quizTimerBar" class="bg-gradient-to-r from-sky-400 to-rose-500 h-full w-full transition-all duration-1000 ease-linear"></div>
         </div>
 
-        <h3 id="quizQuestionText" class="text-sm sm:text-base font-bold text-white text-center min-h-[48px] flex items-center justify-center mb-4"></h3>
-
-        <!-- 4 Options Grid -->
-        <div id="quizOptionsContainer" class="grid grid-cols-1 gap-2.5 mb-2"></div>
+        <h3 id="quizQuestionText" class="text-xs sm:text-sm font-bold text-white text-center min-h-[44px] flex items-center justify-center mb-3"></h3>
+        <div id="quizOptionsContainer" class="grid grid-cols-1 gap-2 mb-2"></div>
       </div>
     </div>
 
     <!-- TAB 3: TASKS (OFFICIAL COMMUNITY ECOSYSTEM) -->
-    <div id="tabTasks" class="hidden space-y-3">
-      <div class="bg-brand-card border border-brand-cardBorder rounded-2xl p-4 text-center">
-        <h3 class="text-sm font-black text-white uppercase tracking-wider">Official Ecosystem Tasks</h3>
-        <p class="text-[11px] text-slate-400 mt-0.5">Complete community missions & verify to claim POM</p>
+    <div id="tabTasks" class="hidden space-y-2.5">
+      <div class="bg-brand-card border border-brand-cardBorder rounded-2xl p-3 text-center">
+        <h3 id="tasksHeading" class="text-xs font-black text-white uppercase tracking-wider">कम्युनिटी टास्क</h3>
+        <p id="tasksSubHeading" class="text-[10px] text-slate-400 mt-0.5">मिशन पूरा करें और POM टोकन प्राप्त करें</p>
       </div>
-      <div id="tasksListContainer" class="space-y-2.5"></div>
+      <div id="tasksListContainer" class="space-y-2"></div>
     </div>
 
     <!-- TAB 4: FRIENDS (3-TIER REFERRAL NETWORK) -->
-    <div id="tabFriends" class="hidden space-y-4">
-      <div class="bg-brand-card border border-brand-cardBorder rounded-2xl p-4 sm:p-5 shadow-xl text-center">
-        <h3 class="text-base font-black text-white">3-Tier Referral System</h3>
-        <p class="text-xs text-slate-400 mt-1">Level 1: 10% | Level 2: 3% | Level 3: 2% Mining Commission</p>
+    <div id="tabFriends" class="hidden space-y-3">
+      <div class="bg-brand-card border border-brand-cardBorder rounded-2xl p-3.5 sm:p-4 shadow-xl text-center">
+        <h3 id="friendsHeading" class="text-sm font-black text-white">3-लेवल रेफरल सिस्टम</h3>
+        <p id="friendsSubHeading" class="text-[10px] text-slate-400 mt-0.5">लेवल 1: 10% | लेवल 2: 3% | लेवल 3: 2% माइनिंग कमीशन</p>
 
-        <div class="grid grid-cols-3 gap-2 mt-4">
-          <div class="bg-slate-900/80 border border-slate-800 p-2.5 rounded-xl text-center">
-            <span class="text-[10px] text-sky-400 font-bold block">Level 1 (Direct)</span>
-            <span id="tier1UsersCount" class="text-sm font-black text-white">0</span>
-            <span class="text-[9px] text-slate-500 block">10% Commission</span>
+        <div class="grid grid-cols-3 gap-2 mt-3">
+          <div class="bg-slate-900/80 border border-slate-800 p-2 rounded-xl text-center">
+            <span class="text-[9px] text-sky-400 font-bold block">लेवल 1</span>
+            <span id="tier1UsersCount" class="text-xs font-black text-white">0</span>
+            <span class="text-[8px] text-slate-500 block">10%</span>
           </div>
-          <div class="bg-slate-900/80 border border-slate-800 p-2.5 rounded-xl text-center">
-            <span class="text-[10px] text-indigo-400 font-bold block">Level 2 (Network)</span>
-            <span id="tier2UsersCount" class="text-sm font-black text-white">0</span>
-            <span class="text-[9px] text-slate-500 block">3% Commission</span>
+          <div class="bg-slate-900/80 border border-slate-800 p-2 rounded-xl text-center">
+            <span class="text-[9px] text-indigo-400 font-bold block">लेवल 2</span>
+            <span id="tier2UsersCount" class="text-xs font-black text-white">0</span>
+            <span class="text-[8px] text-slate-500 block">3%</span>
           </div>
-          <div class="bg-slate-900/80 border border-slate-800 p-2.5 rounded-xl text-center">
-            <span class="text-[10px] text-purple-400 font-bold block">Level 3 (Extended)</span>
-            <span id="tier3UsersCount" class="text-sm font-black text-white">0</span>
-            <span class="text-[9px] text-slate-500 block">2% Commission</span>
+          <div class="bg-slate-900/80 border border-slate-800 p-2 rounded-xl text-center">
+            <span class="text-[9px] text-purple-400 font-bold block">लेवल 3</span>
+            <span id="tier3UsersCount" class="text-xs font-black text-white">0</span>
+            <span class="text-[8px] text-slate-500 block">2%</span>
           </div>
         </div>
 
-        <!-- Referral Link Box -->
-        <div class="mt-4 bg-slate-900 border border-slate-800 rounded-xl p-2.5 flex items-center justify-between">
-          <span id="refLinkDisplay" class="text-[11px] text-slate-300 truncate max-w-[210px]">https://t.me/proof_of_mind_bot?start=ref</span>
-          <button onclick="copyReferralLink()" class="bg-sky-500 hover:bg-sky-400 active:scale-95 text-slate-950 font-black text-[11px] px-3 py-1.5 rounded-lg transition-all">Copy</button>
+        <div class="mt-3 bg-slate-900 border border-slate-800 rounded-xl p-2 flex items-center justify-between">
+          <span class="text-[10px] text-slate-300 truncate max-w-[200px]">https://t.me/proof_of_mind_bot?start=ref</span>
+          <button onclick="copyReferralLink()" class="bg-sky-500 hover:bg-sky-400 active:scale-95 text-slate-950 font-black text-[10px] px-2.5 py-1 rounded-lg transition-all">Copy</button>
         </div>
 
-        <button onclick="shareReferralToTelegram()" class="w-full mt-3 bg-gradient-to-r from-sky-500 to-indigo-600 active:scale-95 text-white font-black text-xs py-3 rounded-xl shadow-lg transition-all flex items-center justify-center space-x-2">
-          <i class="fa-brands fa-telegram text-sm"></i>
-          <span>Invite Friends via Telegram</span>
+        <button onclick="shareReferralToTelegram()" class="w-full mt-2.5 bg-gradient-to-r from-sky-500 to-indigo-600 active:scale-95 text-white font-black text-xs py-2.5 rounded-xl shadow-lg transition-all flex items-center justify-center space-x-1.5">
+          <i class="fa-brands fa-telegram text-xs"></i>
+          <span id="btnInvite">मित्रों को आमंत्रित करें</span>
         </button>
 
-        <!-- Claim Unclaimed Commission -->
-        <div class="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between text-left">
+        <div class="mt-3 pt-2.5 border-t border-slate-800 flex items-center justify-between text-left">
           <div>
-            <span class="text-[10px] text-slate-400 uppercase font-bold block">Unclaimed Commissions</span>
-            <span id="unclaimedCommissionDisplay" class="text-xs font-black text-amber-400">0 POM</span>
+            <span id="lblUnclaimed" class="text-[9px] text-slate-400 uppercase font-bold block">अर्जित रेफरल कमीशन</span>
+            <span id="unclaimedCommissionDisplay" class="text-xs font-black text-amber-400">0.0 POM</span>
           </div>
-          <button onclick="claimReferralRewards()" class="bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-black text-xs px-3 py-1.5 rounded-xl shadow transition-all">Claim Rewards</button>
+          <button onclick="claimReferralRewards()" class="bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-black text-[11px] px-2.5 py-1 rounded-xl shadow transition-all">
+            <span id="btnClaimRewards">क्लेम</span>
+          </button>
         </div>
       </div>
     </div>
 
     <!-- TAB 5: WALLET (TON, 0.3 TON VERIFICATION, PI & AIRDROP) -->
-    <div id="tabWallet" class="hidden space-y-4">
-      <div class="bg-brand-card border border-brand-cardBorder rounded-2xl p-5 shadow-xl text-center">
-        <h3 class="text-base font-bold text-white">Decentralized Multi-Chain Wallet</h3>
-        <p class="text-xs text-slate-400 mt-1 mb-5">Connect TON & Pi Network wallets for PoI token allocations</p>
+    <div id="tabWallet" class="hidden space-y-3">
+      <div class="bg-brand-card border border-brand-cardBorder rounded-2xl p-4 shadow-xl text-center">
+        <h3 id="walletHeading" class="text-sm font-bold text-white">विकेंद्रीकृत मल्टी-चेन वॉलेट</h3>
+        <p id="walletSubHeading" class="text-[10px] text-slate-400 mt-0.5 mb-3">POM रिवॉर्ड्स के लिए TON और Pi वॉलेट कनेक्ट करें</p>
 
         <!-- TON Wallet Card -->
-        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 mb-4 text-left">
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-xs font-bold text-sky-400 flex items-center space-x-1.5">
-              <i class="fa-solid fa-gem text-sky-400"></i>
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 mb-3 text-left">
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="text-[11px] font-bold text-sky-400 flex items-center space-x-1">
+              <i class="fa-solid fa-gem text-sky-400 text-xs"></i>
               <span>The Open Network (TON)</span>
             </span>
-            <span id="tonStatusBadge" class="text-[10px] font-bold text-slate-400 bg-slate-800 px-2 py-0.5 rounded-full">Not Connected</span>
+            <span id="tonStatusBadge" class="text-[9px] font-bold text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded-full">Not Connected</span>
           </div>
-          <p id="tonAddressText" class="text-xs text-slate-400 truncate mb-3">No TON wallet connected yet</p>
-          <button id="btnConnectTon" onclick="toggleTonConnection()" class="w-full bg-slate-800 hover:bg-slate-700 active:scale-95 text-white text-xs font-bold py-2.5 rounded-xl border border-slate-700 transition-all flex items-center justify-center space-x-2">
-            <i class="fa-solid fa-wallet"></i>
-            <span>Connect TON Wallet</span>
+          <p id="tonAddressText" class="text-[10px] text-slate-400 truncate mb-2.5">No TON wallet connected yet</p>
+          <button id="btnConnectTon" onclick="toggleTonConnection()" class="w-full bg-slate-800 hover:bg-slate-700 active:scale-95 text-white text-xs font-bold py-2 rounded-xl border border-slate-700 transition-all flex items-center justify-center space-x-1.5">
+            <i class="fa-solid fa-wallet text-xs"></i>
+            <span id="btnConnectTonText">TON वॉलेट कनेक्ट करें</span>
           </button>
         </div>
 
         <!-- 0.3 TON Verification Action Button -->
-        <div class="bg-emerald-950/20 border border-emerald-500/40 rounded-xl p-4 mb-4 text-center">
-          <div class="flex items-center justify-center space-x-2 mb-1.5">
-            <span class="text-emerald-400 text-sm">🛡️</span>
-            <h4 class="text-xs font-black text-emerald-400 uppercase tracking-wide">Sybil Protection & 2x Multiplier</h4>
+        <div class="bg-emerald-950/20 border border-emerald-500/40 rounded-xl p-3 mb-3 text-center">
+          <div class="flex items-center justify-center space-x-1.5 mb-1">
+            <span class="text-emerald-400 text-xs">🛡️</span>
+            <h4 id="verifyTitle" class="text-[10px] font-black text-emerald-400 uppercase tracking-wide">एंटी-सिबिल सुरक्षा एवं 2x बूस्ट</h4>
           </div>
-          <p class="text-[11px] text-slate-300 mb-3 leading-relaxed">
-            Verify with 0.3 TON network fee to permanently activate the verified badge and unlock 2x mining & quiz rewards.
+          <p id="verifyDesc" class="text-[10px] text-slate-300 mb-2 leading-relaxed">
+            0.3 TON नेटवर्क शुल्क से खाता सत्यापित करें और स्थायी 2x रिवॉर्ड बूस्ट सक्रिय करें।
           </p>
-          <button id="btnWalletVerifyAction" onclick="handleWalletVerifyClick()" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 active:scale-95 text-slate-950 font-black text-xs py-3 rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all flex items-center justify-center space-x-2">
-            <i class="fa-solid fa-bolt"></i>
-            <span>Verify 0.3 TON</span>
+          <button id="btnWalletVerifyAction" onclick="handleWalletVerifyClick()" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 active:scale-95 text-slate-950 font-black text-xs py-2 rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all flex items-center justify-center space-x-1.5">
+            <i class="fa-solid fa-bolt text-xs"></i>
+            <span id="btnVerifyText">0.3 TON से वेरीफाई करें</span>
           </button>
         </div>
 
         <!-- Pi Network Twin Card -->
-        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 text-left">
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-xs font-bold text-amber-400 flex items-center space-x-1.5">
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 text-left">
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="text-[11px] font-bold text-amber-400 flex items-center space-x-1">
               <span class="font-black">π</span>
               <span>Pi Network (Twin Ecosystem)</span>
             </span>
-            <span id="piStatusBadge" class="text-[10px] font-bold text-slate-400 bg-slate-800 px-2 py-0.5 rounded-full">SDK Ready</span>
+            <span id="piStatusBadge" class="text-[9px] font-bold text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded-full">SDK Ready</span>
           </div>
-          <p id="piUserText" class="text-xs text-slate-400 truncate mb-3">Authenticates inside Pi Browser</p>
-          <button onclick="connectPiWallet()" class="w-full bg-slate-800 hover:bg-slate-700 active:scale-95 text-amber-400 text-xs font-bold py-2.5 rounded-xl border border-slate-700 transition-all flex items-center justify-center space-x-2">
+          <p id="piUserText" class="text-[10px] text-slate-400 truncate mb-2">Authenticates inside Pi Browser</p>
+          <button onclick="connectPiWallet()" class="w-full bg-slate-800 hover:bg-slate-700 active:scale-95 text-amber-400 text-xs font-bold py-2 rounded-xl border border-slate-700 transition-all flex items-center justify-center space-x-1.5">
             <span class="font-black">π</span>
             <span>Connect Pi Browser</span>
           </button>
         </div>
 
         <!-- TGE Airdrop Allocation Status Card -->
-        <div class="mt-4 bg-gradient-to-br from-indigo-950/40 to-slate-900 border border-indigo-900/50 rounded-xl p-3.5 text-left">
+        <div class="mt-3 bg-gradient-to-br from-indigo-950/40 to-slate-900 border border-indigo-900/50 rounded-xl p-3 text-left">
           <div class="flex items-center justify-between">
-            <span class="text-[11px] font-bold text-indigo-300 uppercase">TGE Airdrop Allocation</span>
-            <span id="walletAirdropMult" class="text-[11px] font-black text-amber-400">1x Base Multiplier</span>
+            <span class="text-[10px] font-bold text-indigo-300 uppercase">TGE Airdrop Allocation</span>
+            <span id="walletAirdropMult" class="text-[10px] font-black text-amber-400">1x Base Multiplier</span>
           </div>
           <div class="flex items-baseline justify-between mt-1">
-            <span class="text-lg font-black text-white" id="walletTotalPomDisplay">0 POM</span>
-            <span class="text-[10px] text-slate-400" id="walletVerificationText">Unverified</span>
+            <span class="text-base font-black text-white" id="walletTotalPomDisplay">0 POM</span>
+            <span class="text-[9px] text-slate-400" id="walletVerificationText">Status: Unverified</span>
           </div>
         </div>
       </div>
     </div>
   </main>
 
+  <!-- ================= AUTOMATIC OUT-OF-ENERGY POPUP MODAL ================= -->
+  <div id="energyModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-brand-card border border-brand-cardBorder rounded-2xl p-5 max-w-xs w-full shadow-2xl text-center relative">
+      <button onclick="closeEnergyModal()" class="absolute top-2.5 right-3 text-slate-400 hover:text-white text-base">✕</button>
+      <div class="w-12 h-12 bg-rose-500/15 border border-rose-500/40 rounded-2xl flex items-center justify-center mx-auto mb-2 text-rose-400 text-2xl">
+        <i class="fa-solid fa-heart-crack"></i>
+      </div>
+      <h3 id="energyModalHeading" class="text-sm font-black text-white">ऊर्जा समाप्त हो गई!</h3>
+      <p id="energyModalSub" class="text-[11px] text-slate-300 mt-1 mb-4">आपके पास 0 ❤️ बचे हैं। माइनिंग जारी रखने के लिए विज्ञापन देखकर तुरंत ऊर्जा रिचार्ज करें।</p>
+      
+      <div class="space-y-2">
+        <button onclick="watchAdAndRefill(2)" class="w-full bg-gradient-to-r from-amber-500 to-amber-600 active:scale-95 text-slate-950 font-black text-xs py-2.5 rounded-xl shadow transition-all flex items-center justify-center space-x-1.5">
+          <i class="fa-solid fa-play text-xs"></i>
+          <span>1 विज्ञापन देखें (+2 ❤️)</span>
+        </button>
+        <button onclick="watchAdAndRefill(5)" class="w-full bg-slate-800 hover:bg-slate-700 active:scale-95 text-white font-bold text-xs py-2.5 rounded-xl border border-slate-700 transition-all flex items-center justify-center space-x-1.5">
+          <i class="fa-solid fa-forward text-xs"></i>
+          <span>2 विज्ञापन देखें (पूर्ण 5 ❤️)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- ================= FLOATING SETTINGS BUTTON (ADMIN) ================= -->
-  <button onclick="openAdminModal()" class="fixed bottom-24 right-4 z-40 w-10 h-10 rounded-full bg-slate-800/90 hover:bg-slate-700 border border-slate-600 text-slate-300 flex items-center justify-center shadow-xl active:scale-90 transition-all">
-    <i class="fa-solid fa-gear text-sm"></i>
+  <button onclick="openAdminModal()" class="fixed right-3.5 z-40 w-9 h-9 rounded-full bg-slate-800/95 hover:bg-slate-700 border border-slate-600 text-slate-300 flex items-center justify-center shadow-xl active:scale-90 transition-all floating-gear-btn">
+    <i class="fa-solid fa-gear text-xs"></i>
   </button>
 
-  <!-- ================= BOTTOM NAVIGATION MENU ================= -->
-  <nav class="fixed bottom-0 left-0 right-0 z-40 bg-brand-dark/95 backdrop-blur-lg border-t border-brand-cardBorder px-4 py-2 flex items-center justify-around max-w-lg mx-auto shadow-2xl">
-    <button onclick="switchTab('tabMine')" id="navMine" class="flex flex-col items-center text-sky-400 transition-all">
-      <i class="fa-solid fa-hammer text-base"></i>
-      <span class="text-[10px] font-bold mt-1">Mine</span>
+  <!-- ================= ELEVATED TOUCH-SAFE BOTTOM NAVIGATION DOCK ================= -->
+  <nav class="fixed left-3 right-3 z-40 bg-brand-dark/95 backdrop-blur-lg border border-brand-cardBorder rounded-2xl px-2 py-1.5 flex items-center justify-around max-w-lg mx-auto shadow-2xl safe-nav-dock">
+    <button onclick="switchTab('tabMine')" id="navMine" class="flex flex-col items-center py-1 px-3 text-sky-400 active:scale-95 transition-all">
+      <i class="fa-solid fa-hammer text-sm"></i>
+      <span id="navTextMine" class="text-[10px] font-bold mt-0.5">माइन</span>
     </button>
-    <button onclick="switchTab('tabQuiz')" id="navQuiz" class="flex flex-col items-center text-slate-400 hover:text-slate-200 transition-all">
-      <i class="fa-solid fa-circle-question text-base"></i>
-      <span class="text-[10px] font-bold mt-1">Quiz</span>
+    <button onclick="switchTab('tabQuiz')" id="navQuiz" class="flex flex-col items-center py-1 px-3 text-slate-400 active:scale-95 transition-all">
+      <i class="fa-solid fa-circle-question text-sm"></i>
+      <span id="navTextQuiz" class="text-[10px] font-bold mt-0.5">क्विज़</span>
     </button>
-    <button onclick="switchTab('tabTasks')" id="navTasks" class="flex flex-col items-center text-slate-400 hover:text-slate-200 transition-all relative">
-      <div class="w-10 h-10 -mt-5 rounded-full bg-gradient-to-r from-sky-500 to-indigo-600 flex items-center justify-center text-white shadow-lg active:scale-95">
-        <i class="fa-solid fa-wand-magic-sparkles text-sm"></i>
+    <button onclick="switchTab('tabTasks')" id="navTasks" class="flex flex-col items-center py-1 px-3 text-slate-400 active:scale-95 transition-all relative">
+      <div class="w-8 h-8 -mt-4 rounded-full bg-gradient-to-r from-sky-500 to-indigo-600 flex items-center justify-center text-white shadow-lg active:scale-90">
+        <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
       </div>
-      <span class="text-[10px] font-bold mt-0.5">Tasks</span>
+      <span id="navTextTasks" class="text-[10px] font-bold mt-0.5">टास्क</span>
     </button>
-    <button onclick="switchTab('tabFriends')" id="navFriends" class="flex flex-col items-center text-slate-400 hover:text-slate-200 transition-all">
-      <i class="fa-solid fa-users text-base"></i>
-      <span class="text-[10px] font-bold mt-1">Friends</span>
+    <button onclick="switchTab('tabFriends')" id="navFriends" class="flex flex-col items-center py-1 px-3 text-slate-400 active:scale-95 transition-all">
+      <i class="fa-solid fa-users text-sm"></i>
+      <span id="navTextFriends" class="text-[10px] font-bold mt-0.5">मित्र</span>
     </button>
-    <button onclick="switchTab('tabWallet')" id="navWallet" class="flex flex-col items-center text-slate-400 hover:text-slate-200 transition-all">
-      <i class="fa-solid fa-wallet text-base"></i>
-      <span class="text-[10px] font-bold mt-1">Wallet</span>
+    <button onclick="switchTab('tabWallet')" id="navWallet" class="flex flex-col items-center py-1 px-3 text-slate-400 active:scale-95 transition-all">
+      <i class="fa-solid fa-wallet text-sm"></i>
+      <span id="navTextWallet" class="text-[10px] font-bold mt-0.5">वॉलेट</span>
     </button>
   </nav>
 
-  <!-- ================= 0.3 TON VERIFICATION MODAL ================= -->
+  <!-- ================= 0.3 TON ON-CHAIN VERIFICATION MODAL ================= -->
   <div id="tonVerifyModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-brand-card border border-brand-cardBorder rounded-2xl p-5 max-w-sm w-full shadow-2xl text-center relative">
-      <button onclick="closeTonVerifyModal()" class="absolute top-3 right-3 text-slate-400 hover:text-white text-lg">✕</button>
-      <div class="w-12 h-12 bg-emerald-500/10 border border-emerald-500/40 rounded-2xl flex items-center justify-center mx-auto mb-3 text-emerald-400 text-2xl">
+    <div class="bg-brand-card border border-brand-cardBorder rounded-2xl p-4 max-w-xs w-full shadow-2xl text-center relative">
+      <button onclick="closeTonVerifyModal()" class="absolute top-2.5 right-3 text-slate-400 hover:text-white text-base">✕</button>
+      <div class="w-10 h-10 bg-emerald-500/10 border border-emerald-500/40 rounded-xl flex items-center justify-center mx-auto mb-2 text-emerald-400 text-xl">
         <i class="fa-solid fa-shield-halved"></i>
       </div>
-      <h3 class="text-base font-black text-white">0.3 TON On-Chain Verification</h3>
-      <p class="text-xs text-slate-300 mt-1 mb-3">Anti-bot protocol. Permanently enables verified status and 2x mining reward multiplier.</p>
+      <h3 class="text-sm font-black text-white">0.3 TON On-Chain Verification</h3>
+      <p class="text-[10px] text-slate-300 mt-1 mb-2.5">Anti-bot Sybil defense protocol. Permanently enables verified status and 2x reward multiplier.</p>
       
-      <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 text-left mb-4">
-        <span class="text-[10px] text-slate-400 font-bold block">Official Admin TON Address:</span>
-        <p class="text-[11px] font-mono text-sky-400 truncate mt-0.5 select-all">UQD5ZiNy8-eV7l6Ny46c-f98USLg-JXPTRRIPMV-0YiadqJV</p>
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-2 text-left mb-3">
+        <span class="text-[9px] text-slate-400 font-bold block">Official Admin Address:</span>
+        <p class="text-[10px] font-mono text-sky-400 truncate select-all">UQD5ZiNy8-eV7l6Ny46c-f98USLg-JXPTRRIPMV-0YiadqJV</p>
       </div>
 
       <div class="space-y-2">
-        <button onclick="copyAdminTonAddress()" class="w-full bg-slate-800 hover:bg-slate-700 active:scale-95 text-white font-bold text-xs py-2.5 rounded-xl border border-slate-700 transition-all">
+        <button onclick="copyAdminTonAddress()" class="w-full bg-slate-800 hover:bg-slate-700 active:scale-95 text-white font-bold text-xs py-2 rounded-xl border border-slate-700 transition-all">
           <i class="fa-regular fa-copy mr-1"></i> Copy Address
         </button>
-        <button onclick="completeTonVerificationTransaction()" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 active:scale-95 text-slate-950 font-black text-xs py-3 rounded-xl shadow-lg transition-all">
-          Send & Verify 0.3 TON
+        <button onclick="completeTonVerificationTransaction()" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 active:scale-95 text-slate-950 font-black text-xs py-2.5 rounded-xl shadow transition-all">
+          Verify 0.3 TON Now
         </button>
       </div>
     </div>
   </div>
 
-  <!-- ================= DOCS & TOKENOMICS MODAL ================= -->
-  <div id="docsModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-brand-card border border-brand-cardBorder rounded-2xl max-w-md w-full max-h-[85vh] flex flex-col shadow-2xl relative overflow-hidden">
-      <div class="p-4 border-b border-brand-cardBorder flex items-center justify-between">
-        <h3 class="text-sm font-black text-white flex items-center space-x-2">
-          <span>📄 Proof of Mind Whitepaper & Docs</span>
+  <!-- ================= UNCLIPPED FULL SCROLL DOCS / WHITEPAPER MODAL ================= -->
+  <div id="docsModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-3">
+    <div class="bg-brand-card border border-brand-cardBorder rounded-2xl max-w-sm w-full h-[85vh] flex flex-col shadow-2xl relative overflow-hidden">
+      <div class="p-3 border-b border-brand-cardBorder flex items-center justify-between shrink-0">
+        <h3 id="docsHeadingText" class="text-xs font-black text-white flex items-center space-x-1.5">
+          <span>📄</span>
+          <span>Proof of Mind Whitepaper</span>
         </h3>
-        <button onclick="closeDocsModal()" class="text-slate-400 hover:text-white text-lg">✕</button>
+        <button onclick="closeDocsModal()" class="text-slate-400 hover:text-white text-base">✕</button>
       </div>
-
-      <div class="p-4 overflow-y-auto space-y-4 text-xs text-slate-300 leading-relaxed no-scrollbar">
-        <div>
-          <h4 class="text-sky-400 font-bold uppercase text-[11px] mb-1">1. Abstract & Proof of Intellect</h4>
-          <p>Proof of Mind (POM) replaces hardware energy consumption with decentralized cognitive verification. Users solve progressive blocks and validated quizzes to prove active intellect on-chain.</p>
-        </div>
-
-        <div>
-          <h4 class="text-sky-400 font-bold uppercase text-[11px] mb-1">2. 1 Billion POM Tokenomics</h4>
-          <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 space-y-1.5 font-mono text-[10px]">
-            <div class="flex justify-between"><span>• Community Mining:</span><span class="text-amber-400 font-bold">50% (500M POM)</span></div>
-            <div class="flex justify-between"><span>• Referrals & Tasks:</span><span class="text-sky-400 font-bold">15% (150M POM)</span></div>
-            <div class="flex justify-between"><span>• Merit-Based Core Team:</span><span class="text-emerald-400 font-bold">10% (100M POM)</span></div>
-            <div class="flex justify-between"><span>• Infrastructure/Hosting:</span><span class="text-indigo-400 font-bold">10% (100M POM)</span></div>
-            <div class="flex justify-between"><span>• Liquidity & DEX:</span><span class="text-rose-400 font-bold">10% (100M POM)</span></div>
-            <div class="flex justify-between"><span>• Early Airdrop/Promo:</span><span class="text-purple-400 font-bold">5% (50M POM)</span></div>
-          </div>
-        </div>
-
-        <div>
-          <h4 class="text-sky-400 font-bold uppercase text-[11px] mb-1">3. Decentralized Meritocratic Governance (Section 3.1)</h4>
-          <p>The 10% Core Team allocation is strictly merit-based. Top performers on intellect mining leaderboards and active community contributors are selected directly into decentralized core team allocations.</p>
-        </div>
-
-        <div>
-          <h4 class="text-sky-400 font-bold uppercase text-[11px] mb-1">4. Twin Ecosystem Integration</h4>
-          <p>POM leverages the dual reach of Telegram (TON blockchain) for rapid on-chain verification and Pi Network SDK 2.0 for Web3 ecosystem expansion.</p>
-        </div>
+      <!-- Unclipped Native Scrolling Body -->
+      <div id="docsBodyContainer" class="flex-1 min-h-0 overflow-y-auto overscroll-contain p-3.5 space-y-3.5 text-[11px] text-slate-300 leading-relaxed no-scrollbar">
+        <!-- Injected via i18n -->
       </div>
     </div>
   </div>
 
-  <!-- ================= SECURE ADMIN CONTROL MODAL ================= -->
-  <div id="adminModal" class="hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
-    <div class="bg-brand-card border border-brand-cardBorder rounded-2xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl relative">
-      <div class="p-4 border-b border-brand-cardBorder flex items-center justify-between">
-        <h3 class="text-sm font-black text-amber-400 flex items-center space-x-2">
+  <!-- ================= UNCLIPPED FULL-PAGE ADMIN CONTROL CONSOLE ================= -->
+  <div id="adminModal" class="hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3">
+    <div class="bg-brand-card border border-brand-cardBorder rounded-2xl max-w-sm w-full h-[88vh] flex flex-col shadow-2xl relative overflow-hidden">
+      <div class="p-3 border-b border-brand-cardBorder flex items-center justify-between shrink-0">
+        <h3 class="text-xs font-black text-amber-400 flex items-center space-x-1.5">
           <i class="fa-solid fa-lock"></i>
           <span>Admin Control Console</span>
         </h3>
-        <button onclick="closeAdminModal()" class="text-slate-400 hover:text-white text-lg">✕</button>
+        <div class="flex items-center space-x-2">
+          <button id="adminLogoutBtn" onclick="logoutAdmin()" class="hidden text-[10px] text-rose-400 font-bold bg-rose-950/60 border border-rose-800/80 px-2 py-0.5 rounded-lg">Logout</button>
+          <button onclick="closeAdminModal()" class="text-slate-400 hover:text-white text-base">✕</button>
+        </div>
       </div>
 
       <!-- Admin Login View -->
-      <div id="adminLoginView" class="p-6 text-center space-y-4">
-        <p class="text-xs text-slate-400">Enter Admin credentials to access live metrics, clues, and task controllers.</p>
+      <div id="adminLoginView" class="p-5 text-center space-y-3.5 my-auto">
+        <div class="w-12 h-12 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex items-center justify-center mx-auto text-amber-400 text-xl">
+          <i class="fa-solid fa-shield-cat"></i>
+        </div>
+        <div>
+          <h4 class="text-sm font-black text-white">Master Authorization</h4>
+          <p class="text-[11px] text-slate-400 mt-0.5">Enter Admin credentials to unlock console controllers.</p>
+        </div>
         <div class="space-y-2 text-left">
-          <input type="text" id="adminUsernameInput" placeholder="Admin Username" class="w-full bg-slate-900 border border-slate-700 text-xs text-white px-3 py-2.5 rounded-xl outline-none focus:border-sky-500">
-          <input type="password" id="adminPasswordInput" placeholder="Admin Password" class="w-full bg-slate-900 border border-slate-700 text-xs text-white px-3 py-2.5 rounded-xl outline-none focus:border-sky-500">
+          <input type="text" id="adminUsernameInput" placeholder="Username (admin)" class="w-full bg-slate-900 border border-slate-700 text-xs text-white px-3 py-2 rounded-xl outline-none focus:border-amber-400">
+          <input type="password" id="adminPasswordInput" placeholder="Password (pom2026)" class="w-full bg-slate-900 border border-slate-700 text-xs text-white px-3 py-2 rounded-xl outline-none focus:border-amber-400">
         </div>
         <button onclick="submitAdminLogin()" class="w-full bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-black text-xs py-2.5 rounded-xl shadow transition-all">
           Authorize Login
         </button>
       </div>
 
-      <!-- Admin Authenticated Dashboard -->
-      <div id="adminDashboardView" class="hidden flex-1 overflow-y-auto p-4 space-y-4 text-xs no-scrollbar">
-        <!-- Live Metrics Cards -->
+      <!-- Admin Full-Page Dashboard (Unclipped Scrollable) -->
+      <div id="adminDashboardView" class="hidden flex-1 min-h-0 overflow-y-auto overscroll-contain p-3.5 space-y-3.5 text-xs no-scrollbar">
+        <!-- Live Metrics Grid -->
         <div class="grid grid-cols-2 gap-2">
           <div class="bg-slate-900/90 border border-slate-800 p-2.5 rounded-xl">
-            <span class="text-[10px] text-slate-400 block font-bold">Registered Users</span>
+            <span class="text-[9px] text-slate-400 block font-bold">Total Pioneers</span>
             <span class="text-sm font-black text-white">14,820</span>
           </div>
           <div class="bg-slate-900/90 border border-slate-800 p-2.5 rounded-xl">
-            <span class="text-[10px] text-slate-400 block font-bold">Mined POM</span>
+            <span class="text-[9px] text-slate-400 block font-bold">Mined POM</span>
             <span class="text-sm font-black text-amber-400">428,500</span>
           </div>
-        </div>
-
-        <!-- Task Dispatcher -->
-        <div class="bg-slate-900 border border-slate-800 p-3.5 rounded-xl space-y-2">
-          <h4 class="font-bold text-white text-[11px] uppercase">Add New Community Task</h4>
-          <input type="text" id="newTaskTitle" placeholder="Task Title (e.g. Follow X)" class="w-full bg-slate-800 border border-slate-700 p-2 rounded-lg text-xs text-white outline-none">
-          <input type="text" id="newTaskLink" placeholder="Destination URL (https://...)" class="w-full bg-slate-800 border border-slate-700 p-2 rounded-lg text-xs text-white outline-none">
-          <div class="flex space-x-2">
-            <input type="number" id="newTaskReward" placeholder="Reward POM" value="50" class="w-1/2 bg-slate-800 border border-slate-700 p-2 rounded-lg text-xs text-white outline-none">
-            <button onclick="addNewAdminTask()" class="w-1/2 bg-sky-500 hover:bg-sky-400 text-slate-950 font-black rounded-lg text-xs py-2">Add Task</button>
+          <div class="bg-slate-900/90 border border-slate-800 p-2.5 rounded-xl">
+            <span class="text-[9px] text-slate-400 block font-bold">0.3 TON Verified</span>
+            <span class="text-sm font-black text-emerald-400">1,280</span>
+          </div>
+          <div class="bg-slate-900/90 border border-slate-800 p-2.5 rounded-xl">
+            <span class="text-[9px] text-slate-400 block font-bold">Active Miners (24h)</span>
+            <span class="text-sm font-black text-sky-400">3,410</span>
           </div>
         </div>
 
-        <!-- Telegram Hint Clue View -->
-        <div class="bg-slate-900 border border-slate-800 p-3.5 rounded-xl space-y-2">
-          <h4 class="font-bold text-sky-400 text-[11px] uppercase">Current Level Clues (Channel Broadcast)</h4>
-          <p id="adminCurrentWordHint" class="font-mono text-white text-xs bg-slate-800 p-2 rounded-lg"></p>
-          <button onclick="copyTelegramCluePost()" class="w-full bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold text-xs py-2 rounded-xl transition-all">
-            <i class="fa-regular fa-copy mr-1"></i> Copy Telegram Post
+        <!-- Crowd Distribution Progress Bars -->
+        <div class="bg-slate-900 border border-slate-800 p-3 rounded-xl space-y-2">
+          <h4 class="font-bold text-sky-400 text-[10px] uppercase">Level Crowd Distribution</h4>
+          <div class="space-y-1.5 text-[10px]">
+            <div>
+              <div class="flex justify-between text-slate-300 mb-0.5"><span>Levels 1 - 20</span><span>56.8%</span></div>
+              <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden"><div class="bg-sky-400 h-full w-[56.8%]"></div></div>
+            </div>
+            <div>
+              <div class="flex justify-between text-slate-300 mb-0.5"><span>Levels 21 - 40</span><span>24.3%</span></div>
+              <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden"><div class="bg-indigo-400 h-full w-[24.3%]"></div></div>
+            </div>
+            <div>
+              <div class="flex justify-between text-slate-300 mb-0.5"><span>Levels 41 - 60</span><span>10.4%</span></div>
+              <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden"><div class="bg-purple-400 h-full w-[10.4%]"></div></div>
+            </div>
+            <div>
+              <div class="flex justify-between text-slate-300 mb-0.5"><span>Levels 61 - 80</span><span>5.5%</span></div>
+              <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden"><div class="bg-amber-400 h-full w-[5.5%]"></div></div>
+            </div>
+            <div>
+              <div class="flex justify-between text-slate-300 mb-0.5"><span>Levels 81 - 100+</span><span>3.0%</span></div>
+              <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden"><div class="bg-rose-400 h-full w-[3.0%]"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Puzzle & Telegram Broadcast Tool -->
+        <div class="bg-slate-900 border border-slate-800 p-3 rounded-xl space-y-2">
+          <h4 class="font-bold text-sky-400 text-[10px] uppercase">Live Puzzle & Telegram Broadcast</h4>
+          <p id="adminCurrentWordHint" class="font-mono text-white text-[10px] bg-slate-800 p-2 rounded-lg leading-relaxed"></p>
+          <button onclick="copyTelegramChannelHint()" class="w-full bg-sky-600 hover:bg-sky-500 active:scale-95 text-white font-bold text-[11px] py-1.5 rounded-lg transition-all flex items-center justify-center space-x-1">
+            <i class="fa-brands fa-telegram text-xs"></i>
+            <span>Copy Telegram Channel Post 📋</span>
+          </button>
+        </div>
+
+        <!-- Dynamic Community Task Dispatcher -->
+        <div class="bg-slate-900 border border-slate-800 p-3 rounded-xl space-y-2">
+          <h4 class="font-bold text-emerald-400 text-[10px] uppercase">Community Task Dispatcher</h4>
+          <div class="space-y-1.5">
+            <input type="text" id="adminNewTaskTitle" placeholder="Task Title" class="w-full bg-slate-800 border border-slate-700 text-[11px] text-white px-2.5 py-1.5 rounded-lg outline-none">
+            <input type="text" id="adminNewTaskLink" placeholder="Link (https://...)" class="w-full bg-slate-800 border border-slate-700 text-[11px] text-white px-2.5 py-1.5 rounded-lg outline-none">
+            <div class="flex space-x-1.5">
+              <input type="number" id="adminNewTaskReward" placeholder="Reward POM" value="50" class="w-1/2 bg-slate-800 border border-slate-700 text-[11px] text-white px-2.5 py-1.5 rounded-lg outline-none">
+              <button onclick="adminAddTask()" class="w-1/2 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold text-[11px] py-1.5 rounded-lg transition-all">
+                + Add Task
+              </button>
+            </div>
+          </div>
+          <div id="adminTaskListSummary" class="space-y-1 pt-1"></div>
+        </div>
+
+        <!-- Developer Quick Controls -->
+        <div class="bg-slate-900 border border-slate-800 p-3 rounded-xl space-y-2">
+          <h4 class="font-bold text-amber-400 text-[10px] uppercase">Developer Quick Controls</h4>
+          <div class="grid grid-cols-2 gap-1.5">
+            <button onclick="adminDevBoostPOM(500)" class="bg-slate-800 hover:bg-slate-700 text-amber-300 text-[10px] font-bold py-1.5 px-2 rounded-lg border border-slate-700">+500 POM</button>
+            <button onclick="adminDevBoostLevel(5)" class="bg-slate-800 hover:bg-slate-700 text-sky-300 text-[10px] font-bold py-1.5 px-2 rounded-lg border border-slate-700">+5 Mine Levels</button>
+            <button onclick="adminDevRefillHearts()" class="bg-slate-800 hover:bg-slate-700 text-rose-300 text-[10px] font-bold py-1.5 px-2 rounded-lg border border-slate-700">Refill 5 Hearts</button>
+            <button onclick="adminDevToggleVerify()" class="bg-slate-800 hover:bg-slate-700 text-emerald-300 text-[10px] font-bold py-1.5 px-2 rounded-lg border border-slate-700">Toggle 2x Multiplier</button>
+          </div>
+          <button onclick="adminResetAllData()" class="w-full bg-rose-950/80 hover:bg-rose-900/90 text-rose-300 text-[10px] font-bold py-1.5 rounded-lg border border-rose-800/80 transition-all mt-1">
+            ⚠ Reset Local Test State
           </button>
         </div>
       </div>
@@ -475,14 +551,10 @@
 
   <!-- ================= JAVASCRIPT CORE LOGIC ================= -->
   <script>
-    // --- GLOBAL CONFIGURATION ---
     const CONFIG = {
-      BACKEND_API_URL: "", // Render backend URL (e.g. "https://proof-of-mind.onrender.com")
-      ADMIN_TON_WALLET: "UQD5ZiNy8-eV7l6Ny46c-f98USLg-JXPTRRIPMV-0YiadqJV",
-      ADSGRAM_BLOCK_ID: ""
+      ADMIN_TON_WALLET: "UQD5ZiNy8-eV7l6Ny46c-f98USLg-JXPTRRIPMV-0YiadqJV"
     };
 
-    // --- APPLICATION STATE ---
     let state = {
       balance: 130,
       mineLevel: 1,
@@ -496,40 +568,370 @@
       unclaimedCommission: 0,
       tonConnected: false,
       tonAddress: null,
-      lang: "en",
+      lang: "hi",
       tasks: [
-        { id: "tg_ch", title: "Join POM Announcement Channel", link: "https://t.me/proof_of_mind", reward: 50, started: false, completed: false, icon: "fa-brands fa-telegram" },
-        { id: "tg_grp", title: "Join POM Community Group", link: "https://t.me/proof_of_mind_chat", reward: 50, started: false, completed: false, icon: "fa-solid fa-users" },
-        { id: "x_com", title: "Follow Proof of Mind on X", link: "https://x.com", reward: 50, started: false, completed: false, icon: "fa-brands fa-x-twitter" },
-        { id: "yt_sub", title: "Subscribe Official YouTube", link: "https://youtube.com", reward: 50, started: false, completed: false, icon: "fa-brands fa-youtube" },
-        { id: "fb_page", title: "Follow Facebook Page", link: "https://facebook.com", reward: 50, started: false, completed: false, icon: "fa-brands fa-facebook" }
+        { id: "tg_ch", title: "Join POM Announcement Channel", link: "https://t.me/+JpUnewC5FPEyMzNl", reward: 50, started: false, completed: false, icon: "fa-brands fa-telegram" },
+        { id: "tg_grp", title: "Join POM Public Community Group", link: "https://t.me/ProofOfMindPublicGroup", reward: 50, started: false, completed: false, icon: "fa-solid fa-users" },
+        { id: "x_com", title: "Follow Proof of Mind on X", link: "https://x.com/kuku56309", reward: 50, started: false, completed: false, icon: "fa-brands fa-x-twitter" },
+        { id: "yt_sub", title: "Subscribe Official YouTube Channel", link: "https://www.youtube.com/@proof-of-mind_bot", reward: 50, started: false, completed: false, icon: "fa-brands fa-youtube" },
+        { id: "fb_page", title: "Follow Official Facebook Page", link: "https://www.facebook.com/share/19nMDW2gSJ/", reward: 50, started: false, completed: false, icon: "fa-brands fa-facebook" }
       ]
     };
 
-    // --- DICTIONARIES & PUZZLE REPOSITORIES ---
-    const WORDS_DICTIONARY = [
-      "TON", "WEB", "BOT", "KEY", "NET", "APP", "NODE", "DATA", "MIND", "COIN",
-      "HASH", "BLOC", "USER", "SYNC", "PROOF", "CHAIN", "SMART", "TOKEN", "STAKE",
-      "INTEL", "MINER", "TRUST", "BLOCK", "VAULT", "CIPHER", "MEMORY", "ORACLE",
-      "SHARD", "BRIDGE", "GASFEE", "LEDGER", "GENESIS", "NETWORK", "CRYPTO", "VALID"
-    ];
+    // --- 10 COMPLETE MULTILINGUAL VOCABULARIES ---
+    const TRANSLATIONS = {
+      hi: {
+        balance: "बैलेंस", level: "लेवल", energy: "एनर्जी",
+        mineHeading: "वर्ड पज़ल माइनिंग", mineSubHeading: "ब्लॉक माइन करने के लिए सही अक्षरों का चयन करें",
+        clear: "हटाएं", mineBlock: "माइन ब्लॉक",
+        rechargeTitle: "माइंड ऊर्जा रिचार्ज करें", rechargeDesc: "1 ऐड = +2❤️ | 2 ऐड्स = फुल ❤️", refill: "रिफिल",
+        tasksHeading: "कम्युनिटी टास्क", tasksSubHeading: "मिशन पूरा करें और POM टोकन प्राप्त करें",
+        friendsHeading: "3-लेवल रेफरल सिस्टम", friendsSubHeading: "लेवल 1: 10% | लेवल 2: 3% | लेवल 3: 2% माइनिंग कमीशन",
+        invite: "मित्रों को आमंत्रित करें", unclaimed: "अर्जित रेफरल कमीशन", claimRewards: "क्लेम",
+        walletHeading: "विकेंद्रीकृत मल्टी-चेन वॉलेट", walletSubHeading: "POM रिवॉर्ड्स के लिए TON और Pi वॉलेट कनेक्ट करें",
+        connectTon: "TON वॉलेट कनेक्ट करें", verifyTitle: "एंटी-सिबिल सुरक्षा एवं 2x बूस्ट",
+        verifyDesc: "0.3 TON नेटवर्क शुल्क से खाता सत्यापित करें और स्थायी 2x रिवॉर्ड बूस्ट सक्रिय करें।",
+        verifyBtn: "0.3 TON से वेरीफाई करें",
+        navMine: "माइन", navQuiz: "क्विज़", navTasks: "टास्क", navFriends: "मित्र", navWallet: "वॉलेट", docs: "दस्तावेज़"
+      },
+      en: {
+        balance: "Balance", level: "Level", energy: "Energy",
+        mineHeading: "Word Puzzle Mining", mineSubHeading: "Select letters to solve the intellect block",
+        clear: "Clear", mineBlock: "Mine Block",
+        rechargeTitle: "Recharge Mind Energy", rechargeDesc: "Watch 1 Ad = +2❤️ | 2 Ads = Full ❤️", refill: "Refill",
+        tasksHeading: "Official Ecosystem Tasks", tasksSubHeading: "Complete community missions & verify to claim POM",
+        friendsHeading: "3-Tier Referral System", friendsSubHeading: "Level 1: 10% | Level 2: 3% | Level 3: 2% Mining Commission",
+        invite: "Invite Friends via Telegram", unclaimed: "Unclaimed Commissions", claimRewards: "Claim",
+        walletHeading: "Decentralized Multi-Chain Wallet", walletSubHeading: "Connect TON & Pi Network wallets for PoI token allocations",
+        connectTon: "Connect TON Wallet", verifyTitle: "Sybil Protection & 2x Multiplier",
+        verifyDesc: "Verify with 0.3 TON network fee to permanently activate the verified badge and unlock 2x mining & quiz rewards.",
+        verifyBtn: "Verify 0.3 TON",
+        navMine: "Mine", navQuiz: "Quiz", navTasks: "Tasks", navFriends: "Friends", navWallet: "Wallet", docs: "Docs"
+      },
+      ru: {
+        balance: "Баланс", level: "Уровень", energy: "Энергия",
+        mineHeading: "Интеллект Майнинг", mineSubHeading: "Соберите слово для подтверждения блока",
+        clear: "Сброс", mineBlock: "Майнить Блок",
+        rechargeTitle: "Восстановить Энергию", rechargeDesc: "1 реклама = +2❤️ | 2 = Полная ❤️", refill: "Пополнить",
+        tasksHeading: "Официальные Задания", tasksSubHeading: "Выполняйте задания сообщества за POM",
+        friendsHeading: "3-Уровневая Реферальная Система", friendsSubHeading: "Ур.1: 10% | Ур.2: 3% | Ур.3: 2%",
+        invite: "Пригласить друзей", unclaimed: "Доступные Награды", claimRewards: "Забрать",
+        walletHeading: "Децентрализованный Кошелек", walletSubHeading: "Подключите TON и Pi кошельки",
+        connectTon: "Подключить TON", verifyTitle: "Защита от ботов и 2x Буст",
+        verifyDesc: "Верификация за 0.3 TON дает постоянный 2x буст.", verifyBtn: "0.3 TON Верификация",
+        navMine: "Майнинг", navQuiz: "Квиз", navTasks: "Задания", navFriends: "Друзья", navWallet: "Кошелек", docs: "Документы"
+      },
+      zh: {
+        balance: "余额", level: "等级", energy: "体力",
+        mineHeading: "智慧单词挖矿", mineSubHeading: "选择字母以验证智力区块",
+        clear: "清除", mineBlock: "开采区块",
+        rechargeTitle: "恢复脑力", rechargeDesc: "看1次广告 = +2❤️ | 2次 = 满格 ❤️", refill: "补充",
+        tasksHeading: "官方生态任务", tasksSubHeading: "完成社区任务领取POM代币",
+        friendsHeading: "三级推荐网络", friendsSubHeading: "1级: 10% | 2级: 3% | 3级: 2%",
+        invite: "邀请好友", unclaimed: "未提取奖励", claimRewards: "领取",
+        walletHeading: "去中心化多链钱包", walletSubHeading: "连接 TON 与 Pi 钱包",
+        connectTon: "连接 TON 钱包", verifyTitle: "女巫防护与双倍加速",
+        verifyDesc: "支付 0.3 TON 验证以永久激活 2x 挖矿奖励。", verifyBtn: "验证 0.3 TON",
+        navMine: "挖矿", navQuiz: "答题", navTasks: "任务", navFriends: "好友", navWallet: "钱包", docs: "白皮书"
+      },
+      es: {
+        balance: "Balance", level: "Nivel", energy: "Energía",
+        mineHeading: "Minería de Palabras", mineSubHeading: "Selecciona letras para resolver el bloque",
+        clear: "Borrar", mineBlock: "Minar Bloque",
+        rechargeTitle: "Recargar Energía Mental", rechargeDesc: "1 Anuncio = +2❤️ | 2 Anuncios = Lleno ❤️", refill: "Recargar",
+        tasksHeading: "Tareas de la Comunidad", tasksSubHeading: "Completa misiones y reclama POM",
+        friendsHeading: "Sistema de 3 Niveles", friendsSubHeading: "Nivel 1: 10% | Nivel 2: 3% | Nivel 3: 2%",
+        invite: "Invitar amigos", unclaimed: "Comisiones Pendientes", claimRewards: "Reclamar",
+        walletHeading: "Billetera Multicadena", walletSubHeading: "Conecta billeteras TON y Pi",
+        connectTon: "Conectar TON", verifyTitle: "Protección Sybil y 2x Multiplicador",
+        verifyDesc: "Verifica con 0.3 TON para duplicar tus recompensas.", verifyBtn: "Verificar 0.3 TON",
+        navMine: "Minar", navQuiz: "Quiz", navTasks: "Tareas", navFriends: "Amigos", navWallet: "Billetera", docs: "Docs"
+      },
+      ar: {
+        balance: "الرصيد", level: "المستوى", energy: "الطاقة",
+        mineHeading: "تعدين الألغاز الذهنية", mineSubHeading: "اختر الحروف لحل كتلة الذكاء",
+        clear: "مسح", mineBlock: "تعدين الكتلة",
+        rechargeTitle: "إعادة شحن الطاقة", rechargeDesc: "إعلان = +2❤️ | إعلانان = ممتلئ ❤️", refill: "شحن",
+        tasksHeading: "مهام المجتمع الرسمية", tasksSubHeading: "أكمل المهام للمطالبة بـ POM",
+        friendsHeading: "نظام الإحالة ثلاثي المستويات", friendsSubHeading: "المستوى 1: 10% | 2: 3% | 3: 2%",
+        invite: "دعوة الأصدقاء", unclaimed: "العمولات غير المطالب بها", claimRewards: "مطالبة",
+        walletHeading: "محفظة لا مركزية", walletSubHeading: "اربط محفظتي TON و Pi Network",
+        connectTon: "ربط محفظة TON", verifyTitle: "حماية سيبيل ومضاعف 2x",
+        verifyDesc: "توثيق بـ 0.3 TON لتفعيل المضاعف الدائم.", verifyBtn: "توثيق 0.3 TON",
+        navMine: "تعدين", navQuiz: "اختبار", navTasks: "مهام", navFriends: "أصدقاء", navWallet: "محفظة", docs: "وثائق"
+      },
+      bn: {
+        balance: "ব্যালেন্স", level: "লেভেল", energy: "শক্তি",
+        mineHeading: "ওয়ার্ড পাজল মাইনিং", mineSubHeading: "ব্লক সমাধান করতে সঠিক অক্ষর নির্বাচন করুন",
+        clear: "মুছুন", mineBlock: "ব্লক মাইন করুন",
+        rechargeTitle: "শক্তি রিচার্জ করুন", rechargeDesc: "১টি বিজ্ঞাপন = +২❤️ | ২টি = পূর্ণ ❤️", refill: "রিফিল",
+        tasksHeading: "অফিসিয়াল টাস্ক", tasksSubHeading: "মিশন সম্পন্ন করে POM দাবি করুন",
+        friendsHeading: "৩-স্তর রেফারেল সিস্টেম", friendsSubHeading: "লেভেল ১: ১০% | ২: ৩% | ৩: ২%",
+        invite: "বন্ধুদের আমন্ত্রণ জানান", unclaimed: "অদাবিকৃত কমিশন", claimRewards: "দাবি করুন",
+        walletHeading: "মাল্টি-চেন ওয়ালেট", walletSubHeading: "TON এবং Pi ওয়ালেট সংযুক্ত করুন",
+        connectTon: "TON ওয়ালেট সংযুক্ত করুন", verifyTitle: "সিবিল সুরক্ষা ও ২x গুণক",
+        verifyDesc: "০.৩ TON ফি দিয়ে যাচাই করে দ্বিগুণ রিওয়ার্ড আনলক করুন।", verifyBtn: "০.৩ TON যাচাই",
+        navMine: "মাইন", navQuiz: "কুইজ", navTasks: "টাস্ক", navFriends: "বন্ধু", navWallet: "ওয়ালেট", docs: "ডকুমেন্টস"
+      },
+      vi: {
+        balance: "Số dư", level: "Cấp độ", energy: "Năng lượng",
+        mineHeading: "Đào Khối Trí Tuệ", mineSubHeading: "Chọn các chữ cái để giải khối",
+        clear: "Xóa", mineBlock: "Đào Khối",
+        rechargeTitle: "Nạp Năng Lượng", rechargeDesc: "1 Quảng cáo = +2❤️ | 2 = Đầy ❤️", refill: "Nạp",
+        tasksHeading: "Nhiệm Vụ Cộng Đồng", tasksSubHeading: "Hoàn thành nhiệm vụ nhận POM",
+        friendsHeading: "Hệ Thống Giới Thiệu 3 Tầng", friendsSubHeading: "Tầng 1: 10% | Tầng 2: 3% | Tầng 3: 2%",
+        invite: "Mời Bạn Bè", unclaimed: "Hoa Hồng Chưa Nhận", claimRewards: "Nhận",
+        walletHeading: "Ví Đa Chuỗi", walletSubHeading: "Kết nối ví TON & Pi Network",
+        connectTon: "Kết Nối TON", verifyTitle: "Bảo Vệ Sybil & Nhân Đôi 2x",
+        verifyDesc: "Xác minh 0.3 TON để kích hoạt nhân đôi vĩnh viễn.", verifyBtn: "Xác Minh 0.3 TON",
+        navMine: "Đào", navQuiz: "Đố Vui", navTasks: "Nhiệm Vụ", navFriends: "Bạn Bè", navWallet: "Ví", docs: "Tài Liệu"
+      },
+      id: {
+        balance: "Saldo", level: "Level", energy: "Energi",
+        mineHeading: "Penambangan Kata", mineSubHeading: "Pilih huruf untuk menyelesaikan blok",
+        clear: "Hapus", mineBlock: "Tambang Blok",
+        rechargeTitle: "Isi Ulang Energi", rechargeDesc: "1 Iklan = +2❤️ | 2 Iklan = Penuh ❤️", refill: "Isi",
+        tasksHeading: "Tugas Resmi", tasksSubHeading: "Selesaikan misi & klaim token POM",
+        friendsHeading: "Sistem Rujukan 3 Tingkat", friendsSubHeading: "Level 1: 10% | Level 2: 3% | Level 3: 2%",
+        invite: "Undang Teman", unclaimed: "Komisi Belum Diklaim", claimRewards: "Klaim",
+        walletHeading: "Dompet Multi-Rantai", walletSubHeading: "Hubungkan dompet TON & Pi",
+        connectTon: "Hubungkan TON", verifyTitle: "Perlindungan Sybil & Pengali 2x",
+        verifyDesc: "Verifikasi biaya 0.3 TON untuk pengali 2x permanen.", verifyBtn: "Verifikasi 0.3 TON",
+        navMine: "Tambang", navQuiz: "Kuis", navTasks: "Tugas", navFriends: "Teman", navWallet: "Dompet", docs: "Dokumen"
+      },
+      fa: {
+        balance: "موجودی", level: "سطح", energy: "انرژی",
+        mineHeading: "استخراج پازل کلمات", mineSubHeading: "حروف را برای حل بلوک انتخاب کنید",
+        clear: "پاک کردن", mineBlock: "استخراج بلوک",
+        rechargeTitle: "شارژ مجدد انرژی", rechargeDesc: "۱ تبلیغ = +۲❤️ | ۲ تبلیغ = پر ❤️", refill: "شارژ",
+        tasksHeading: "ماموریت‌های رسمی", tasksSubHeading: "ماموریت‌ها را تکمیل و POM دریافت کنید",
+        friendsHeading: "سیستم ارجاع ۳ سطحی", friendsSubHeading: "سطح ۱: ۱۰٪ | سطح ۲: ۳٪ | سطح ۳: ۲٪",
+        invite: "دعوت از دوستان", unclaimed: "پاداش‌های مطالبه نشده", claimRewards: "دریافت",
+        walletHeading: "کیف پول چند زنجیره‌ای", walletSubHeading: "اتصال کیف پول‌های TON و Pi",
+        connectTon: "اتصال به TON", verifyTitle: "محافظت سیبیل و ضریب ۲ برابری",
+        verifyDesc: "تایید با ۰.۳ TON برای ضریب ۲ برابری دائمی.", verifyBtn: "تایید ۰.۳ TON",
+        navMine: "استخراج", navQuiz: "کوییز", navTasks: "ماموریت", navFriends: "دوستان", navWallet: "کیف پول", docs: "مستندات"
+      }
+    };
 
-    const QUIZ_REPOSITORY = [
-      { q: "What consensus does POM implement for intellect?", options: ["Proof of Work", "Proof of Intellect", "Proof of Stake", "Proof of Authority"], correct: 1 },
-      { q: "What is the total supply of POM tokens?", options: ["500 Million", "1 Billion", "2 Billion", "100 Million"], correct: 1 },
-      { q: "What benefit does 0.3 TON verification provide?", options: ["Permanent 2x Boost", "Extra 5 Hearts", "Instant Level 100", "500 Free POM"], correct: 0 },
-      { q: "What blockchain powers native Telegram Mini Apps?", options: ["Solana", "The Open Network (TON)", "Bitcoin", "Cardano"], correct: 1 }
-    ];
+    // --- NATIVE WORDS & TILES DICTIONARY FOR ALL 10 LANGUAGES ---
+    const LOCAL_WORDS = {
+      hi: [
+        { word: ["म", "न"], fillers: ["क", "ल", "र", "स"] },
+        { word: ["ट", "न"], fillers: ["प", "य", "व", "द"] },
+        { word: ["वे", "ब"], fillers: ["स", "ग", "ल", "ज"] },
+        { word: ["ज्ञा", "न"], fillers: ["भा", "र", "त", "व"] }
+      ],
+      en: [
+        { word: ["T", "O", "N"], fillers: ["E", "P", "L", "X"] },
+        { word: ["W", "E", "B"], fillers: ["R", "A", "Z", "Q"] },
+        { word: ["B", "O", "T"], fillers: ["K", "N", "M", "S"] },
+        { word: ["N", "O", "D", "E"], fillers: ["L", "Q", "Y", "P"] }
+      ],
+      ru: [
+        { word: ["Т", "О", "Н"], fillers: ["К", "Б", "В", "Д"] },
+        { word: ["С", "Е", "Т", "Ь"], fillers: ["У", "М", "Р", "Л"] },
+        { word: ["У", "М"], fillers: ["З", "Н", "А", "Я"] }
+      ],
+      zh: [
+        { word: ["智", "能"], fillers: ["块", "链", "心", "网"] },
+        { word: ["区", "块"], fillers: ["通", "信", "币", "力"] },
+        { word: ["脑", "力"], fillers: ["学", "天", "道", "算"] }
+      ],
+      es: [
+        { word: ["R", "E", "D"], fillers: ["A", "L", "M", "T"] },
+        { word: ["M", "E", "N", "T", "E"], fillers: ["P", "Q", "S", "O"] },
+        { word: ["N", "O", "D", "O"], fillers: ["B", "C", "K", "Y"] }
+      ],
+      ar: [
+        { word: ["ع", "ق", "ل"], fillers: ["ب", "ت", "ك", "و"] },
+        { word: ["ش", "ب", "ك", "ة"], fillers: ["م", "ن", "ل", "ر"] },
+        { word: ["ك", "ت", "ل", "ة"], fillers: ["س", "د", "ف", "ي"] }
+      ],
+      bn: [
+        { word: ["ম", "ন"], fillers: ["ক", "ল", "ব", "র"] },
+        { word: ["জ্ঞান"], fillers: ["ভা", "ব", "ন", "দ"] },
+        { word: ["জাল"], fillers: ["প", "ঠ", "স", "হ"] }
+      ],
+      vi: [
+        { word: ["T", "R", "I"], fillers: ["A", "O", "N", "K"] },
+        { word: ["M", "A", "N", "G"], fillers: ["E", "P", "U", "L"] },
+        { word: ["K", "H", "O", "I"], fillers: ["C", "B", "T", "D"] }
+      ],
+      id: [
+        { word: ["A", "K", "A", "L"], fillers: ["P", "S", "B", "D"] },
+        { word: ["B", "L", "O", "K"], fillers: ["M", "N", "T", "R"] },
+        { word: ["J", "A", "R", "I", "N", "G"], fillers: ["O", "P", "K", "L"] }
+      ],
+      fa: [
+        { word: ["ذ", "ه", "ن"], fillers: ["ك", "ت", "ب", "ل"] },
+        { word: ["ش", "ب", "ک", "ه"], fillers: ["م", "ر", "د", "و"] },
+        { word: ["ب", "ل", "و", "ک"], fillers: ["س", "ف", "ی", "ن"] }
+      ]
+    };
 
-    let currentTargetWord = "TON";
-    let currentScrambledTiles = ["T", "O", "N", "E", "S"];
+    // --- MULTILINGUAL QUIZ DATABASE (ALL 10 LANGUAGES) ---
+    const QUIZ_REPOSITORY = {
+      hi: [
+        { q: "POM बौद्धिक सत्यापन के लिए किस सर्वसम्मति का उपयोग करता है?", options: ["Proof of Work", "Proof of Intellect", "Proof of Stake", "Proof of Authority"], correct: 1 },
+        { q: "POM टोकन की कुल आपूर्ति (Total Supply) कितनी है?", options: ["500 मिलियन", "1 अरब (1 Billion)", "2 अरब", "100 मिलियन"], correct: 1 },
+        { q: "0.3 TON ऑन-चेन सत्यापन से क्या स्थायी लाभ मिलता है?", options: ["स्थायी 2x रिवॉर्ड मल्टीप्लायर", "अतिरिक्त 5 हार्ट्स", "तुरंत 100 लेवल", "500 मुफ्त POM"], correct: 0 },
+        { q: "टेलीग्राम मिनी ऐप्स को कौन सा ब्लॉकचेन सपोर्ट करता है?", options: ["Solana", "The Open Network (TON)", "Bitcoin L1", "Cardano"], correct: 1 }
+      ],
+      en: [
+        { q: "What consensus protocol does Proof of Mind implement?", options: ["Proof of Work", "Proof of Intellect", "Proof of Stake", "Proof of Authority"], correct: 1 },
+        { q: "What is the total hard-cap supply of POM tokens?", options: ["500 Million", "1 Billion (POM)", "2 Billion", "100 Million"], correct: 1 },
+        { q: "What permanent benefit does 0.3 TON verification grant?", options: ["Permanent 2x Multiplier", "Extra 5 Hearts", "Instant Level 100", "500 Free POM"], correct: 0 },
+        { q: "Which native blockchain directly powers Telegram Mini Apps?", options: ["Solana", "The Open Network (TON)", "Bitcoin L1", "Cardano"], correct: 1 }
+      ],
+      ru: [
+        { q: "Какой консенсус использует проект Proof of Mind?", options: ["Proof of Work", "Proof of Intellect", "Proof of Stake", "Proof of Authority"], correct: 1 },
+        { q: "Какова общая эмиссия токенов POM?", options: ["500 Миллионов", "1 Миллиард", "2 Миллиарда", "100 Миллионов"], correct: 1 },
+        { q: "Что дает верификация за 0.3 TON?", options: ["Постоянный 2x множитель", "5 бесплатных сердец", "100-й уровень", "500 POM"], correct: 0 }
+      ],
+      zh: [
+        { q: "Proof of Mind (POM) 采用何种共识机制？", options: ["工作量证明 (PoW)", "智力证明 (PoI)", "权益证明 (PoS)", "权威证明 (PoA)"], correct: 1 },
+        { q: "POM 代币的总供应量是多少？", options: ["5亿", "10亿 (1 Billion)", "20亿", "1亿"], correct: 1 },
+        { q: "0.3 TON 链上验证提供什么核心权益？", options: ["永久 2x 奖励加速", "额外 5 颗心", "直升 100 级", "500 空投代币"], correct: 0 }
+      ],
+      es: [
+        { q: "¿Qué consenso implementa Proof of Mind?", options: ["Proof of Work", "Proof of Intellect", "Proof of Stake", "Proof of Authority"], correct: 1 },
+        { q: "¿Cuál es el suministro total de POM?", options: ["500 Millones", "1 Mil Millones (1B)", "2 Mil Millones", "100 Millones"], correct: 1 },
+        { q: "¿Qué beneficio otorga la verificación de 0.3 TON?", options: ["Multiplicador 2x Permanente", "5 Corazones Extra", "Nivel 100 Instantáneo", "500 POM Gratis"], correct: 0 }
+      ],
+      ar: [
+        { q: "ما هو بروتوكول الإجماع الذي يطبقه POM؟", options: ["Proof of Work", "Proof of Intellect", "Proof of Stake", "Proof of Authority"], correct: 1 },
+        { q: "ما هو إجمالي المعروض من عملة POM؟", options: ["500 مليون", "1 مليار (1 Billion)", "2 مليار", "100 مليون"], correct: 1 },
+        { q: "ما الميزة الدائمة لتوثيق 0.3 TON؟", options: ["مضاعف 2x دائم", "5 قلوب إضافية", "المستوى 100 فوراً", "500 POM مجاناً"], correct: 0 }
+      ],
+      bn: [
+        { q: "POM কোন ঐক্যমত্য প্রোটোকল প্রয়োগ করে?", options: ["Proof of Work", "Proof of Intellect", "Proof of Stake", "Proof of Authority"], correct: 1 },
+        { q: "POM টোকেনের মোট সরবরাহ কত?", options: ["৫০০ মিলিয়ন", "১ বিলিয়ন (1 Billion)", "২ বিলিয়ন", "১০০ মিলিয়ন"], correct: 1 },
+        { q: "০.৩ TON যাচাইকরণ কী স্থায়ী সুবিধা দেয়?", options: ["স্থায়ী ২x গুণক বুস্ট", "অতিরিক্ত ৫ হার্ট", "তাত্ক্ষণিক লেভেল ১০০", "৫০০ বিনামূল্যের POM"], correct: 0 }
+      ],
+      vi: [
+        { q: "Proof of Mind triển khai giao thức đồng thuận nào?", options: ["Proof of Work", "Proof of Intellect", "Proof of Stake", "Proof of Authority"], correct: 1 },
+        { q: "Tổng cung tối đa của token POM là bao nhiêu?", options: ["500 Triệu", "1 Tỷ (1 Billion)", "2 Tỷ", "100 Triệu"], correct: 1 },
+        { q: "Xác minh 0.3 TON mang lại lợi ích vĩnh viễn gì?", options: ["Nhân đôi 2x vĩnh viễn", "Thêm 5 Tim", "Cấp 100 ngay lập tức", "500 POM miễn phí"], correct: 0 }
+      ],
+      id: [
+        { q: "Protokol konsensus apa yang diterapkan oleh POM?", options: ["Proof of Work", "Proof of Intellect", "Proof of Stake", "Proof of Authority"], correct: 1 },
+        { q: "Berapa total pasokan maksimal token POM?", options: ["500 Juta", "1 Miliar (1 Billion)", "2 Miliar", "100 Juta"], correct: 1 },
+        { q: "Manfaat permanen apa yang diberikan verifikasi 0.3 TON?", options: ["Pengali 2x Permanen", "Ekstra 5 Hati", "Level 100 Instan", "500 POM Gratis"], correct: 0 }
+      ],
+      fa: [
+        { q: "پروتکل اجماع اثبات ذهن (POM) چیست؟", options: ["Proof of Work", "Proof of Intellect", "Proof of Stake", "Proof of Authority"], correct: 1 },
+        { q: "مجموع کل عرضه توکن POM چقدر است؟", options: ["۵۰۰ میلیون", "۱ میلیارد (1 Billion)", "۲ میلیارد", "۱۰۰ میلیون"], correct: 1 },
+        { q: "تایید ۰.۳ TON چه مزیت دائمی دارد؟", options: ["ضریب دائمی ۲ برابری", "۵ قلب اضافی", "سطح ۱۰۰ آنی", "۵۰۰ توکن رایگان"], correct: 0 }
+      ]
+    };
+
+    let currentTargetTiles = ["म", "न"];
+    let currentScrambledTiles = ["म", "न", "क", "ल", "र", "स"];
     let quizTimer = null;
     let quizRemainingTime = 25;
 
-    // --- SAFE DOM HELPERS ---
+    // --- STORAGE PERSISTENCE ---
+    function loadSavedState() {
+      try {
+        const saved = localStorage.getItem('POM_USER_STATE');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          state = Object.assign(state, parsed);
+        }
+      } catch(e) {}
+    }
+
+    function saveActiveState() {
+      try {
+        localStorage.setItem('POM_USER_STATE', JSON.stringify({
+          balance: state.balance,
+          mineLevel: state.mineLevel,
+          quizLevel: state.quizLevel,
+          energy: state.energy,
+          isVerified: state.isVerified,
+          lang: state.lang,
+          tonConnected: state.tonConnected,
+          tonAddress: state.tonAddress,
+          tasks: state.tasks,
+          unclaimedCommission: state.unclaimedCommission
+        }));
+      } catch(e) {}
+    }
+
     function safeSetText(id, text) {
       const el = document.getElementById(id);
       if (el) el.innerText = text;
+    }
+
+    function showToast(message, icon = "ℹ️") {
+      const toast = document.getElementById('toastNotification');
+      const toastMsg = document.getElementById('toastMessage');
+      const toastIcon = document.getElementById('toastIcon');
+      if (!toast || !toastMsg) return;
+
+      toastMsg.innerText = message;
+      if (toastIcon) toastIcon.innerText = icon;
+
+      toast.classList.remove('opacity-0', 'pointer-events-none', '-translate-y-4');
+      toast.classList.add('opacity-100', 'translate-y-0');
+
+      setTimeout(() => {
+        toast.classList.remove('opacity-100', 'translate-y-0');
+        toast.classList.add('opacity-0', 'pointer-events-none', '-translate-y-4');
+      }, 2500);
+    }
+
+    // --- LANGUAGE SYSTEM ---
+    function changeLanguage(lang) {
+      state.lang = lang;
+      saveActiveState();
+      applyCurrentLanguage();
+      initCurrentPuzzle();
+      renderTasks();
+      if (!document.getElementById('tabQuiz').classList.contains('hidden')) {
+        startQuizRound();
+      }
+      showToast(`Language: ${document.getElementById('languageSelect')?.selectedOptions[0]?.text || lang}`, "🌐");
+    }
+
+    function applyCurrentLanguage() {
+      const dict = TRANSLATIONS[state.lang] || TRANSLATIONS.en;
+      safeSetText('labelBalance', dict.balance);
+      safeSetText('labelEnergy', dict.energy);
+      safeSetText('mineHeading', dict.mineHeading);
+      safeSetText('mineSubHeading', dict.mineSubHeading);
+      safeSetText('btnClear', dict.clear);
+      safeSetText('btnMine', dict.mineBlock);
+      safeSetText('energyRefillTitle', dict.rechargeTitle);
+      safeSetText('energyRefillDesc', dict.rechargeDesc);
+      safeSetText('btnRefill', dict.refill);
+      safeSetText('tasksHeading', dict.tasksHeading);
+      safeSetText('tasksSubHeading', dict.tasksSubHeading);
+      safeSetText('friendsHeading', dict.friendsHeading);
+      safeSetText('friendsSubHeading', dict.friendsSubHeading);
+      safeSetText('btnInvite', dict.invite);
+      safeSetText('lblUnclaimed', dict.unclaimed);
+      safeSetText('btnClaimRewards', dict.claimRewards);
+      safeSetText('walletHeading', dict.walletHeading);
+      safeSetText('walletSubHeading', dict.walletSubHeading);
+      safeSetText('btnConnectTonText', dict.connectTon);
+      safeSetText('verifyTitle', dict.verifyTitle);
+      safeSetText('verifyDesc', dict.verifyDesc);
+      safeSetText('btnVerifyText', dict.verifyBtn);
+      safeSetText('navTextMine', dict.navMine);
+      safeSetText('navTextQuiz', dict.navQuiz);
+      safeSetText('navTextTasks', dict.navTasks);
+      safeSetText('navTextFriends', dict.navFriends);
+      safeSetText('navTextWallet', dict.navWallet);
+      safeSetText('navDocsLabel', dict.docs);
+
+      const langSelect = document.getElementById('languageSelect');
+      if (langSelect && langSelect.value !== state.lang) {
+        langSelect.value = state.lang;
+      }
+
+      renderDocsContent();
     }
 
     // --- TAB NAVIGATION ---
@@ -556,22 +958,18 @@
         currentNav.classList.add('text-sky-400');
       }
 
+      updateHUD();
       if (tabId === 'tabQuiz') startQuizRound();
     }
 
     // --- WORD PUZZLE MINING ENGINE ---
     function initCurrentPuzzle() {
-      const wordIdx = (state.mineLevel - 1) % WORDS_DICTIONARY.length;
-      currentTargetWord = WORDS_DICTIONARY[wordIdx];
+      const langWords = LOCAL_WORDS[state.lang] || LOCAL_WORDS.en;
+      const puzzleObj = langWords[(state.mineLevel - 1) % langWords.length];
+      currentTargetTiles = [...puzzleObj.word];
       state.selectedLetters = [];
 
-      const wordLetters = currentTargetWord.split('');
-      const fillers = ["X", "M", "P", "Q", "Z", "L", "R", "W"];
-      let pool = [...wordLetters];
-      while (pool.length < wordLetters.length + 2) {
-        const rand = fillers[Math.floor(Math.random() * fillers.length)];
-        pool.push(rand);
-      }
+      let pool = [...currentTargetTiles, ...puzzleObj.fillers];
       currentScrambledTiles = pool.sort(() => Math.random() - 0.5);
 
       renderPuzzleBoard();
@@ -584,10 +982,10 @@
       if (!boxesContainer || !lettersContainer) return;
 
       boxesContainer.innerHTML = '';
-      for (let i = 0; i < currentTargetWord.length; i++) {
+      for (let i = 0; i < currentTargetTiles.length; i++) {
         const char = state.selectedLetters[i] || '';
         const box = document.createElement('div');
-        box.className = `w-12 h-13 sm:w-14 sm:h-14 rounded-xl border-2 flex items-center justify-center font-black text-xl transition-all shadow-md ${
+        box.className = `w-11 h-12 sm:w-12 sm:h-13 rounded-xl border-2 flex items-center justify-center font-black text-lg transition-all shadow ${
           char ? 'bg-sky-500/20 border-sky-400 text-sky-300' : 'bg-slate-900 border-slate-700 text-slate-500'
         }`;
         box.innerText = char;
@@ -597,20 +995,20 @@
       lettersContainer.innerHTML = '';
       currentScrambledTiles.forEach((letter, idx) => {
         const btn = document.createElement('button');
-        btn.className = "w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-90 border border-slate-700 text-white font-bold text-base transition-all shadow";
+        btn.className = "w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-90 border border-slate-700 text-white font-bold text-sm transition-all shadow";
         btn.innerText = letter;
         btn.onclick = () => selectLetter(letter, idx, btn);
         lettersContainer.appendChild(btn);
       });
 
-      safeSetText('mineBadgeLevelInfo', `Level ${state.mineLevel} • ${currentTargetWord.length} Boxes`);
+      safeSetText('mineBadgeLevelInfo', `Level ${state.mineLevel} • ${currentTargetTiles.length} Boxes`);
       const baseReward = 3;
       const finalReward = state.isVerified ? baseReward * 2 : baseReward;
       safeSetText('mineRewardBadge', `+${finalReward} POM`);
     }
 
     function selectLetter(letter, idx, element) {
-      if (state.selectedLetters.length < currentTargetWord.length) {
+      if (state.selectedLetters.length < currentTargetTiles.length) {
         state.selectedLetters.push(letter);
         element.style.visibility = 'hidden';
         renderPuzzleBoxesOnly();
@@ -622,7 +1020,7 @@
       if (!boxesContainer) return;
       Array.from(boxesContainer.children).forEach((box, i) => {
         const char = state.selectedLetters[i] || '';
-        box.className = `w-12 h-13 sm:w-14 sm:h-14 rounded-xl border-2 flex items-center justify-center font-black text-xl transition-all shadow-md ${
+        box.className = `w-11 h-12 sm:w-12 sm:h-13 rounded-xl border-2 flex items-center justify-center font-black text-lg transition-all shadow ${
           char ? 'bg-sky-500/20 border-sky-400 text-sky-300' : 'bg-slate-900 border-slate-700 text-slate-500'
         }`;
         box.innerText = char;
@@ -636,29 +1034,41 @@
 
     function submitMiningBlock() {
       if (state.energy <= 0) {
-        alert("You need mind energy! Watch a quick ad to refill.");
+        openEnergyModal();
         return;
       }
 
-      const formed = state.selectedLetters.join('');
-      if (formed === currentTargetWord) {
+      const isCorrect = state.selectedLetters.length === currentTargetTiles.length &&
+        state.selectedLetters.every((val, index) => val === currentTargetTiles[index]);
+
+      if (isCorrect) {
         const reward = state.isVerified ? 6 : 3;
         state.balance += reward;
         state.mineLevel++;
         state.energy--;
         creditReferralCommission(reward);
+        saveActiveState();
+        showToast(`Block Mined! +${reward} POM credited`, "🎉");
         initCurrentPuzzle();
       } else {
-        alert("Incorrect word arrangement. Try again!");
+        state.energy--;
+        saveActiveState();
+        updateHUD();
+        showToast("Incorrect word! -1 ❤️ lost", "❌");
         clearSelectedLetters();
+      }
+
+      if (state.energy <= 0) {
+        openEnergyModal();
       }
     }
 
     // --- TIMED QUIZ ENGINE ---
     function startQuizRound() {
       clearInterval(quizTimer);
-      const qIdx = (state.quizLevel - 1) % QUIZ_REPOSITORY.length;
-      const q = QUIZ_REPOSITORY[qIdx];
+      const repo = QUIZ_REPOSITORY[state.lang] || QUIZ_REPOSITORY.en;
+      const qIdx = (state.quizLevel - 1) % repo.length;
+      const q = repo[qIdx];
       safeSetText('quizQuestionText', q.q);
 
       const optsContainer = document.getElementById('quizOptionsContainer');
@@ -666,7 +1076,7 @@
         optsContainer.innerHTML = '';
         q.options.forEach((opt, idx) => {
           const btn = document.createElement('button');
-          btn.className = "w-full bg-slate-800/90 hover:bg-slate-700 active:scale-98 text-left text-xs font-semibold text-slate-200 p-3 rounded-xl border border-slate-700 transition-all";
+          btn.className = "w-full bg-slate-800/90 hover:bg-slate-700 active:scale-98 text-left text-xs font-semibold text-slate-200 p-2.5 rounded-xl border border-slate-700 transition-all";
           btn.innerText = opt;
           btn.onclick = () => submitQuizAnswer(idx, q.correct);
           optsContainer.appendChild(btn);
@@ -680,7 +1090,11 @@
         updateQuizTimerBar();
         if (quizRemainingTime <= 0) {
           clearInterval(quizTimer);
-          alert("Time elapsed! Moving to next round.");
+          state.energy--;
+          saveActiveState();
+          updateHUD();
+          showToast("Time up! -1 ❤️ lost", "⏳");
+          if (state.energy <= 0) openEnergyModal();
           state.quizLevel++;
           startQuizRound();
         }
@@ -694,50 +1108,49 @@
 
     function submitQuizAnswer(selectedIdx, correctIdx) {
       clearInterval(quizTimer);
+      if (state.energy <= 0) {
+        openEnergyModal();
+        return;
+      }
+
       if (selectedIdx === correctIdx) {
         const reward = state.isVerified ? 2 : 1;
         state.balance += reward;
         state.quizLevel++;
+        state.energy--;
         creditReferralCommission(reward);
-        alert(`Correct answer! +${reward} POM credited.`);
+        saveActiveState();
+        showToast(`Correct Answer! +${reward} POM`, "🌟");
       } else {
-        alert("Incorrect answer. Advancing to the next tier challenge.");
+        state.energy--;
+        saveActiveState();
+        showToast("Incorrect answer! -1 ❤️ lost", "❌");
         state.quizLevel++;
       }
+
       updateHUD();
+      if (state.energy <= 0) openEnergyModal();
       startQuizRound();
     }
 
-    // --- 3-TIER REFERRAL ENGINE ---
-    function creditReferralCommission(amount) {
-      state.unclaimedCommission += (amount * 0.10) + (amount * 0.03) + (amount * 0.02);
-      safeSetText('unclaimedCommissionDisplay', `${state.unclaimedCommission.toFixed(1)} POM`);
+    // --- AUTOMATIC OUT-OF-ENERGY POPUP ---
+    function openEnergyModal() {
+      document.getElementById('energyModal')?.classList.remove('hidden');
     }
 
-    function claimReferralRewards() {
-      if (state.unclaimedCommission <= 0) {
-        alert("No unclaimed commissions currently.");
-        return;
-      }
-      state.balance += Math.floor(state.unclaimedCommission);
-      state.unclaimedCommission = 0;
-      safeSetText('unclaimedCommissionDisplay', `0 POM`);
+    function closeEnergyModal() {
+      document.getElementById('energyModal')?.classList.add('hidden');
+    }
+
+    function watchAdAndRefill(amount) {
+      state.energy = Math.min(5, state.energy + amount);
+      saveActiveState();
+      closeEnergyModal();
       updateHUD();
-      alert("Commissions claimed successfully to your main balance!");
+      showToast(`Energy Recharged (+${amount} ❤️)!`, "⚡");
     }
 
-    function copyReferralLink() {
-      navigator.clipboard.writeText("https://t.me/proof_of_mind_bot?start=ref");
-      alert("Referral link copied!");
-    }
-
-    function shareReferralToTelegram() {
-      const url = encodeURIComponent("https://t.me/proof_of_mind_bot?start=ref");
-      const text = encodeURIComponent("🧠 Join Proof of Mind! Mine POM tokens with your intellect on TON & Pi Network.");
-      window.open(`https://t.me/share/url?url=${url}&text=${text}`, '_blank');
-    }
-
-    // --- COMMUNITY TASKS WITH 2-STEP VERIFICATION ---
+    // --- COMMUNITY TASKS ---
     function renderTasks() {
       const container = document.getElementById('tasksListContainer');
       if (!container) return;
@@ -745,25 +1158,25 @@
 
       state.tasks.forEach((task, idx) => {
         const card = document.createElement('div');
-        card.className = "bg-brand-card border border-brand-cardBorder rounded-xl p-3.5 flex items-center justify-between shadow";
+        card.className = "bg-brand-card border border-brand-cardBorder rounded-xl p-3 flex items-center justify-between shadow";
 
         let actionBtnHtml = '';
         if (task.completed) {
           actionBtnHtml = `<span class="text-emerald-400 font-bold text-xs bg-emerald-950/80 px-2.5 py-1 rounded-lg">✔ Done</span>`;
         } else if (task.started) {
-          actionBtnHtml = `<button onclick="claimTaskReward(${idx})" class="bg-gradient-to-r from-amber-500 to-amber-600 active:scale-95 text-slate-950 font-black text-xs px-3 py-1.5 rounded-lg shadow">Claim ✨</button>`;
+          actionBtnHtml = `<button onclick="claimTaskReward(${idx})" class="bg-gradient-to-r from-amber-500 to-amber-600 active:scale-95 text-slate-950 font-black text-xs px-2.5 py-1 rounded-lg shadow">Claim ✨</button>`;
         } else {
-          actionBtnHtml = `<button onclick="startTask(${idx})" class="bg-sky-500 hover:bg-sky-400 active:scale-95 text-slate-950 font-black text-xs px-3 py-1.5 rounded-lg shadow">Start ↗</button>`;
+          actionBtnHtml = `<button onclick="startTask(${idx})" class="bg-sky-500 hover:bg-sky-400 active:scale-95 text-slate-950 font-black text-xs px-2.5 py-1 rounded-lg shadow">Start ↗</button>`;
         }
 
         card.innerHTML = `
-          <div class="flex items-center space-x-3">
-            <div class="w-9 h-9 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-sky-400">
-              <i class="${task.icon} text-base"></i>
+          <div class="flex items-center space-x-2.5">
+            <div class="w-8 h-8 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-sky-400">
+              <i class="${task.icon} text-sm"></i>
             </div>
             <div>
-              <h4 class="text-xs font-bold text-white">${task.title}</h4>
-              <span class="text-[10px] text-amber-400 font-bold">+${task.reward} POM</span>
+              <h4 class="text-xs font-bold text-white truncate max-w-[190px]">${task.title}</h4>
+              <span class="text-[9px] text-amber-400 font-bold">+${task.reward} POM</span>
             </div>
           </div>
           <div>${actionBtnHtml}</div>
@@ -775,74 +1188,102 @@
     function startTask(idx) {
       window.open(state.tasks[idx].link, '_blank');
       state.tasks[idx].started = true;
+      saveActiveState();
       renderTasks();
     }
 
     function claimTaskReward(idx) {
       state.balance += state.tasks[idx].reward;
       state.tasks[idx].completed = true;
+      saveActiveState();
       updateHUD();
       renderTasks();
-      alert(`+${state.tasks[idx].reward} POM Claimed!`);
+      showToast(`+${state.tasks[idx].reward} POM Claimed!`, "🎁");
+    }
+
+    // --- REFERRALS ---
+    function creditReferralCommission(amount) {
+      state.unclaimedCommission += (amount * 0.10) + (amount * 0.03) + (amount * 0.02);
+      saveActiveState();
+      safeSetText('unclaimedCommissionDisplay', `${state.unclaimedCommission.toFixed(1)} POM`);
+    }
+
+    function claimReferralRewards() {
+      if (state.unclaimedCommission <= 0) {
+        showToast("No unclaimed commissions right now.", "ℹ️");
+        return;
+      }
+      state.balance += Math.floor(state.unclaimedCommission);
+      state.unclaimedCommission = 0;
+      saveActiveState();
+      safeSetText('unclaimedCommissionDisplay', `0.0 POM`);
+      updateHUD();
+      showToast("Commissions claimed to balance!", "💰");
+    }
+
+    function copyReferralLink() {
+      navigator.clipboard.writeText("https://t.me/proof_of_mind_bot?start=ref");
+      showToast("Referral link copied!", "📋");
+    }
+
+    function shareReferralToTelegram() {
+      const url = encodeURIComponent("https://t.me/proof_of_mind_bot?start=ref");
+      const text = encodeURIComponent("🧠 Join Proof of Mind! Mine POM tokens with your intellect on TON & Pi Network.");
+      window.open(`https://t.me/share/url?url=${url}&text=${text}`, '_blank');
     }
 
     // --- 0.3 TON ON-CHAIN VERIFICATION FLOW ---
     function handleWalletVerifyClick() {
       if (state.isVerified) {
-        alert("Your account is already permanently verified with 2x Boost active!");
+        showToast("Account already verified with 2x Boost active!", "✔");
+        return;
+      }
+      if (!state.tonConnected) {
+        showToast("Please connect your TON wallet first!", "⚠️");
         return;
       }
       openTonVerifyModal();
     }
 
-    function openTonVerifyModal() {
-      const modal = document.getElementById('tonVerifyModal');
-      if (modal) modal.classList.remove('hidden');
-    }
-
-    function closeTonVerifyModal() {
-      const modal = document.getElementById('tonVerifyModal');
-      if (modal) modal.classList.add('hidden');
-    }
+    function openTonVerifyModal() { document.getElementById('tonVerifyModal')?.classList.remove('hidden'); }
+    function closeTonVerifyModal() { document.getElementById('tonVerifyModal')?.classList.add('hidden'); }
 
     function copyAdminTonAddress() {
       navigator.clipboard.writeText(CONFIG.ADMIN_TON_WALLET);
-      alert("Admin TON Wallet copied to clipboard!");
+      showToast("Admin TON Wallet copied!", "📋");
     }
 
     function completeTonVerificationTransaction() {
       state.isVerified = true;
+      saveActiveState();
       closeTonVerifyModal();
       updateHUD();
-      alert("0.3 TON Verification confirmed! 2x boost permanently activated.");
+      showToast("0.3 TON Verification confirmed! 2x boost active.", "🛡️");
     }
 
     function toggleTonConnection() {
       state.tonConnected = !state.tonConnected;
-      state.tonAddress = state.tonConnected ? "EQBynX...92pLwQ" : null;
+      state.tonAddress = state.tonConnected ? "UQD5ZiNy8...46c-f98US" : null;
+      saveActiveState();
       updateHUD();
+      showToast(state.tonConnected ? "TON Wallet Connected" : "TON Wallet Disconnected", "💎");
     }
 
     function connectPiWallet() {
       safeSetText('piStatusBadge', 'Pi Connected');
-      safeSetText('piUserText', '@pioneer_mind (Verified Pioneer)');
-      alert("Pi Network Pioneer Account Connected!");
-    }
-
-    // --- ENERGY REFILL AD CONTROLLER ---
-    function triggerRewardAd() {
-      state.energy = Math.min(5, state.energy + 2);
-      updateHUD();
-      alert("Energy Recharged (+2 ❤️)!");
+      safeSetText('piUserText', '@pioneer_mind (Verified)');
+      showToast("Pi Network Pioneer Connected!", "π");
     }
 
     // --- HUD UPDATER ---
     function updateHUD() {
       safeSetText('userBalanceDisplay', state.balance);
-      safeSetText('userLevelDisplay', state.mineLevel);
       safeSetText('walletTotalPomDisplay', `${state.balance} POM`);
 
-      // Energy Hearts
+      const isQuizTab = !document.getElementById('tabQuiz').classList.contains('hidden');
+      safeSetText('labelLevel', isQuizTab ? (state.lang === 'hi' ? 'क्विज़ लेवल' : 'Quiz Level') : (state.lang === 'hi' ? 'माइन लेवल' : 'Mine Level'));
+      safeSetText('userLevelDisplay', isQuizTab ? state.quizLevel : state.mineLevel);
+
       const heartsContainer = document.getElementById('heartsContainer');
       if (heartsContainer) {
         let html = '';
@@ -852,29 +1293,26 @@
         heartsContainer.innerHTML = html;
       }
 
-      // Header Verified Tick
       const headerTick = document.getElementById('headerVerifiedTick');
       if (headerTick) {
         if (state.isVerified) headerTick.classList.remove('hidden');
         else headerTick.classList.add('hidden');
       }
 
-      // Wallet Tab Verification Button State
       const btnVerify = document.getElementById('btnWalletVerifyAction');
       if (btnVerify) {
         if (state.isVerified) {
-          btnVerify.className = "w-full bg-emerald-600 text-white font-black text-xs py-3 rounded-xl shadow transition-all cursor-default flex items-center justify-center space-x-2";
+          btnVerify.className = "w-full bg-emerald-600 text-white font-black text-xs py-2 rounded-xl shadow transition-all cursor-default flex items-center justify-center space-x-1.5";
           btnVerify.innerHTML = `<i class="fa-solid fa-circle-check"></i><span>✔ 0.3 TON Verified (2x Boost Active)</span>`;
         } else {
-          btnVerify.className = "w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 active:scale-95 text-slate-950 font-black text-xs py-3 rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all flex items-center justify-center space-x-2";
-          btnVerify.innerHTML = `<i class="fa-solid fa-bolt"></i><span>Verify 0.3 TON</span>`;
+          btnVerify.className = "w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 active:scale-95 text-slate-950 font-black text-xs py-2 rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all flex items-center justify-center space-x-1.5";
+          btnVerify.innerHTML = `<i class="fa-solid fa-bolt text-xs"></i><span id="btnVerifyText">${TRANSLATIONS[state.lang]?.verifyBtn || "Verify 0.3 TON"}</span>`;
         }
       }
 
       safeSetText('walletAirdropMult', state.isVerified ? "2x Verified Multiplier" : "1x Base Multiplier");
       safeSetText('walletVerificationText', state.isVerified ? "Status: Verified Pioneer" : "Status: Unverified");
 
-      // TON Wallet UI
       if (state.tonConnected) {
         safeSetText('tonStatusBadge', 'TON Connected');
         safeSetText('tonAddressText', state.tonAddress);
@@ -884,13 +1322,43 @@
         safeSetText('tonStatusBadge', 'Not Connected');
         safeSetText('tonAddressText', 'No TON wallet connected yet');
         const btn = document.getElementById('btnConnectTon');
-        if (btn) btn.innerHTML = '<i class="fa-solid fa-wallet mr-1"></i> Connect TON Wallet';
+        if (btn) btn.innerHTML = `<i class="fa-solid fa-wallet mr-1"></i> <span id="btnConnectTonText">${TRANSLATIONS[state.lang]?.connectTon || "Connect TON"}</span>`;
       }
     }
 
-    // --- DOCS & ADMIN MODAL TOGGLES ---
-    function openDocsModal() { document.getElementById('docsModal')?.classList.remove('hidden'); }
+    // --- COMPLETE UNCLIPPED MULTILINGUAL WHITEPAPER ---
+    function renderDocsContent() {
+      const container = document.getElementById('docsBodyContainer');
+      if (!container) return;
+
+      if (state.lang === 'hi') {
+        container.innerHTML = `
+          <div><h4 class="text-sky-400 font-bold uppercase text-[10px] mb-1">१. विज़न एवं प्रूफ ऑफ इंटेलेक्ट (PoI)</h4><p>प्रूफ ऑफ माइंड (POM) बिजली और हार्डवेयर की अनावश्यक बर्बादी के स्थान पर मानव बौद्धिक सर्वसम्मति को ऑन-चेन लागू करता है। उपयोगकर्ता शब्द पहेलियां और सत्यापित क्विज़ हल करके अपनी सक्रिय बौद्धिक क्षमता प्रमाणित करते हैं और विकेंद्रीकृत टोकन माइन करते हैं।</p></div>
+          <div><h4 class="text-sky-400 font-bold uppercase text-[10px] mb-1">२. १ अरब POM टोकनॉमिक्स</h4><div class="bg-slate-900 border border-slate-800 rounded-xl p-2.5 space-y-1 font-mono text-[9px]"><div class="flex justify-between"><span>• कम्युनिटी माइनिंग:</span><span class="text-amber-400 font-bold">50% (500M)</span></div><div class="flex justify-between"><span>• रेफरल व टास्क:</span><span class="text-sky-400 font-bold">15% (150M)</span></div><div class="flex justify-between"><span>• विकेंद्रीकृत कोर टीम:</span><span class="text-emerald-400 font-bold">10% (100M)</span></div><div class="flex justify-between"><span>• इंफ्रास्ट्रक्चर व सर्वर:</span><span class="text-indigo-400 font-bold">10% (100M)</span></div><div class="flex justify-between"><span>• लिक्विडिटी व DEX:</span><span class="text-rose-400 font-bold">10% (100M)</span></div><div class="flex justify-between"><span>• अर्ली एयरड्रॉप:</span><span class="text-purple-400 font-bold">5% (50M)</span></div></div></div>
+          <div><h4 class="text-sky-400 font-bold uppercase text-[10px] mb-1">३. विकेंद्रीकृत मेरिट कोर टीम (धारा 3.1)</h4><p>१०% कोर टीम आवंटन किसी निजी फाउंडर लॉबी के लिए आरक्षित नहीं है। यह पूरी तरह योग्यता (Merit) पर आधारित है। वैश्विक माइनिंग लीडरबोर्ड पर शीर्ष बौद्धिक प्रदर्शन करने वाले और सक्रिय समुदायिक डेवलपर्स को सीधे कोर टीम आवंटन में शामिल किया जाएगा।</p></div>
+          <div><h4 class="text-sky-400 font-bold uppercase text-[10px] mb-1">४. TON एवं Pi Network ट्विन आर्किटेक्चर</h4><p>POM एक साथ टेलीग्राम नेटिव ब्लॉकचेन (TON) और Pi Network के 60+ मिलियन पायनियर इकोसिस्टम को जोड़ता है। उपयोगकर्ता दोनों नेटवर्क्स के वॉलेट कनेक्ट करके दोनों इकोसिस्टम्स से टोकन क्लेम करने के पात्र बनते हैं।</p></div>
+          <div><h4 class="text-sky-400 font-bold uppercase text-[10px] mb-1">५. 0.3 TON ऑन-चेन सिबिल सुरक्षा एवं 2x बूस्ट</h4><p>स्वचालित बॉट्स और फेक एकाउंट्स से वास्तविक माइनर्स के रिवॉर्ड्स की रक्षा के लिए 0.3 TON का ऑन-चेन माइक्रोट्रांजैक्शन लागू किया गया है। यह सत्यापित पायनियर्स को स्थायी 2x माइनिंग और क्विज़ मल्टीप्लायर प्रदान करता है।</p></div>
+          <div><h4 class="text-sky-400 font-bold uppercase text-[10px] mb-1">६. रोडमैप एवं TGE लिस्टिंग</h4><p>फेज 1: टेलीग्राम मिनी ऐप लॉन्च एवं टास्क इकोसिस्टम। फेज 2: ऑन-चेन PoI सत्यापन और Pi ब्राउज़र सिंकिंग। फेज 3: TGE (टोकन जेनरेशन इवेंट) और प्रमुख DEX/CEX पर POM लिस्टिंग।</p></div>
+        `;
+      } else {
+        container.innerHTML = `
+          <div><h4 class="text-sky-400 font-bold uppercase text-[10px] mb-1">1. Abstract & Proof of Intellect (PoI)</h4><p>Proof of Mind (POM) replaces hardware electrical waste with decentralized human cognitive consensus. Pioneers solve on-chain intellect blocks and verified quizzes to validate genuine human intelligence and mint POM tokens.</p></div>
+          <div><h4 class="text-sky-400 font-bold uppercase text-[10px] mb-1">2. 1 Billion POM Hard-Cap Tokenomics</h4><div class="bg-slate-900 border border-slate-800 rounded-xl p-2.5 space-y-1 font-mono text-[9px]"><div class="flex justify-between"><span>• Community Mining:</span><span class="text-amber-400 font-bold">50% (500M)</span></div><div class="flex justify-between"><span>• Referrals & Tasks:</span><span class="text-sky-400 font-bold">15% (150M)</span></div><div class="flex justify-between"><span>• Merit Core Team:</span><span class="text-emerald-400 font-bold">10% (100M)</span></div><div class="flex justify-between"><span>• Infrastructure:</span><span class="text-indigo-400 font-bold">10% (100M)</span></div><div class="flex justify-between"><span>• Liquidity & DEX:</span><span class="text-rose-400 font-bold">10% (100M)</span></div><div class="flex justify-between"><span>• Early Airdrop:</span><span class="text-purple-400 font-bold">5% (50M)</span></div></div></div>
+          <div><h4 class="text-sky-400 font-bold uppercase text-[10px] mb-1">3. Decentralized Merit Core Team (Section 3.1)</h4><p>The 10% Core Team allocation is strictly non-custodial and meritocratic. Pioneers holding top positions on global intellect leaderboards are directly onboarded into decentralized governance and core rewards.</p></div>
+          <div><h4 class="text-sky-400 font-bold uppercase text-[10px] mb-1">4. Dual TON & Pi Network Architecture</h4><p>POM bridges Telegram's native TON blockchain with Pi Network's 60M+ verified web3 pioneer community. Dual-chain connectivity enables seamless verification and multi-chain liquidity.</p></div>
+          <div><h4 class="text-sky-400 font-bold uppercase text-[10px] mb-1">5. 0.3 TON Sybil Defense & 2x Multiplier</h4><p>To eliminate automated bot farms, 0.3 TON micro-verification confirms authentic human identity on-chain and grants verified pioneers a lifetime 2x reward boost on all mining and quiz activities.</p></div>
+          <div><h4 class="text-sky-400 font-bold uppercase text-[10px] mb-1">6. Roadmap & TGE DEX Listing</h4><p>Phase 1: Mini App Launch & Ecosystem Tasks. Phase 2: On-chain PoI Engine and Pi Browser Integration. Phase 3: Token Generation Event (TGE) and decentralized exchange liquidity pool deployment.</p></div>
+        `;
+      }
+    }
+
+    function openDocsModal() {
+      renderDocsContent();
+      document.getElementById('docsModal')?.classList.remove('hidden');
+    }
     function closeDocsModal() { document.getElementById('docsModal')?.classList.add('hidden'); }
+
+    // --- ADMIN CONTROL CONSOLE (FULL-PAGE RESTORATION) ---
     function openAdminModal() { document.getElementById('adminModal')?.classList.remove('hidden'); }
     function closeAdminModal() { document.getElementById('adminModal')?.classList.add('hidden'); }
 
@@ -900,42 +1368,132 @@
       if (u === 'admin' && (p === 'pom2026' || p === 'admin123')) {
         document.getElementById('adminLoginView').classList.add('hidden');
         document.getElementById('adminDashboardView').classList.remove('hidden');
-        safeSetText('adminCurrentWordHint', `Target Word: ${currentTargetWord} | Letters Pool: ${currentScrambledTiles.join(', ')}`);
+        document.getElementById('adminLogoutBtn').classList.remove('hidden');
+        refreshAdminDashboard();
+        showToast("Master Admin Authorized!", "🛡️");
       } else {
-        alert("Invalid admin credentials!");
+        showToast("Invalid admin credentials!", "❌");
       }
     }
 
-    function addNewAdminTask() {
-      const title = document.getElementById('newTaskTitle').value;
-      const link = document.getElementById('newTaskLink').value;
-      const reward = parseInt(document.getElementById('newTaskReward').value) || 50;
+    function logoutAdmin() {
+      document.getElementById('adminLoginView').classList.remove('hidden');
+      document.getElementById('adminDashboardView').classList.add('hidden');
+      document.getElementById('adminLogoutBtn').classList.add('hidden');
+      document.getElementById('adminUsernameInput').value = '';
+      document.getElementById('adminPasswordInput').value = '';
+      showToast("Admin session locked", "🔒");
+    }
+
+    function refreshAdminDashboard() {
+      const wordStr = currentTargetTiles.join('');
+      const poolStr = currentScrambledTiles.join(', ');
+      safeSetText('adminCurrentWordHint', `Target: ${wordStr} | Tiles Pool: [ ${poolStr} ] | Current Lang: ${state.lang.toUpperCase()}`);
+
+      const summary = document.getElementById('adminTaskListSummary');
+      if (summary) {
+        summary.innerHTML = '';
+        state.tasks.forEach((t, i) => {
+          const row = document.createElement('div');
+          row.className = "flex items-center justify-between bg-slate-800 p-1.5 rounded text-[10px]";
+          row.innerHTML = `<span class="truncate max-w-[200px] text-slate-300">${t.title} (+${t.reward})</span><button onclick="adminRemoveTask(${i})" class="text-rose-400 font-bold hover:text-rose-300">✕</button>`;
+          summary.appendChild(row);
+        });
+      }
+    }
+
+    function copyTelegramChannelHint() {
+      const wordStr = currentTargetTiles.join('');
+      const postText = `🧠 Proof of Mind (POM) Community Intellect Drop!\n\nSolve Level ${state.mineLevel} now.\nTarget Length: ${currentTargetTiles.length} Letters\nLetter Pool: ${currentScrambledTiles.join(' ')}\n\nMine block now 👉 https://t.me/proof_of_mind_bot?start=ref`;
+      navigator.clipboard.writeText(postText);
+      showToast("Telegram post copied to clipboard!", "📋");
+    }
+
+    function adminAddTask() {
+      const title = document.getElementById('adminNewTaskTitle').value;
+      const link = document.getElementById('adminNewTaskLink').value;
+      const reward = parseInt(document.getElementById('adminNewTaskReward').value) || 50;
       if (!title || !link) {
-        alert("Enter title & URL!");
+        showToast("Fill title & link", "⚠️");
         return;
       }
-      state.tasks.push({ id: `custom_${Date.now()}`, title, link, reward, started: false, completed: false, icon: "fa-solid fa-star" });
+      state.tasks.push({
+        id: "task_" + Date.now(),
+        title: title,
+        link: link,
+        reward: reward,
+        started: false,
+        completed: false,
+        icon: "fa-solid fa-star"
+      });
+      saveActiveState();
       renderTasks();
-      alert("Task added successfully!");
+      refreshAdminDashboard();
+      document.getElementById('adminNewTaskTitle').value = '';
+      document.getElementById('adminNewTaskLink').value = '';
+      showToast("Task dispatched live!", "🚀");
     }
 
-    function copyTelegramCluePost() {
-      const text = `🧠 **Proof of Mind (POM) Hint Drop!**\nLevel: ${state.mineLevel}\nLetters: ${currentScrambledTiles.join(' - ')}\nSolve now: https://t.me/proof_of_mind_bot/app`;
-      navigator.clipboard.writeText(text);
-      alert("Telegram Clue Post copied!");
+    function adminRemoveTask(index) {
+      state.tasks.splice(index, 1);
+      saveActiveState();
+      renderTasks();
+      refreshAdminDashboard();
+      showToast("Task removed", "🗑️");
     }
 
-    function changeLanguage(lang) {
-      state.lang = lang;
-      alert(`Language changed to ${lang}. Localizing interface.`);
+    function adminDevBoostPOM(amt) {
+      state.balance += amt;
+      saveActiveState();
+      updateHUD();
+      showToast(`Added +${amt} POM!`, "💰");
     }
 
-    // --- INITIALIZATION ---
+    function adminDevBoostLevel(levels) {
+      state.mineLevel += levels;
+      state.quizLevel += levels;
+      saveActiveState();
+      initCurrentPuzzle();
+      showToast(`Advanced +${levels} Levels!`, "⚡");
+    }
+
+    function adminDevRefillHearts() {
+      state.energy = 5;
+      saveActiveState();
+      updateHUD();
+      showToast("Hearts refilled to 5 ❤️!", "❤️");
+    }
+
+    function adminDevToggleVerify() {
+      state.isVerified = !state.isVerified;
+      saveActiveState();
+      updateHUD();
+      showToast(`2x Boost is now ${state.isVerified ? 'ENABLED' : 'DISABLED'}`, "🛡️");
+    }
+
+    function adminResetAllData() {
+      localStorage.removeItem('POM_USER_STATE');
+      state.balance = 130;
+      state.mineLevel = 1;
+      state.quizLevel = 1;
+      state.energy = 5;
+      state.isVerified = false;
+      state.unclaimedCommission = 0;
+      initCurrentPuzzle();
+      renderTasks();
+      updateHUD();
+      refreshAdminDashboard();
+      showToast("State reset to defaults", "🔄");
+    }
+
+    // --- APPLICATION STARTUP ---
     function startApp() {
       if (window.Telegram?.WebApp) {
         window.Telegram.WebApp.ready();
         window.Telegram.WebApp.expand();
       }
+      loadSavedState();
+      applyCurrentLanguage();
       initCurrentPuzzle();
       renderTasks();
       updateHUD();
