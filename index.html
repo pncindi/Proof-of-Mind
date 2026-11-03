@@ -20,7 +20,7 @@
   <!-- Pi Network SDK 2.0 Anchor -->
   <script src="https://sdk.minepi.com/pi-sdk.js"></script>
 
-  <!-- TonConnect UI SDK -->
+  <!-- Official TonConnect UI SDK -->
   <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
 
   <script>
@@ -86,7 +86,7 @@
         <span id="navDocsLabel">Docs</span>
       </button>
 
-      <!-- 10 Full Languages Selector -->
+      <!-- 10 Languages Selector -->
       <div class="relative">
         <select id="languageSelect" onchange="changeLanguage(this.value)" class="bg-slate-800/90 border border-slate-700 text-[11px] font-medium text-slate-200 px-2 py-1 rounded-lg outline-none cursor-pointer focus:border-sky-500">
           <option value="hi" selected>हिंदी (Hindi)</option>
@@ -269,7 +269,7 @@
         <h3 id="walletHeading" class="text-sm font-bold text-white">विकेंद्रीकृत मल्टी-चेन वॉलेट</h3>
         <p id="walletSubHeading" class="text-[10px] text-slate-400 mt-0.5 mb-3">POM रिवॉर्ड्स के लिए TON और Pi वॉलेट कनेक्ट करें</p>
 
-        <!-- TON Wallet Card -->
+        <!-- TON Wallet Card with Real TonConnect Container -->
         <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 mb-3 text-left">
           <div class="flex items-center justify-between mb-1.5">
             <span class="text-[11px] font-bold text-sky-400 flex items-center space-x-1">
@@ -401,19 +401,16 @@
       </div>
 
       <div class="space-y-2">
-        <!-- Direct Tonkeeper Deep-Link -->
         <button onclick="openTonkeeperPay()" class="w-full bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 active:scale-95 text-white font-bold text-xs py-2 rounded-xl shadow transition-all flex items-center justify-center space-x-1.5">
           <i class="fa-solid fa-gem text-xs"></i>
           <span>Pay via Tonkeeper App</span>
         </button>
 
-        <!-- Direct Telegram Wallet (@wallet) Deep-Link -->
         <button onclick="openTelegramWalletPay()" class="w-full bg-slate-800 hover:bg-slate-700 active:scale-95 text-sky-400 font-bold text-xs py-2 rounded-xl border border-slate-700 transition-all flex items-center justify-center space-x-1.5">
           <i class="fa-brands fa-telegram text-xs"></i>
           <span>Pay via Telegram @wallet</span>
         </button>
 
-        <!-- Copy Address & Confirm Manual -->
         <button onclick="copyAdminTonAddress()" class="w-full bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 font-bold text-xs py-1.5 rounded-xl border border-slate-700 transition-all flex items-center justify-center space-x-1">
           <i class="fa-regular fa-copy text-xs"></i>
           <span>Copy Admin Address</span>
@@ -475,7 +472,7 @@
         </button>
       </div>
 
-      <!-- Admin Full-Page Dashboard (Unclipped Scrollable) -->
+      <!-- Admin Full-Page Dashboard -->
       <div id="adminDashboardView" class="hidden flex-1 min-h-0 overflow-y-auto overscroll-contain p-3.5 space-y-3.5 text-xs no-scrollbar">
         <!-- Live Metrics Grid -->
         <div class="grid grid-cols-2 gap-2">
@@ -569,6 +566,7 @@
             <button onclick="adminDevBoostLevel(5)" class="bg-slate-800 hover:bg-slate-700 text-sky-300 text-[10px] font-bold py-1.5 px-2 rounded-lg border border-slate-700">+5 Mine Levels</button>
             <button onclick="adminDevRefillHearts()" class="bg-slate-800 hover:bg-slate-700 text-rose-300 text-[10px] font-bold py-1.5 px-2 rounded-lg border border-slate-700">Refill 5 Hearts</button>
             <button onclick="adminDevToggleVerify()" class="bg-slate-800 hover:bg-slate-700 text-emerald-300 text-[10px] font-bold py-1.5 px-2 rounded-lg border border-slate-700">Toggle 2x Multiplier</button>
+            <button onclick="adminSimulateReferral()" class="col-span-2 bg-indigo-900 hover:bg-indigo-800 text-indigo-200 text-[10px] font-bold py-1.5 px-2 rounded-lg border border-indigo-700">+1 Test Referral (Simulate)</button>
           </div>
           <button onclick="adminResetAllData()" class="w-full bg-rose-950/80 hover:bg-rose-900/90 text-rose-300 text-[10px] font-bold py-1.5 rounded-lg border border-rose-800/80 transition-all mt-1">
             ⚠ Reset Local Test State
@@ -581,10 +579,12 @@
   <!-- ================= JAVASCRIPT CORE LOGIC ================= -->
   <script>
     const CONFIG = {
-      BACKEND_API_URL: "", // Render URL जोड़ें (जैसे: "https://pom-backend.onrender.com")
+      BACKEND_API_URL: "", // Render URL तैयार होने पर यहाँ डालें (जैसे "https://pom-backend.onrender.com")
       ADMIN_TON_WALLET: "UQD5ZiNy8-eV7l6Ny46c-f98USLg-JXPTRRIPMV-0YiadqJV",
       BOT_USERNAME: "proofofmind_bot"
     };
+
+    let tonConnectUI = null;
 
     let state = {
       telegram_id: "pioneer",
@@ -610,7 +610,7 @@
       ]
     };
 
-    // --- 10 COMPLETE MULTILINGUAL VOCABULARIES ---
+    // --- FULL MULTILINGUAL VOCABULARIES ---
     const TRANSLATIONS = {
       hi: {
         balance: "बैलेंस", level: "लेवल", energy: "एनर्जी",
@@ -715,7 +715,7 @@
         invite: "Mời Bạn Bè", unclaimed: "Hoa Hồng Chưa Nhận", claimRewards: "Nhận",
         walletHeading: "Ví Đa Chuỗi", walletSubHeading: "Kết nối ví TON & Pi Network",
         connectTon: "Kết Nối TON", verifyTitle: "Bảo Vệ Sybil & Nhân Đôi 2x",
-        verifyDesc: "Xác minh 0.3 TON để kích hoạt nhân đôi vĩnh viễn.", verifyBtn: "Xác Minh 0.3 TON",
+        verifyDesc: "Xác minh on-chain 0.3 TON kích hoạt nhân đôi phần thưởng vĩnh viễn.", verifyBtn: "Xác Minh 0.3 TON",
         navMine: "Đào", navQuiz: "Đố Vui", navTasks: "Nhiệm Vụ", navFriends: "Bạn Bè", navWallet: "Ví", docs: "Tài Liệu"
       },
       id: {
@@ -741,8 +741,82 @@
         invite: "دعوت از دوستان", unclaimed: "پاداش‌های مطالبه نشده", claimRewards: "دریافت",
         walletHeading: "کیف پول چند زنجیره‌ای", walletSubHeading: "اتصال کیف پول‌های TON و Pi",
         connectTon: "اتصال به TON", verifyTitle: "محافظت سیبیل و ضریب ۲ برابری",
-        verifyDesc: "تایید با ۰.۳ TON برای ضریب ۲ برابری دائمی.", verifyBtn: "تایید ۰.३ TON",
+        verifyDesc: "تایید با ۰.۳ TON برای ضریب ۲ برابری دائمی.", verifyBtn: "تایید ۰.۳ TON",
         navMine: "استخراج", navQuiz: "کوییز", navTasks: "ماموریت", navFriends: "دوستان", navWallet: "کیف پول", docs: "مستندات"
+      }
+    };
+
+    // --- TASK TITLES IN ALL 10 LANGUAGES ---
+    const TASK_TRANSLATIONS = {
+      hi: {
+        tg_ch: "आधिकारिक घोषणा चैनल से जुड़ें",
+        tg_grp: "पब्लिक कम्युनिटी ग्रुप में शामिल हों",
+        x_com: "Proof of Mind को X पर फॉलो करें",
+        yt_sub: "यूट्यूब चैनल सब्सक्राइब करें",
+        fb_page: "फेसबुक पेज को फॉलो करें"
+      },
+      en: {
+        tg_ch: "Join POM Announcement Channel",
+        tg_grp: "Join POM Public Community Group",
+        x_com: "Follow Proof of Mind on X",
+        yt_sub: "Subscribe Official YouTube Channel",
+        fb_page: "Follow Official Facebook Page"
+      },
+      ru: {
+        tg_ch: "Подписаться на канал анонсов",
+        tg_grp: "Вступить в группу сообщества",
+        x_com: "Подписаться на X (Twitter)",
+        yt_sub: "Подписаться на YouTube канал",
+        fb_page: "Подписаться на страницу Facebook"
+      },
+      zh: {
+        tg_ch: "加入官方公告频道",
+        tg_grp: "加入官方社区讨论群",
+        x_com: "在 X 上关注 Proof of Mind",
+        yt_sub: "订阅官方 YouTube 频道",
+        fb_page: "关注官方 Facebook 页面"
+      },
+      es: {
+        tg_ch: "Unirse al canal de anuncios oficial",
+        tg_grp: "Unirse al grupo de la comunidad",
+        x_com: "Seguir Proof of Mind en X",
+        yt_sub: "Suscribirse al canal de YouTube",
+        fb_page: "Seguir la página de Facebook"
+      },
+      ar: {
+        tg_ch: "الانضمام إلى قناة الإعلانات الرسمية",
+        tg_grp: "الانضمام إلى مجموعة المجتمع العامة",
+        x_com: "متابعة Proof of Mind على X",
+        yt_sub: "الاشتراك في قناة يوتيوب الرسمية",
+        fb_page: "متابعة صفحة فيسبوك الرسمية"
+      },
+      bn: {
+        tg_ch: "অফিসিয়াল ঘোষণা চ্যানেলে যোগ দিন",
+        tg_grp: "পাবলিক কমিউনিটি গ্রুপে যোগ দিন",
+        x_com: "X-এ Proof of Mind অনুসরণ করুন",
+        yt_sub: "অফিসিয়াল ইউটিউব চ্যানেল সাবস্ক্রাইব করুন",
+        fb_page: "অফিসিয়াল ফেসবুক পেজ ফলো করুন"
+      },
+      vi: {
+        tg_ch: "Tham gia Kênh thông báo chính thức",
+        tg_grp: "Tham gia Nhóm cộng đồng công khai",
+        x_com: "Theo dõi Proof of Mind trên X",
+        yt_sub: "Đăng ký Kênh YouTube chính thức",
+        fb_page: "Theo dõi Trang Facebook chính thức"
+      },
+      id: {
+        tg_ch: "Gabung Saluran Pengumuman Resmi",
+        tg_grp: "Gabung Grup Komunitas Publik",
+        x_com: "Ikuti Proof of Mind di X",
+        yt_sub: "Langganan Saluran YouTube Resmi",
+        fb_page: "Ikuti Halaman Facebook Resmi"
+      },
+      fa: {
+        tg_ch: "عضویت در کانال رسمی اطلاعیه‌ها",
+        tg_grp: "عضویت در گروه عمومی جامعه",
+        x_com: "دنبال کردن Proof of Mind در X",
+        yt_sub: "اشتراک در کانال رسمی یوتیوب",
+        fb_page: "دنبال کردن صفحه رسمی فیس‌بوک"
       }
     };
 
@@ -802,7 +876,7 @@
       ]
     };
 
-    // --- MULTILINGUAL QUIZ DATABASE (ALL 10 LANGUAGES) ---
+    // --- MULTILINGUAL QUIZ DATABASE ---
     const QUIZ_REPOSITORY = {
       hi: [
         { q: "POM बौद्धिक सत्यापन के लिए किस सर्वसम्मति का उपयोग करता है?", options: ["Proof of Work", "Proof of Intellect", "Proof of Stake", "Proof of Authority"], correct: 1 },
@@ -844,7 +918,7 @@
       vi: [
         { q: "Proof of Mind triển khai giao thức đồng thuận nào?", options: ["Proof of Work", "Proof of Intellect", "Proof of Stake", "Proof of Authority"], correct: 1 },
         { q: "Tổng cung tối đa của token POM là bao nhiêu?", options: ["500 Triệu", "1 Tỷ (1 Billion)", "2 Tỷ", "100 Triệu"], correct: 1 },
-        { q: "Xác minh 0.3 TON mang lại lợi ích vĩnh viễn gì?", options: ["Nhân đôi 2x vĩnh viễn", "Thêm 5 Tim", "Cấp 100 ngay lập tức", "500 POM miễn phí"], correct: 0 }
+        { q: "Xác minh on-chain 0.3 TON mang lại lợi ích vĩnh viễn gì?", options: ["Nhân đôi 2x vĩnh viễn", "Thêm 5 Tim", "Cấp 100 ngay lập tức", "500 POM miễn phí"], correct: 0 }
       ],
       id: [
         { q: "Protokol konsensus apa yang diterapkan oleh POM?", options: ["Proof of Work", "Proof of Intellect", "Proof of Stake", "Proof of Authority"], correct: 1 },
@@ -863,7 +937,7 @@
     let quizTimer = null;
     let quizRemainingTime = 25;
 
-    // --- STORAGE & BACKEND SYNC ---
+    // --- STORAGE PERSISTENCE ---
     function loadSavedState() {
       try {
         const saved = localStorage.getItem('POM_USER_STATE');
@@ -886,46 +960,12 @@
           tonConnected: state.tonConnected,
           tonAddress: state.tonAddress,
           tasks: state.tasks,
+          tier1Users: state.tier1Users,
+          tier2Users: state.tier2Users,
+          tier3Users: state.tier3Users,
           unclaimedCommission: state.unclaimedCommission
         }));
       } catch(e) {}
-    }
-
-    // ऑटोमेटिक बैकएंड सिंक (Render से कनेक्ट होने पर सक्रिय)
-    async function syncWithBackendServer() {
-      if (!CONFIG.BACKEND_API_URL) return;
-      try {
-        const startParam = window.Telegram?.WebApp?.initDataUnsafe?.start_param || "";
-        const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
-        const res = await fetch(`${CONFIG.BACKEND_API_URL}/api/user/sync`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            telegram_id: state.telegram_id,
-            username: tgUser?.username || "",
-            first_name: tgUser?.first_name || "",
-            start_param: startParam
-          })
-        });
-        const data = await res.json();
-        if (data && data.user) {
-          state.balance = data.user.balance;
-          state.mineLevel = data.user.mineLevel;
-          state.isVerified = data.user.isVerified;
-          state.unclaimedCommission = data.user.unclaimedCommission || 0;
-          if (data.user.referrals) {
-            state.tier1Users = data.user.referrals.tier1?.length || 0;
-            state.tier2Users = data.user.referrals.tier2?.length || 0;
-            state.tier3Users = data.user.referrals.tier3?.length || 0;
-          }
-          safeSetText('tier1UsersCount', state.tier1Users);
-          safeSetText('tier2UsersCount', state.tier2Users);
-          safeSetText('tier3UsersCount', state.tier3Users);
-          updateHUD();
-        }
-      } catch (err) {
-        console.log("Backend offline, running in local state.");
-      }
     }
 
     function safeSetText(id, text) {
@@ -1155,7 +1195,7 @@
       }
     }
 
-    // --- TIMED QUIZ ENGINE ---
+    // --- TIMED QUIZ ENGINE (FIXED: NO ENERGY CUT ON CORRECT ANSWER) ---
     function startQuizRound() {
       stopQuizTimer();
       const repo = QUIZ_REPOSITORY[state.lang] || QUIZ_REPOSITORY.en;
@@ -1182,7 +1222,7 @@
         updateQuizTimerBar();
         if (quizRemainingTime <= 0) {
           stopQuizTimer();
-          state.energy--;
+          state.energy--; // टाइमर खत्म होने पर 1 हार्ट कटेगा
           saveActiveState();
           updateHUD();
           showToast("Time up! -1 ❤️ lost", "⏳");
@@ -1209,12 +1249,12 @@
         const reward = state.isVerified ? 2 : 1;
         state.balance += reward;
         state.quizLevel++;
-        state.energy--;
+        // ध्यान दें: सही उत्तर पर कोई हार्ट (❤️) नहीं कटेगा
         creditReferralCommission(reward);
         saveActiveState();
         showToast(`Correct Answer! +${reward} POM`, "🌟");
       } else {
-        state.energy--;
+        state.energy--; // केवल गलत उत्तर पर 1 हार्ट कटेगा
         saveActiveState();
         showToast("Incorrect answer! -1 ❤️ lost", "❌");
         state.quizLevel++;
@@ -1242,15 +1282,19 @@
       showToast(`Energy Recharged (+${amount} ❤️)!`, "⚡");
     }
 
-    // --- COMMUNITY TASKS ---
+    // --- COMMUNITY TASKS (FIXED: ALL TITLES TRANSLATE DYNAMICALLY) ---
     function renderTasks() {
       const container = document.getElementById('tasksListContainer');
       if (!container) return;
       container.innerHTML = '';
 
+      const activeLangTasks = TASK_TRANSLATIONS[state.lang] || TASK_TRANSLATIONS.en;
+
       state.tasks.forEach((task, idx) => {
         const card = document.createElement('div');
         card.className = "bg-brand-card border border-brand-cardBorder rounded-xl p-3 flex items-center justify-between shadow";
+
+        const localizedTitle = activeLangTasks[task.id] || task.title;
 
         let actionBtnHtml = '';
         if (task.completed) {
@@ -1267,7 +1311,7 @@
               <i class="${task.icon} text-sm"></i>
             </div>
             <div>
-              <h4 class="text-xs font-bold text-white truncate max-w-[190px]">${task.title}</h4>
+              <h4 class="text-xs font-bold text-white truncate max-w-[190px]">${localizedTitle}</h4>
               <span class="text-[9px] text-amber-400 font-bold">+${task.reward} POM</span>
             </div>
           </div>
@@ -1329,7 +1373,61 @@
       window.open(`https://t.me/share/url?url=${url}&text=${text}`, '_blank');
     }
 
-    // --- 0.3 TON ON-CHAIN VERIFICATION & WALLET INTEGRATION ---
+    // --- TONCONNECT 2.0 INITIALIZATION & REAL WALLET POPUP ---
+    function initRealTonConnect() {
+      try {
+        if (window.TON_CONNECT_UI) {
+          const manifestUrl = window.location.origin.includes('http')
+            ? `${window.location.origin}/tonconnect-manifest.json`
+            : 'https://proof-of-mind-vvnd.vercel.app/tonconnect-manifest.json';
+
+          tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+            manifestUrl: manifestUrl
+          });
+
+          tonConnectUI.onStatusChange(wallet => {
+            if (wallet && wallet.account) {
+              state.tonConnected = true;
+              state.tonAddress = wallet.account.address;
+              saveActiveState();
+              updateHUD();
+              showToast("TON Wallet Connected!", "💎");
+            } else {
+              state.tonConnected = false;
+              state.tonAddress = null;
+              saveActiveState();
+              updateHUD();
+            }
+          });
+        }
+      } catch (err) {
+        console.error("TonConnect error:", err);
+      }
+    }
+
+    async function toggleTonConnection() {
+      if (state.tonConnected) {
+        if (tonConnectUI) {
+          try { await tonConnectUI.disconnect(); } catch (e) {}
+        }
+        state.tonConnected = false;
+        state.tonAddress = null;
+        saveActiveState();
+        updateHUD();
+        showToast("TON Wallet Disconnected", "💎");
+      } else {
+        if (tonConnectUI) {
+          try {
+            await tonConnectUI.openModal();
+          } catch (e) {
+            openTonVerifyModal();
+          }
+        } else {
+          openTonVerifyModal();
+        }
+      }
+    }
+
     function handleWalletVerifyClick() {
       if (state.isVerified) {
         showToast("Account already verified with 2x Boost active!", "✔");
@@ -1346,14 +1444,12 @@
       showToast("Admin TON Wallet copied!", "📋");
     }
 
-    // Direct Tonkeeper Pay Deep-Link (0.3 TON = 300000000 nanotons)
     function openTonkeeperPay() {
       const transferUrl = `https://app.tonkeeper.com/transfer/${CONFIG.ADMIN_TON_WALLET}?amount=300000000&text=POM-Verify`;
       window.open(transferUrl, '_blank');
       showToast("Opening Tonkeeper...", "💎");
     }
 
-    // Direct Telegram Wallet Pay Deep-Link
     function openTelegramWalletPay() {
       const tgWalletUrl = `https://t.me/wallet?startattach=ton_transfer_${CONFIG.ADMIN_TON_WALLET}_300000000`;
       window.open(tgWalletUrl, '_blank');
@@ -1380,14 +1476,6 @@
       showToast("0.3 TON Verification confirmed! 2x boost active.", "🛡️");
     }
 
-    function toggleTonConnection() {
-      state.tonConnected = !state.tonConnected;
-      state.tonAddress = state.tonConnected ? "UQD5ZiNy8...46c-f98US" : null;
-      saveActiveState();
-      updateHUD();
-      showToast(state.tonConnected ? "TON Wallet Connected" : "TON Wallet Disconnected", "💎");
-    }
-
     function connectPiWallet() {
       safeSetText('piStatusBadge', 'Pi Connected');
       safeSetText('piUserText', '@pioneer_mind (Verified)');
@@ -1399,6 +1487,9 @@
       safeSetText('userBalanceDisplay', state.balance);
       safeSetText('walletTotalPomDisplay', `${state.balance} POM`);
       safeSetText('referralLinkText', getReferralLink());
+      safeSetText('tier1UsersCount', state.tier1Users);
+      safeSetText('tier2UsersCount', state.tier2Users);
+      safeSetText('tier3UsersCount', state.tier3Users);
 
       const isQuizTab = !document.getElementById('tabQuiz').classList.contains('hidden');
       safeSetText('labelLevel', isQuizTab ? (state.lang === 'hi' ? 'क्विज़ लेवल' : 'Quiz Level') : (state.lang === 'hi' ? 'माइन लेवल' : 'Mine Level'));
@@ -1435,7 +1526,7 @@
 
       if (state.tonConnected) {
         safeSetText('tonStatusBadge', 'TON Connected');
-        safeSetText('tonAddressText', state.tonAddress);
+        safeSetText('tonAddressText', state.tonAddress ? `${state.tonAddress.slice(0, 8)}...${state.tonAddress.slice(-6)}` : "Connected");
         const btn = document.getElementById('btnConnectTon');
         if (btn) btn.innerHTML = '<i class="fa-solid fa-link-slash mr-1"></i> Disconnect TON';
       } else {
@@ -1446,7 +1537,7 @@
       }
     }
 
-    // --- COMPLETE UNCLIPPED MULTILINGUAL WHITEPAPER (ALL 10 LANGUAGES) ---
+    // --- COMPLETE MULTILINGUAL WHITEPAPER ---
     function renderDocsContent() {
       const container = document.getElementById('docsBodyContainer');
       if (!container) return;
@@ -1734,6 +1825,13 @@
       showToast(`2x Boost is now ${state.isVerified ? 'ENABLED' : 'DISABLED'}`, "🛡️");
     }
 
+    function adminSimulateReferral() {
+      state.tier1Users += 1;
+      saveActiveState();
+      updateHUD();
+      showToast("Added +1 Tier 1 Referral!", "👥");
+    }
+
     function adminResetAllData() {
       localStorage.removeItem('POM_USER_STATE');
       state.balance = 130;
@@ -1741,6 +1839,9 @@
       state.quizLevel = 1;
       state.energy = 5;
       state.isVerified = false;
+      state.tier1Users = 0;
+      state.tier2Users = 0;
+      state.tier3Users = 0;
       state.unclaimedCommission = 0;
       initCurrentPuzzle();
       renderTasks();
@@ -1755,7 +1856,6 @@
         window.Telegram.WebApp.ready();
         window.Telegram.WebApp.expand();
         
-        // टेलीग्राम यूज़र की असली आईडी डिटेक्ट करें
         const tgUser = window.Telegram.WebApp.initDataUnsafe?.user;
         if (tgUser && tgUser.id) {
           state.telegram_id = String(tgUser.id);
@@ -1766,7 +1866,7 @@
       initCurrentPuzzle();
       renderTasks();
       updateHUD();
-      syncWithBackendServer();
+      initRealTonConnect();
     }
 
     if (document.readyState === 'loading') {
