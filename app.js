@@ -197,14 +197,34 @@ function initCurrentPuzzle() {
   const rawItem = langWords[(state.mineLevel - 1) % langWords.length];
   const targetWord = (typeof rawItem === 'object' && rawItem.word) ? rawItem.word : rawItem;
   
-  currentTargetTiles = Array.from(targetWord);
+  // मात्राओं को अक्षर के साथ जोड़कर रखना (जैसे 'कि', 'ता' एक साथ रहे, अलग न टूटे)
+  if (typeof Intl !== 'undefined' && Intl.Segmenter) {
+    const segmenter = new Intl.Segmenter(state.lang || 'en', { granularity: 'grapheme' });
+    currentTargetTiles = Array.from(segmenter.segment(targetWord), s => s.segment);
+  } else {
+    currentTargetTiles = Array.from(targetWord);
+  }
   state.selectedLetters = [];
 
-  // उसी भाषा के बाकी शब्दों से अक्षर उठाना (ताकि कभी इंग्लिश मिक्स न हो)
-  const allLangChars = langWords.join('').split('');
-  const extraFillers = allLangChars.filter(c => !currentTargetTiles.includes(c));
-  const randomFillers = extraFillers.sort(() => Math.random() - 0.5).slice(0, 4);
-  
+  // उसी भाषा से 2-3 आसान और साफ़ अक्षर चुनना
+  let allChars = [];
+  if (typeof Intl !== 'undefined' && Intl.Segmenter) {
+    const segmenter = new Intl.Segmenter(state.lang || 'en', { granularity: 'grapheme' });
+    langWords.forEach(w => {
+      const str = (typeof w === 'object' && w.word) ? w.word : w;
+      for (const seg of segmenter.segment(str)) {
+        if (!/^[\u0901-\u0903\u093c\u093e-\u094f\u0951-\u0957\u0962-\u0963]/.test(seg.segment)) {
+          allChars.push(seg.segment);
+        }
+      }
+    });
+  } else {
+    allChars = ["क", "म", "न", "स", "र", "ल", "प", "द", "त"];
+  }
+
+  const cleanFillers = [...new Set(allChars)].filter(c => !currentTargetTiles.includes(c));
+  const randomFillers = cleanFillers.sort(() => Math.random() - 0.5).slice(0, 3);
+
   const pool = [...currentTargetTiles, ...randomFillers];
   currentScrambledTiles = pool.sort(() => Math.random() - 0.5);
 
