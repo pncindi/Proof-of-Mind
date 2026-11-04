@@ -409,22 +409,29 @@ function watchAdAndRefill(amount) {
 
   if (window.Adsgram) {
     showToast("Loading Ad...", "⏳");
-    const AdController = window.Adsgram.init({ blockId: blockId, debug: false });
+    const AdController = window.Adsgram.init({ blockId: blockId, debug: true });
     
     AdController.show().then((result) => {
-      if (result.done) {
-        state.energy = Math.min(5, state.energy + amount);
-        saveActiveState();
-        closeEnergyModal();
-        updateHUD();
-        showToast(`Energy Recharged (+${amount} ❤️)!`, "⚡");
-      }
+      state.energy = 5;
+      saveActiveState();
+      closeEnergyModal();
+      updateHUD();
+      showToast("Energy Recharged (Full ❤️)!", "⚡");
     }).catch((result) => {
-      console.error("Adsgram Error:", result);
-      showToast("Ad not available or dismissed", "⚠️");
+      // टेस्टिंग फ़ॉलबैक: ब्लॉक एक्टिव न होने पर भी टेस्ट के लिए एनर्जी दे देगा
+      console.warn("Adsgram inactive, granting test refill:", result);
+      state.energy = 5;
+      saveActiveState();
+      closeEnergyModal();
+      updateHUD();
+      showToast("Test Refill: Full Energy Restored!", "⚡");
     });
   } else {
-    showToast("Ad network unavailable! Check index.html", "⚠️");
+    state.energy = 5;
+    saveActiveState();
+    closeEnergyModal();
+    updateHUD();
+    showToast("Test Refill: Full Energy Restored!", "⚡");
   }
 }
 
