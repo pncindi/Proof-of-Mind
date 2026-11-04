@@ -336,26 +336,105 @@ function submitMiningBlock() {
   }
 }
 
-// --- TIMED QUIZ ENGINE (NO ENERGY CUT ON SUCCESS) ---
+// --- DYNAMIC NEVER-ENDING QUIZ GENERATOR ---
+let playedQuestionIds = new Set();
+
+function generateDynamicQuestion(lang = 'hi') {
+  const isHi = lang === 'hi';
+  const modes = ['math_add', 'math_mul', 'iq_series', 'crypto_calc', 'static_pool'];
+  const mode = modes[Math.floor(Math.random() * modes.length)];
+
+  if (mode === 'math_add') {
+    const a = Math.floor(Math.random() * 85) + 12;
+    const b = Math.floor(Math.random() * 85) + 15;
+    const ans = a + b;
+    const opts = [ans, ans + 2, ans - 3, ans + 10].sort(() => Math.random() - 0.5);
+    return {
+      q: isHi ? `त्वरित गणना: ${a} + ${b} का मान क्या होगा?` : `Speed Math: What is ${a} + ${b}?`,
+      options: opts.map(String),
+      correct: opts.indexOf(ans)
+    };
+  }
+
+  if (mode === 'math_mul') {
+    const a = Math.floor(Math.random() * 14) + 3;
+    const b = Math.floor(Math.random() * 11) + 4;
+    const ans = a * b;
+    const opts = [ans, ans + 4, ans - 5, ans + 12].sort(() => Math.random() - 0.5);
+    return {
+      q: isHi ? `माइंड लॉजिक: ${a} × ${b} = ?` : `Mental Logic: ${a} × ${b} = ?`,
+      options: opts.map(String),
+      correct: opts.indexOf(ans)
+    };
+  }
+
+  if (mode === 'iq_series') {
+    const start = Math.floor(Math.random() * 15) + 2;
+    const step = Math.floor(Math.random() * 6) + 3;
+    const s1 = start, s2 = start + step, s3 = start + step * 2, s4 = start + step * 3;
+    const ans = start + step * 4;
+    const opts = [ans, ans + step, ans - 2, ans + 4].sort(() => Math.random() - 0.5);
+    return {
+      q: isHi ? `पैटर्न पहचानें: ${s1}, ${s2}, ${s3}, ${s4}, [ ? ]` : `Complete the series: ${s1}, ${s2}, ${s3}, ${s4}, [ ? ]`,
+      options: opts.map(String),
+      correct: opts.indexOf(ans)
+    };
+  }
+
+  if (mode === 'crypto_calc') {
+    const tonVal = Math.floor(Math.random() * 8) + 2;
+    const rate = 150;
+    const ans = tonVal * rate;
+    const opts = [ans, ans + rate, ans - 50, ans * 2].sort(() => Math.random() - 0.5);
+    return {
+      q: isHi ? `यदि 1 TON = ${rate} POM है, तो ${tonVal} TON में कितने POM बनेंगे?` : `If 1 TON = ${rate} POM, how many POM in ${tonVal} TON?`,
+      options: opts.map(String),
+      correct: opts.indexOf(ans)
+    };
+  }
+
+  const dictList = (typeof QUIZ_QUESTIONS !== 'undefined' && QUIZ_QUESTIONS[lang]) 
+    ? QUIZ_QUESTIONS[lang] 
+    : (typeof QUIZ_QUESTIONS !== 'undefined' && QUIZ_QUESTIONS.hi ? QUIZ_QUESTIONS.hi : []);
+
+  if (dictList && dictList.length > 0) {
+    let unplayed = dictList.filter((_, idx) => !playedQuestionIds.has(`${lang}_${idx}`));
+    if (unplayed.length === 0) {
+      playedQuestionIds.clear();
+      unplayed = dictList;
+    }
+    const chosen = unplayed[Math.floor(Math.random() * unplayed.length)];
+    const chosenIdx = dictList.indexOf(chosen);
+    playedQuestionIds.add(`${lang}_${chosenIdx}`);
+    return chosen;
+  }
+
+  return {
+    q: isHi ? "Web3 में विकेंद्रीकरण (Decentralization) का क्या अर्थ है?" : "What does Decentralization mean in Web3?",
+    options: isHi ? ["उपयोगकर्ता का स्वामित्त्व", "एकल सर्वर नियंत्रण", "सरकारी एकाधिकार", "सीमित उपयोग"] : ["User Ownership", "Single Server", "Centralized", "Closed Source"],
+    correct: 0
+  };
+}
+
 function startQuizRound() {
   stopQuizTimer();
-  const activeBank = (typeof QUIZ_BANK !== 'undefined') ? QUIZ_BANK : (typeof QUIZ_REPOSITORY !== 'undefined' ? QUIZ_REPOSITORY : {});
-    const repo = (activeBank && activeBank[state.lang]) ? activeBank[state.lang] : (activeBank ? activeBank.en : []);
-  const qIdx = (state.quizLevel - 1) % repo.length;
-  const q = repo[qIdx];
-  safeSetText('quizQuestionText', q.q);
 
+  const currentQ = generateDynamicQuestion(state.lang || 'hi');
+  if (!currentQ) return;
+
+  const questionEl = document.getElementById('quizQuestionText');
   const optsContainer = document.getElementById('quizOptionsContainer');
-  if (optsContainer) {
-    optsContainer.innerHTML = '';
-    q.options.forEach((opt, idx) => {
-      const btn = document.createElement('button');
-      btn.className = "w-full bg-slate-800/90 hover:bg-slate-700 active:scale-98 text-left text-xs font-semibold text-slate-200 p-2.5 rounded-xl border border-slate-700 transition-all";
-      btn.innerText = opt;
-      btn.onclick = () => submitQuizAnswer(idx, q.correct);
-      optsContainer.appendChild(btn);
-    });
-  }
+  if (questionEl) questionEl.innerText = currentQ.q;
+  if (!optsContainer) return;
+
+  optsContainer.innerHTML = '';
+  currentQ.options.forEach((opt, idx) => {
+    const btn = document.createElement('button');
+    btn.className = 'w-full py-3.5 px-4 rounded-xl bg-slate-800/90 border border-slate-700/60 hover:border-cyan-500 font-semibold text-slate-100 transition-all text-center active:scale-95 text-sm sm:text-base';
+    btn.innerText = opt;
+    btn.onclick = () => submitQuizAnswer(idx, currentQ.correct);
+    optsContainer.appendChild(btn);
+  });
 
   quizRemainingTime = 25;
   updateQuizTimerBar();
@@ -367,7 +446,7 @@ function startQuizRound() {
       state.energy--;
       saveActiveState();
       updateHUD();
-      showToast("Time up! -1 ❤️ lost", "⏳");
+      showToast("Time up! -1 ❤️ lost", "⌛");
       if (state.energy <= 0) openEnergyModal();
       state.quizLevel++;
       startQuizRound();
