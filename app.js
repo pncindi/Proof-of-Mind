@@ -1030,22 +1030,54 @@ function adminResetAllData() {
 }
 
 // --- APPLICATION STARTUP ---
-function startApp() {
-  if (window.Telegram?.WebApp) {
-    window.Telegram.WebApp.ready();
-    window.Telegram.WebApp.expand();
-    
-    const tgUser = window.Telegram.WebApp.initDataUnsafe?.user;
-    if (tgUser && tgUser.id) {
-      state.telegram_id = String(tgUser.id);
+async function startApp() {
+    let startParam = "";
+    let tgUser = null;
+
+    if (window.Telegram?.WebApp) {
+        window.Telegram.WebApp.ready();
+        window.Telegram.WebApp.expand();
+
+        tgUser = window.Telegram.WebApp.initDataUnsafe?.user;
+        startParam = window.Telegram.WebApp.initDataUnsafe?.start_param || "";
+
+        if (tgUser && tgUser.id) {
+            state.telegram_id = String(tgUser.id);
+        }
     }
-  }
-  loadSavedState();
-  applyCurrentLanguage();
-  initCurrentPuzzle();
-  renderTasks();
-  updateHUD();
-  initRealTonConnect();
+
+    loadSavedState();
+    applyCurrentLanguage();
+    initCurrentPuzzle();
+    renderTasks();
+    updateHUD();
+    initRealTonConnect();
+
+    // --- बैकएंड पर यूज़र और रेफ़रल सिंक करने का कोड ---
+    if (CONFIG.BACKEND_API_URL && state.telegram_id && state.telegram_id !== "pioneer") {
+        try {
+            const res = await fetch(`${CONFIG.BACKEND_API_URL}/api/user/sync`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    telegram_id: state.telegram_id,
+                    username: tgUser?.username || "",
+                    first_name: tgUser?.first_name || "",
+                    start_param: startParam
+                })
+            });
+            const data = await res.json();
+            if (data && data.user) {
+                // सर्वर से ताज़ा रेफ़रल काउंट और डेटा अपडेट करें
+                if (data.user.referrals?.tier1) {
+                    state.tier1Users = data.user.referrals.tier1.length;
+                }
+                updateHUD();
+            }
+        } catch (err) {
+            console.error("User sync error:", err);
+        }
+    }
 }
 
 if (document.readyState === 'loading') {
