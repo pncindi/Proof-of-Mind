@@ -200,8 +200,12 @@ function initCurrentPuzzle() {
   currentTargetTiles = Array.from(targetWord);
   state.selectedLetters = [];
 
-  const extraFillers = (typeof rawItem === 'object' && rawItem.fillers) ? rawItem.fillers : ["A", "B", "X", "Z", "क", "स", "प", "र"];
-  const pool = [...currentTargetTiles, ...extraFillers.slice(0, 4)];
+  // उसी भाषा के बाकी शब्दों से अक्षर उठाना (ताकि कभी इंग्लिश मिक्स न हो)
+  const allLangChars = langWords.join('').split('');
+  const extraFillers = allLangChars.filter(c => !currentTargetTiles.includes(c));
+  const randomFillers = extraFillers.sort(() => Math.random() - 0.5).slice(0, 4);
+  
+  const pool = [...currentTargetTiles, ...randomFillers];
   currentScrambledTiles = pool.sort(() => Math.random() - 0.5);
 
   renderPuzzleBoard();
@@ -401,11 +405,27 @@ function closeEnergyModal() {
 }
 
 function watchAdAndRefill(amount) {
-  state.energy = Math.min(5, state.energy + amount);
-  saveActiveState();
-  closeEnergyModal();
-  updateHUD();
-  showToast(`Energy Recharged (+${amount} ❤️)!`, "⚡");
+  const blockId = (typeof CONFIG !== 'undefined' && CONFIG.ADSGRAM_BLOCK_ID) ? CONFIG.ADSGRAM_BLOCK_ID : "57910";
+
+  if (window.Adsgram) {
+    showToast("Loading Ad...", "⏳");
+    const AdController = window.Adsgram.init({ blockId: blockId, debug: false });
+    
+    AdController.show().then((result) => {
+      if (result.done) {
+        state.energy = Math.min(5, state.energy + amount);
+        saveActiveState();
+        closeEnergyModal();
+        updateHUD();
+        showToast(`Energy Recharged (+${amount} ❤️)!`, "⚡");
+      }
+    }).catch((result) => {
+      console.error("Adsgram Error:", result);
+      showToast("Ad not available or dismissed", "⚠️");
+    });
+  } else {
+    showToast("Ad network unavailable! Check index.html", "⚠️");
+  }
 }
 
 // --- COMMUNITY TASKS ---
@@ -696,7 +716,19 @@ function updateHUD() {
 
   if (state.tonConnected) {
     safeSetText('tonStatusBadge', 'TON Connected');
-    let displayAddr = state.tonAddress || "Connected";
+    let raw = state.tonAddress || "";
+    try {
+      if (typeof TonConnectSDK !== 'undefined' && TonConnectSDK.toUserFriendlyAddress && raw.startsWith("0:")) {
+        raw = TonConnectSDK.toUserFriendlyAddress(raw);
+      } else if (typeof tonConnectUI !== 'undefined' && tonConnectUI.toUserFriendlyAddress && raw.startsWith("0:")) {
+        raw = tonConnectUI.toUserFriendlyAddress(raw);
+      } else if (window.TON_CONNECT_UI && window.TON_CONNECT_UI.toUserFriendlyAddress && raw.startsWith("0:")) {
+        raw = window.TON_CONNECT_UI.toUserFriendlyAddress(raw);
+      }
+    } catch (e) {
+      console.log("Address format error:", e);
+    }
+    let displayAddr = raw || "Connected";
     if (displayAddr.length > 14) {
       displayAddr = `${displayAddr.slice(0, 8)}...${displayAddr.slice(-6)}`;
     }
