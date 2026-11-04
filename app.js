@@ -300,7 +300,8 @@ function submitMiningBlock() {
 // --- TIMED QUIZ ENGINE (NO ENERGY CUT ON SUCCESS) ---
 function startQuizRound() {
   stopQuizTimer();
-  const repo = QUIZ_REPOSITORY[state.lang] || QUIZ_REPOSITORY.en;
+  const activeBank = (typeof QUIZ_BANK !== 'undefined') ? QUIZ_BANK : (typeof QUIZ_REPOSITORY !== 'undefined' ? QUIZ_REPOSITORY : {});
+    const repo = (activeBank && activeBank[state.lang]) ? activeBank[state.lang] : (activeBank ? activeBank.en : []);
   const qIdx = (state.quizLevel - 1) % repo.length;
   const q = repo[qIdx];
   safeSetText('quizQuestionText', q.q);
