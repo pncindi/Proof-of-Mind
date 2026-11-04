@@ -5,7 +5,7 @@
 const CONFIG = {
   BACKEND_API_URL: "https://proof-of-mind-api.onrender.com",
   ADMIN_TON_WALLET: "UQD5ZiNy8-eV7l6Ny46c-f98USLg-JXPTRRIPMV-0YiadqJV",
-  BOT_USERNAME: "proof_of_mind_bot",
+  BOT_USERNAME: "proofofmind_bot",
   ADSGRAM_BLOCK_ID: "57910"
 };
 
