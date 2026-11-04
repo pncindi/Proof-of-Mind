@@ -189,12 +189,19 @@ function switchTab(tabId) {
 
 // --- WORD PUZZLE MINING ENGINE (CORRECTED: NO ENERGY CUT ON WIN) ---
 function initCurrentPuzzle() {
-  const langWords = LOCAL_WORDS[state.lang] || LOCAL_WORDS.en;
-  const puzzleObj = langWords[(state.mineLevel - 1) % langWords.length];
-  currentTargetTiles = [...puzzleObj.word];
+  const activeDict = (typeof MINE_DICTIONARY !== 'undefined') ? MINE_DICTIONARY : (typeof LOCAL_WORDS !== 'undefined' ? LOCAL_WORDS : {});
+  const langWords = (activeDict && activeDict[state.lang]) ? activeDict[state.lang] : (activeDict ? (activeDict.en || activeDict.hi) : []);
+
+  if (!langWords || langWords.length === 0) return;
+
+  const rawItem = langWords[(state.mineLevel - 1) % langWords.length];
+  const targetWord = (typeof rawItem === 'object' && rawItem.word) ? rawItem.word : rawItem;
+  
+  currentTargetTiles = Array.from(targetWord);
   state.selectedLetters = [];
 
-  let pool = [...currentTargetTiles, ...puzzleObj.fillers];
+  const extraFillers = (typeof rawItem === 'object' && rawItem.fillers) ? rawItem.fillers : ["A", "B", "X", "Z", "क", "स", "प", "र"];
+  const pool = [...currentTargetTiles, ...extraFillers.slice(0, 4)];
   currentScrambledTiles = pool.sort(() => Math.random() - 0.5);
 
   renderPuzzleBoard();
@@ -267,7 +274,15 @@ function submitMiningBlock() {
     state.selectedLetters.every((val, index) => val === currentTargetTiles[index]);
 
   if (isCorrect) {
-    const reward = state.isVerified ? 6 : 3;
+    let baseMineReward = 3;
+    if (state.mineLevel >= 81) {
+      baseMineReward = 30;
+    } else if (state.mineLevel >= 51) {
+      baseMineReward = 15;
+    } else if (state.mineLevel >= 21) {
+      baseMineReward = 8;
+    }
+    const reward = state.isVerified ? (baseMineReward * 2) : baseMineReward;
     state.balance += reward;
     state.mineLevel++;
     // सही उत्तर पर एनर्जी (❤️) नहीं कटेगी
