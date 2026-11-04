@@ -348,7 +348,15 @@ function submitQuizAnswer(selectedIdx, correctIdx) {
   }
 
   if (selectedIdx === correctIdx) {
-    const reward = state.isVerified ? 2 : 1;
+    let baseReward = 2;
+    if (state.quizLevel >= 81) {
+      baseReward = 20;
+    } else if (state.quizLevel >= 51) {
+      baseReward = 10;
+    } else if (state.quizLevel >= 21) {
+      baseReward = 5;
+    }
+    const reward = state.isVerified ? (baseReward * 2) : baseReward;
     state.balance += reward;
     state.quizLevel++;
     // सही उत्तर पर एनर्जी (❤️) नहीं कटेगी
