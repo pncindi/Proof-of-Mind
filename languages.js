@@ -2,7 +2,7 @@
 // PROOF OF MIND (POM) - MULTILINGUAL DATA ENGINE
 // ==========================================
 
-const TRANSLATIONS = {
+export const TRANSLATIONS = {
   hi: {
     balance: "बैलेंस", level: "लेवल", energy: "एनर्जी",
     mineHeading: "वर्ड पज़ल माइनिंग", mineSubHeading: "ब्लॉक माइन करने के लिए सही अक्षरों का चयन करें",
@@ -137,7 +137,7 @@ const TRANSLATIONS = {
   }
 };
 
-const TASK_TRANSLATIONS = {
+export const TASK_TRANSLATIONS = {
   hi: {
     tg_ch: "आधिकारिक घोषणा चैनल से जुड़ें",
     tg_grp: "पब्लिक कम्युनिटी ग्रुप में शामिल हों",
@@ -210,7 +210,7 @@ const TASK_TRANSLATIONS = {
   }
 };
 
-const LOCAL_WORDS = {
+export const LOCAL_WORDS = {
   hi: [
     { word: ["म", "न"], fillers: ["क", "ल", "र", "स"] },
     { word: ["ट", "न"], fillers: ["प", "य", "व", "द"] },
@@ -245,8 +245,8 @@ const LOCAL_WORDS = {
   ],
   bn: [
     { word: ["ম", "ন"], fillers: ["ক", "ল", "ব", "র"] },
-    { word: ["জ্ঞান"], fillers: ["ভা", "ব", "ন", "দ"] },
-    { word: ["জাল"], fillers: ["প", "ঠ", "স", "হ"] }
+    { word: ["জ্ঞ", "া", "ন"], fillers: ["ভ", "ব", "ন", "দ"] }, // Fixed: split characters
+    { word: ["জ", "া", "ল"], fillers: ["প", "ঠ", "স", "হ"] }
   ],
   vi: [
     { word: ["T", "R", "I"], fillers: ["A", "O", "N", "K"] },
@@ -265,62 +265,85 @@ const LOCAL_WORDS = {
   ]
 };
 
-const QUIZ_REPOSITORY = {
+// Consolidated Quiz Repository (All Questions Merged)
+export const QUIZ_REPOSITORY = {
   hi: [
     { q: "POM बौद्धिक सत्यापन के लिए किस सर्वसम्मति का उपयोग करता है?", options: ["Proof of Work", "Proof of Intellect", "Proof of Stake", "Proof of Authority"], correct: 1 },
     { q: "POM टोकन की कुल आपूर्ति (Total Supply) कितनी है?", options: ["500 मिलियन", "1 अरब (1 Billion)", "2 अरब", "100 मिलियन"], correct: 1 },
     { q: "0.3 TON ऑन-चेन सत्यापन से क्या स्थायी लाभ मिलता है?", options: ["स्थायी 2x रिवॉर्ड मल्टीप्लायर", "अतिरिक्त 5 हार्ट्स", "तुरंत 100 लेवल", "500 मुफ्त POM"], correct: 0 },
-    { q: "टेलीग्राम मिनी ऐप्स को कौन सा ब्लॉकचेन सपोर्ट करता है?", options: ["Solana", "The Open Network (TON)", "Bitcoin L1", "Cardano"], correct: 1 }
+    { q: "टेलीग्राम मिनी ऐप्स को कौन सा ब्लॉकचेन सपोर्ट करता है?", options: ["Solana", "The Open Network (TON)", "Bitcoin L1", "Cardano"], correct: 1 },
+    { q: "TON नेटवर्क का मूल टोकन कौन सा है?", options: ["TON", "BTC", "ETH", "SOL"], correct: 0 },
+    { q: "POM टोकन की प्राथमिक उपयोगिता क्या है?", options: ["गवर्नेंस एवं माइनिंग", "स्टोरेज", "DNS", "NFT"], correct: 0 },
+    { q: "POM के साथ कौन सा 60M+ समुदाय जुड़ा है?", options: ["Pi Network", "Cardano", "Polkadot", "Ripple"], correct: 0 }
   ],
   en: [
     { q: "What consensus protocol does Proof of Mind implement?", options: ["Proof of Work", "Proof of Intellect", "Proof of Stake", "Proof of Authority"], correct: 1 },
     { q: "What is the total hard-cap supply of POM tokens?", options: ["500 Million", "1 Billion (POM)", "2 Billion", "100 Million"], correct: 1 },
     { q: "What permanent benefit does 0.3 TON verification grant?", options: ["Permanent 2x Multiplier", "Extra 5 Hearts", "Instant Level 100", "500 Free POM"], correct: 0 },
-    { q: "Which native blockchain directly powers Telegram Mini Apps?", options: ["Solana", "The Open Network (TON)", "Bitcoin L1", "Cardano"], correct: 1 }
+    { q: "Which native blockchain directly powers Telegram Mini Apps?", options: ["Solana", "The Open Network (TON)", "Bitcoin L1", "Cardano"], correct: 1 },
+    { q: "What is the native token of TON Network?", options: ["TON", "BTC", "ETH", "SOL"], correct: 0 },
+    { q: "What is the primary utility of POM token?", options: ["Governance & Mining", "File Storage", "DNS", "NFT Art"], correct: 0 },
+    { q: "Which ecosystem connects 60M+ pioneers with POM?", options: ["Pi Network", "Cardano", "Polkadot", "Ripple"], correct: 0 }
   ],
   ru: [
     { q: "Какой консенсус использует проект Proof of Mind?", options: ["Proof of Work", "Proof of Intellect", "Proof of Stake", "Proof of Authority"], correct: 1 },
     { q: "Какова общая эмиссия токенов POM?", options: ["500 Миллионов", "1 Миллиард", "2 Миллиарда", "100 Миллионов"], correct: 1 },
-    { q: "Что дает верификация за 0.3 TON?", options: ["Постоянный 2x множитель", "5 бесплатных сердец", "100-й уровень", "500 POM"], correct: 0 }
+    { q: "Что дает верификация за 0.3 TON?", options: ["Постоянный 2x множитель", "5 бесплатных сердец", "100-й уровень", "500 POM"], correct: 0 },
+    { q: "Какой нативный токен сети TON?", options: ["TON", "BTC", "ETH", "SOL"], correct: 0 },
+    { q: "Какое сообщество из 60M+ пионеров связано с POM?", options: ["Pi Network", "Cardano", "Polkadot", "Ripple"], correct: 0 }
   ],
   zh: [
     { q: "Proof of Mind (POM) 采用何种共识机制？", options: ["工作量证明 (PoW)", "智力证明 (PoI)", "权益证明 (PoS)", "权威证明 (PoA)"], correct: 1 },
     { q: "POM 代币的总供应量是多少？", options: ["5亿", "10亿 (1 Billion)", "20亿", "1亿"], correct: 1 },
-    { q: "0.3 TON 链上验证提供什么核心权益？", options: ["永久 2x 奖励加速", "额外 5 颗心", "直升 100 级", "500 空投代币"], correct: 0 }
+    { q: "0.3 TON 链上验证提供什么核心权益？", options: ["永久 2x 奖励加速", "额外 5 颗心", "直升 100 级", "500 空投代币"], correct: 0 },
+    { q: "TON 网络的代币是什么？", options: ["TON", "BTC", "ETH", "SOL"], correct: 0 },
+    { q: "与 POM 结合的 6000万+ 先锋网络是？", options: ["Pi Network", "Cardano", "Polkadot", "Ripple"], correct: 0 }
   ],
   es: [
     { q: "¿Qué consenso implementa Proof of Mind?", options: ["Proof of Work", "Proof of Intellect", "Proof of Stake", "Proof of Authority"], correct: 1 },
     { q: "¿Cuál es el suministro total de POM?", options: ["500 Millones", "1 Mil Millones (1B)", "2 Mil Millones", "100 Millones"], correct: 1 },
-    { q: "¿Qué beneficio otorga la verificación de 0.3 TON?", options: ["Multiplicador 2x Permanente", "5 Corazones Extra", "Nivel 100 Instantáneo", "500 POM Gratis"], correct: 0 }
+    { q: "¿Qué beneficio otorga la verificación de 0.3 TON?", options: ["Multiplicador 2x Permanente", "5 Corazones Extra", "Nivel 100 Instantáneo", "500 POM Gratis"], correct: 0 },
+    { q: "¿Cuál es el token nativo de la red TON?", options: ["TON", "BTC", "ETH", "SOL"], correct: 0 },
+    { q: "¿Qué red de 60M+ pioneros se integra con POM?", options: ["Pi Network", "Cardano", "Polkadot", "Ripple"], correct: 0 }
   ],
   ar: [
     { q: "ما هو بروتوكول الإجماع الذي يطبقه POM؟", options: ["Proof of Work", "Proof of Intellect", "Proof of Stake", "Proof of Authority"], correct: 1 },
     { q: "ما هو إجمالي المعروض من عملة POM؟", options: ["500 مليون", "1 مليار (1 Billion)", "2 مليار", "100 مليون"], correct: 1 },
-    { q: "ما الميزة الدائمة لتوثيق 0.3 TON؟", options: ["مضاعف 2x دائم", "5 قلوب إضافية", "المستوى 100 فوراً", "500 POM مجاناً"], correct: 0 }
+    { q: "ما الميزة الدائمة لتوثيق 0.3 TON؟", options: ["مضاعف 2x دائم", "5 قلوب إضافية", "المستوى 100 فوراً", "500 POM مجاناً"], correct: 0 },
+    { q: "ما هو الرمز الأصلي لشبكة TON؟", options: ["TON", "BTC", "ETH", "SOL"], correct: 0 },
+    { q: "ما المجتمع المكون من 60 مليون+ رائد المرتبط بـ POM؟", options: ["Pi Network", "Cardano", "Polkadot", "Ripple"], correct: 0 }
   ],
   bn: [
     { q: "POM কোন ঐক্যমত্য প্রোটোকল প্রয়োগ করে?", options: ["Proof of Work", "Proof of Intellect", "Proof of Stake", "Proof of Authority"], correct: 1 },
     { q: "POM টোকেনের মোট সরবরাহ কত?", options: ["৫০০ মিলিয়ন", "১ বিলিয়ন (1 Billion)", "২ বিলিয়ন", "১০০ মিলিয়ন"], correct: 1 },
-    { q: "০.৩ TON যাচাইকরণ কী স্থায়ী সুবিধা দেয়?", options: ["স্থায়ী ২x গুণক বুস্ট", "অতিরিক্ত ৫ হার্ট", "তাত্ক্ষণিক লেভেল ১০০", "৫০০ বিনামূল্যের POM"], correct: 0 }
+    { q: "০.৩ TON যাচাইকরণ কী স্থায়ী সুবিধা দেয়?", options: ["স্থায়ী ২x গুণক বুস্ট", "অতিরিক্ত ৫ হার্ট", "তাত্ক্ষণিক লেভেল ১০০", "৫০০ বিনামূল্যের POM"], correct: 0 },
+    { q: "TON নেটওয়ার্কের নেটিভ টোকেন কোনটি?", options: ["TON", "BTC", "ETH", "SOL"], correct: 0 },
+    { q: "POM-এর সাথে ৬০ মিলিয়নের বেশি পাইওনিয়ার যুক্ত কোন নেটওয়ার্ক?", options: ["Pi Network", "Cardano", "Polkadot", "Ripple"], correct: 0 }
   ],
   vi: [
     { q: "Proof of Mind triển khai giao thức đồng thuận nào?", options: ["Proof of Work", "Proof of Intellect", "Proof of Stake", "Proof of Authority"], correct: 1 },
     { q: "Tổng cung tối đa của token POM là bao nhiêu?", options: ["500 Triệu", "1 Tỷ (1 Billion)", "2 Tỷ", "100 Triệu"], correct: 1 },
-    { q: "Xác minh on-chain 0.3 TON mang lại lợi ích vĩnh viễn gì?", options: ["Nhân đôi 2x vĩnh viễn", "Thêm 5 Tim", "Cấp 100 ngay lập tức", "500 POM miễn phí"], correct: 0 }
+    { q: "Xác minh on-chain 0.3 TON mang lại lợi ích vĩnh viễn gì?", options: ["Nhân đôi 2x vĩnh viễn", "Thêm 5 Tim", "Cấp 100 ngay lập tức", "500 POM miễn phí"], correct: 0 },
+    { q: "Token gốc của mạng TON là gì?", options: ["TON", "BTC", "ETH", "SOL"], correct: 0 },
+    { q: "Hệ sinh thái 60M+ pioneer nào kết nối với POM?", options: ["Pi Network", "Cardano", "Polkadot", "Ripple"], correct: 0 }
   ],
   id: [
     { q: "Protokol konsensus apa yang diterapkan oleh POM?", options: ["Proof of Work", "Proof of Intellect", "Proof of Stake", "Proof of Authority"], correct: 1 },
     { q: "Berapa total pasokan maksimal token POM?", options: ["500 Juta", "1 Miliar (1 Billion)", "2 Miliar", "100 Juta"], correct: 1 },
-    { q: "Manfaat permanen apa yang diberikan verifikasi 0.3 TON?", options: ["Pengali 2x Permanen", "Ekstra 5 Hati", "Level 100 Instan", "500 POM Gratis"], correct: 0 }
+    { q: "Manfaat permanen apa yang diberikan verifikasi 0.3 TON?", options: ["Pengali 2x Permanen", "Ekstra 5 Hati", "Level 100 Instan", "500 POM Gratis"], correct: 0 },
+    { q: "Apa token asli dari Jaringan TON?", options: ["TON", "BTC", "ETH", "SOL"], correct: 0 },
+    { q: "Komunitas 60M+ pionir mana yang terhubung ke POM?", options: ["Pi Network", "Cardano", "Polkadot", "Ripple"], correct: 0 }
   ],
   fa: [
     { q: "پروتکل اجماع اثبات ذهن (POM) چیست؟", options: ["Proof of Work", "Proof of Intellect", "Proof of Stake", "Proof of Authority"], correct: 1 },
     { q: "مجموع کل عرضه توکن POM چقدر است؟", options: ["۵۰۰ میلیون", "۱ میلیارد (1 Billion)", "۲ میلیارد", "۱۰۰ میلیون"], correct: 1 },
-    { q: "تایید ۰.۳ TON چه مزیت دائمی دارد؟", options: ["ضریب دائمی ۲ برابری", "۵ قلب اضافی", "سطح ۱۰۰ آنی", "۵۰۰ توکن رایگان"], correct: 0 }
+    { q: "تایید ۰.۳ TON چه مزیت دائمی دارد؟", options: ["ضریب دائمی ۲ برابری", "۵ قلب اضافی", "سطح ۱۰۰ آنی", "۵۰۰ توکن رایگان"], correct: 0 },
+    { q: "توکن اصلی شبکه TON چیست؟", options: ["TON", "BTC", "ETH", "SOL"], correct: 0 },
+    { q: "کدام جامعه بیش از ۶۰ میلیونی به POM متصل است؟", options: ["Pi Network", "Cardano", "Polkadot", "Ripple"], correct: 0 }
   ]
 };
 
-const WHITEPAPER_DATA = {
+export const WHITEPAPER_DATA = {
   hi: {
     s1: "१. विज़न एवं प्रूफ ऑफ इंटेलेक्ट (PoI)",
     p1: "प्रूफ ऑफ माइंड (POM) बिजली और हार्डवेयर की अनावश्यक बर्बादी के स्थान पर मानव बौद्धिक सर्वसम्मति को ऑन-चेन लागू करता है। उपयोगकर्ता शब्द पहेलियां और सत्यापित क्विज़ हल करके अपनी सक्रिय बौद्धिक क्षमता प्रमाणित करते हैं और विकेंद्रीकृत टोकन माइन करते हैं।",
@@ -452,86 +475,8 @@ const WHITEPAPER_DATA = {
     p6: "مینی‌اپلیکیشن تلگرام -> موتور PoI -> رویداد TGE و عرضه در DEX."
   }
 };
-// ==========================================
-// 10-LANGUAGE QUIZ QUESTION BANK
-// ==========================================
-const QUIZ_BANK = {
-  en: [
-    { q: "What is the native token of TON Network?", options: ["TON", "BTC", "ETH", "SOL"], correct: 0 },
-    { q: "What consensus does Proof of Mind (POM) emphasize?", options: ["PoW", "PoS", "Human Cognition", "PoA"], correct: 2 },
-    { q: "What is the primary utility of POM token?", options: ["Governance & Mining", "File Storage", "DNS", "NFT Art"], correct: 0 },
-    { q: "Which ecosystem connects 60M+ pioneers with POM?", options: ["Pi Network", "Cardano", "Polkadot", "Ripple"], correct: 0 },
-    { q: "What is the fastest layer-1 blockchain integrated in POM?", options: ["TON Blockchain", "Bitcoin", "Dogecoin", "Litecoin"], correct: 0 }
-  ],
-  hi: [
-    { q: "TON नेटवर्क का मूल टोकन कौन सा है?", options: ["TON", "BTC", "ETH", "SOL"], correct: 0 },
-    { q: "Proof of Mind (POM) किस पर आधारित है?", options: ["PoW", "PoS", "मानव संज्ञान (Cognition)", "PoA"], correct: 2 },
-    { q: "POM टोकन की प्राथमिक उपयोगिता क्या है?", options: ["गवर्नेंस एवं माइनिंग", "स्टोरेज", "DNS", "NFT"], correct: 0 },
-    { q: "POM के साथ कौन सा 60M+ समुदाय जुड़ा है?", options: ["Pi Network", "Cardano", "Polkadot", "Ripple"], correct: 0 },
-    { q: "POM में कौन सा तेज़ ब्लॉकचेन नेटवर्क जुड़ा है?", options: ["TON ब्लॉकचेन", "बिटकॉइन", "डॉजकॉइन", "लिटकॉइन"], correct: 0 }
-  ],
-  ru: [
-    { q: "Какой нативный токен сети TON?", options: ["TON", "BTC", "ETH", "SOL"], correct: 0 },
-    { q: "На чем основан консенсус Proof of Mind?", options: ["PoW", "PoS", "Человеческое познание", "PoA"], correct: 2 },
-    { q: "Какова главная польза токена POM?", options: ["Управление и майнинг", "Хранение файлов", "DNS", "NFT"], correct: 0 },
-    { q: "Какое сообщество из 60M+ пионеров связано с POM?", options: ["Pi Network", "Cardano", "Polkadot", "Ripple"], correct: 0 },
-    { q: "Какой быстрый блокчейн интегрирован в POM?", options: ["TON", "Bitcoin", "Dogecoin", "Litecoin"], correct: 0 }
-  ],
-  zh: [
-    { q: "TON 网络的代币是什么？", options: ["TON", "BTC", "ETH", "SOL"], correct: 0 },
-    { q: "Proof of Mind (POM) 的核心是什么？", options: ["工作量证明", "权益证明", "人类认知共识", "权威证明"], correct: 2 },
-    { q: "POM 代币的主要用途是什么？", options: ["治理与挖矿", "文件存储", "域名服务", "NFT艺术"], correct: 0 },
-    { q: "与 POM 结合的 6000万+ 先锋网络是？", options: ["Pi Network", "Cardano", "Polkadot", "Ripple"], correct: 0 },
-    { q: "POM 集成的高速 Layer-1 公链是？", options: ["TON 区块链", "比特币", "狗狗币", "莱特币"], correct: 0 }
-  ],
-  es: [
-    { q: "¿Cuál es el token nativo de la red TON?", options: ["TON", "BTC", "ETH", "SOL"], correct: 0 },
-    { q: "¿En qué consenso se enfoca Proof of Mind?", options: ["PoW", "PoS", "Cognición Humana", "PoA"], correct: 2 },
-    { q: "¿Cuál es la utilidad principal del token POM?", options: ["Gobernanza y Minería", "Almacenamiento", "DNS", "NFT"], correct: 0 },
-    { q: "¿Qué red de 60M+ pioneros se integra con POM?", options: ["Pi Network", "Cardano", "Polkadot", "Ripple"], correct: 0 },
-    { q: "¿Qué blockchain rápida está integrada en POM?", options: ["TON Blockchain", "Bitcoin", "Dogecoin", "Litecoin"], correct: 0 }
-  ],
-  ar: [
-    { q: "ما هو الرمز الأصلي لشبكة TON؟", options: ["TON", "BTC", "ETH", "SOL"], correct: 0 },
-    { q: "على ماذا يركز مشروع Proof of Mind؟", options: ["PoW", "PoS", "الإدراك البشري", "PoA"], correct: 2 },
-    { q: "ما هي الفائدة الأساسية لرمز POM؟", options: ["الحوكمة والتعدين", "تخزين الملفات", "DNS", "NFT"], correct: 0 },
-    { q: "ما المجتمع المكون من 60 مليون+ رائد المرتبط بـ POM؟", options: ["Pi Network", "Cardano", "Polkadot", "Ripple"], correct: 0 },
-    { q: "ما هي شبكة البلوكشين المدمجة في POM؟", options: ["شبكة TON", "Bitcoin", "Dogecoin", "Litecoin"], correct: 0 }
-  ],
-  bn: [
-    { q: "TON নেটওয়ার্কের নেটিভ টোকেন কোনটি?", options: ["TON", "BTC", "ETH", "SOL"], correct: 0 },
-    { q: "Proof of Mind কোন ধারণার ওপর ভিত্তি করে তৈরি?", options: ["PoW", "PoS", "মানবীয় জ্ঞান (Cognition)", "PoA"], correct: 2 },
-    { q: "POM টোকেনের প্রধান কাজ কী?", options: ["গভর্নেন্স ও মাইনিং", "ফাইল স্টোরেজ", "DNS", "NFT"], correct: 0 },
-    { q: "POM-এর সাথে ৬০ মিলিয়নের বেশি পাইওনিয়ার যুক্ত কোন নেটওয়ার্ক?", options: ["Pi Network", "Cardano", "Polkadot", "Ripple"], correct: 0 },
-    { q: "POM-এ কোন উচ্চগতির ব্লকচেইন যুক্ত আছে?", options: ["TON ব্লকচেইন", "Bitcoin", "Dogecoin", "Litecoin"], correct: 0 }
-  ],
-  vi: [
-    { q: "Token gốc của mạng TON là gì?", options: ["TON", "BTC", "ETH", "SOL"], correct: 0 },
-    { q: "Proof of Mind (POM) tập trung vào đồng thuận nào?", options: ["PoW", "PoS", "Nhận thức con người", "PoA"], correct: 2 },
-    { q: "Tiện ích chính của token POM là gì?", options: ["Quản trị & Khai thác", "Lưu trữ tệp", "DNS", "NFT"], correct: 0 },
-    { q: "Hệ sinh thái 60M+ pioneer nào kết nối với POM?", options: ["Pi Network", "Cardano", "Polkadot", "Ripple"], correct: 0 },
-    { q: "Blockchain layer-1 tốc độ cao nào được tích hợp vào POM?", options: ["TON Blockchain", "Bitcoin", "Dogecoin", "Litecoin"], correct: 0 }
-  ],
-  id: [
-    { q: "Apa token asli dari Jaringan TON?", options: ["TON", "BTC", "ETH", "SOL"], correct: 0 },
-    { q: "Mekanisme apa yang difokuskan Proof of Mind?", options: ["PoW", "PoS", "Kognisi Manusia", "PoA"], correct: 2 },
-    { q: "Apa kegunaan utama dari token POM?", options: ["Tata Kelola & Penambangan", "Penyimpanan", "DNS", "NFT"], correct: 0 },
-    { q: "Komunitas 60M+ pionir mana yang terhubung ke POM?", options: ["Pi Network", "Cardano", "Polkadot", "Ripple"], correct: 0 },
-    { q: "Blockchain berkecepatan tinggi apa yang terintegrasi di POM?", options: ["TON Blockchain", "Bitcoin", "Dogecoin", "Litecoin"], correct: 0 }
-  ],
-  fa: [
-    { q: "توکن اصلی شبکه TON چیست؟", options: ["TON", "BTC", "ETH", "SOL"], correct: 0 },
-    { q: "پروژه اثبات ذهن (PoM) بر چه اساسی کار می‌کند؟", options: ["PoW", "PoS", "شناخت انسانی", "PoA"], correct: 2 },
-    { q: "کاربرد اصلی توکن POM چیست؟", options: ["حاکمیت و استخراج", "ذخیره‌سازی فایل", "DNS", "NFT"], correct: 0 },
-    { q: "کدام جامعه بیش از ۶۰ میلیونی به POM متصل است؟", options: ["Pi Network", "Cardano", "Polkadot", "Ripple"], correct: 0 },
-    { q: "کدام بلاکچین پرسرعت در POM ادغام شده است؟", options: ["بلاکچین TON", "Bitcoin", "Dogecoin", "Litecoin"], correct: 0 }
-  ]
-};
 
-// ==========================================
-// 10-LANGUAGE MINING WORDS DICTIONARY
-// ==========================================
-const MINE_DICTIONARY = {
+export const MINE_DICTIONARY = {
   en: ["MIND", "TON", "NODE", "COIN", "HASH", "BLOCK", "PROOF", "BRAIN", "CHAIN", "TOKEN"],
   hi: ["मन", "ज्ञान", "बुद्धि", "सोच", "चेतना", "प्रमाण", "सत्य", "मस्तिष्क", "सिक्का", "नेटवर्क"],
   ru: ["РАЗУМ", "МОЗГ", "БЛОК", "УЗЕЛ", "ТОКЕН", "СЕТЬ", "МЫСЛЬ", "КЛЮЧ"],
@@ -543,3 +488,15 @@ const MINE_DICTIONARY = {
   id: ["AKAL", "OTAK", "PIKIR", "KOIN", "BLOK", "BUKTI", "SIMPUL", "JARINGAN"],
   fa: ["ذهن", "مغز", "بلاک", "گره", "توکن", "اثبات", "دانش", "هوش"]
 };
+
+// CommonJS Backward Compatibility (Node.js environments ke liye)
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    TRANSLATIONS,
+    TASK_TRANSLATIONS,
+    LOCAL_WORDS,
+    QUIZ_REPOSITORY,
+    WHITEPAPER_DATA,
+    MINE_DICTIONARY
+  };
+}
