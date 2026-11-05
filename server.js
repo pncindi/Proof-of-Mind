@@ -40,7 +40,17 @@ const userSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 const User = mongoose.model('User', userSchema);
+// --- क्विज़ प्रश्न स्कीमा ---
+const questionSchema = new mongoose.Schema({
+    question_hi: { type: String, required: true },
+    question_en: { type: String, required: true },
+    options_hi: [{ type: String, required: true }],
+    options_en: [{ type: String, required: true }],
+    correctIndex: { type: Number, required: true },
+    reward: { type: Number, default: 5 }
+});
 
+const Question = mongoose.model('Question', questionSchema);
 // 1. यूज़र सिंक एवं रेफरल ट्रैकिंग
 app.post('/api/user/sync', async (req, res) => {
     try {
@@ -182,7 +192,21 @@ app.post('/api/wallet/verify-ton', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+// 3. रैंडम क्विज़ सवाल मंगाने का API
+app.get('/api/quiz/random', async (req, res) => {
+    try {
+        const randomQuestion = await Question.aggregate([{ $sample: { size: 1 } }]);
+        
+        if (!randomQuestion || randomQuestion.length === 0) {
+            return res.status(404).json({ error: "No questions found in database" });
+        }
 
+        res.json({ success: true, question: randomQuestion[0] });
+    } catch (err) {
+        console.error("Quiz fetch error:", err);
+        res.status(500).json({ error: "Failed to fetch question" });
+    }
+});
 // Health check endpoint
 app.get('/', (req, res) => {
   res.send('Proof of Mind API is Running live!');
