@@ -6,6 +6,7 @@ const CONFIG = {
   BACKEND_API_URL: "https://proof-of-mind-api.onrender.com",
   ADMIN_TON_WALLET: "UQD5ZiNy8-eV7l6Ny46c-f98USLg-JXPTRRIPMV-0YiadqJV",
   BOT_USERNAME: "proofofmind_bot",
+  APP_SHORT_NAME: "app", // Direct Mini App identifier
   ADSGRAM_BLOCK_ID: "57910"
 };
 
@@ -42,24 +43,17 @@ let quizTimer = null;
 let quizRemainingTime = 25;
 let isSubmittingAnswer = false;
 
-// --- TON रॉ हेक्स एड्रेस (0:...) को यूज़र-फ्रेंडली (UQ...) में बदलने का इनबिल्ट कनवर्टर ---
+// --- TON ADDRESS FORMATTER (Raw 0:... ko User-friendly UQ... me badalna) ---
 function convertTonToUserFriendly(rawAddress) {
   if (!rawAddress || typeof rawAddress !== 'string') return rawAddress;
   if (!rawAddress.includes(':')) return rawAddress;
 
-  // 1. TonConnect SDK मेथड का प्रयास
   try {
     if (window.TON_CONNECT_UI && typeof window.TON_CONNECT_UI.toUserFriendlyAddress === 'function') {
       return window.TON_CONNECT_UI.toUserFriendlyAddress(rawAddress);
     }
-    if (typeof TonConnectSDK !== 'undefined' && typeof TonConnectSDK.toUserFriendlyAddress === 'function') {
-      return TonConnectSDK.toUserFriendlyAddress(rawAddress);
-    }
-  } catch(e) {
-    console.warn("SDK conversion fallback:", e);
-  }
+  } catch(e) {}
 
-  // 2. शुद्ध जावास्क्रिप्ट फॉलबैक (CRC16 + Base64url)
   try {
     const parts = rawAddress.split(':');
     const wc = parseInt(parts[0], 10);
@@ -67,7 +61,7 @@ function convertTonToUserFriendly(rawAddress) {
     if (hex.length !== 64) return rawAddress;
 
     const bytes = new Uint8Array(36);
-    bytes[0] = 0x51; // नॉन-बाउंसएबल मुख्य नेटवर्क टैग ('UQ...')
+    bytes[0] = 0x51; // Non-bounceable Mainnet tag ('UQ...')
     bytes[1] = wc === -1 ? 0xFF : (wc & 0xFF);
 
     for (let i = 0; i < 32; i++) {
@@ -78,11 +72,8 @@ function convertTonToUserFriendly(rawAddress) {
     for (let i = 0; i < 34; i++) {
       crc ^= (bytes[i] << 8);
       for (let j = 0; j < 8; j++) {
-        if (crc & 0x8000) {
-          crc = ((crc << 1) ^ 0x1021) & 0xFFFF;
-        } else {
-          crc = (crc << 1) & 0xFFFF;
-        }
+        if (crc & 0x8000) crc = ((crc << 1) ^ 0x1021) & 0xFFFF;
+        else crc = (crc << 1) & 0xFFFF;
       }
     }
     bytes[34] = (crc >> 8) & 0xFF;
@@ -94,33 +85,25 @@ function convertTonToUserFriendly(rawAddress) {
     }
     return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
   } catch (err) {
-    console.error("Manual TON conversion error:", err);
     return rawAddress;
   }
 }
 
-// --- बैकअप सवाल (सुरक्षा फ़ॉलबैक) ---
+// --- FALLBACK QUESTIONS ---
 const FALLBACK_QUESTIONS = [
   {
-    question_hi: "Proof of Mind (POM) किस प्रकार की सर्वसम्मति पर आधारित है?",
+    question_hi: "Proof of Mind (POM) kis prakar ki sarvasammati par aadharit hai?",
     question_en: "What consensus protocol does Proof of Mind (POM) emphasize?",
     options_hi: ["Proof of Work", "Proof of Stake", "Proof of Intellect (PoI)", "Proof of Authority"],
     options_en: ["Proof of Work", "Proof of Stake", "Proof of Intellect (PoI)", "Proof of Authority"],
     correctIndex: 2
   },
   {
-    question_hi: "0.3 TON ऑन-चेन सत्यापन से उपयोगकर्ता को क्या लाभ मिलता है?",
+    question_hi: "0.3 TON on-chain satyapan se kya labh milta hai?",
     question_en: "What benefit does 0.3 TON verification grant?",
-    options_hi: ["स्थायी 2x रिवॉर्ड मल्टीप्लायर", "अतिरिक्त 5 हार्ट्स", "तुरंत 100 लेवल", "500 मुफ्त POM"],
+    options_hi: ["2x Permanent Boost", "Extra 5 Hearts", "Instant Level 100", "500 Free POM"],
     options_en: ["Lifetime 2x Reward Multiplier", "Extra 5 Hearts", "Instant Level 100", "500 Free POM"],
     correctIndex: 0
-  },
-  {
-    question_hi: "कंप्यूटर का मस्तिष्क किसे कहा जाता है?",
-    question_en: "Which part is known as the brain of computer?",
-    options_hi: ["RAM", "Hard Disk", "CPU", "Monitor"],
-    options_en: ["RAM", "Hard Disk", "CPU", "Monitor"],
-    correctIndex: 2
   }
 ];
 
@@ -178,7 +161,7 @@ function showToast(message, icon = "ℹ️") {
   }, 2200);
 }
 
-// --- भाषा बदलना ---
+// --- LANGUAGE SWITCHING ---
 function changeLanguage(lang) {
   state.lang = lang;
   saveActiveState();
@@ -237,7 +220,7 @@ function stopQuizTimer() {
   }
 }
 
-// --- टैब नेविगेशन ---
+// --- TAB NAVIGATION ---
 function switchTab(tabId) {
   try {
     if (tabId !== 'tabQuiz') {
@@ -274,13 +257,15 @@ function switchTab(tabId) {
       startQuizRound();
     } else if (tabId === 'tabMine') {
       initCurrentPuzzle();
+    } else if (tabId === 'tabFriends') {
+      fetchLatestUserData();
     }
   } catch (err) {
     console.error("Tab switch error:", err);
   }
 }
 
-// --- वर्ड पज़ल माइनिंग इंजन ---
+// --- WORD PUZZLE MINING ENGINE ---
 function initCurrentPuzzle() {
   try {
     const activeDict = (typeof MINE_DICTIONARY !== 'undefined') ? MINE_DICTIONARY : (typeof LOCAL_WORDS !== 'undefined' ? LOCAL_WORDS : {});
@@ -426,7 +411,7 @@ async function submitMiningBlock() {
   }
 }
 
-// --- प्री-फ़ेचिंग एवं ज़ीरो-लेटेंसी क्विज़ इंजन ---
+// --- ZERO-LATENCY PRE-FETCHING QUIZ ENGINE ---
 let nextQuizQ = null;
 
 async function prefetchQuizQ() {
@@ -501,12 +486,12 @@ async function startQuizRound() {
     updateQuizTimerBar();
     if (quizRemainingTime <= 0) {
       stopQuizTimer();
-      state.energy--; // समय समाप्त पर केवल 1 हार्ट कटेगा
+      state.energy--;
       saveActiveState();
       updateHUD();
       showToast("Time up! -1 ❤️ lost", "⌛");
       if (state.energy <= 0) openEnergyModal();
-      // ध्यान दें: टाइमर खत्म होने पर लेवल नहीं बढ़ेगा, यूज़र उसी लेवल पर अगला सवाल हल करेगा
+      // Level same rahega, user usi level par naya sawal try karega
       startQuizRound();
     }
   }, 1000);
@@ -538,15 +523,14 @@ function submitQuizAnswer(selectedIdx, correctIdx, btnElement) {
       let baseReward = state.quizLevel >= 81 ? 20 : (state.quizLevel >= 51 ? 10 : (state.quizLevel >= 21 ? 5 : 2));
       const reward = state.isVerified ? (baseReward * 2) : baseReward;
       state.balance += reward;
-      state.quizLevel++; // लेवल केवल सही उत्तर पर ही बढ़ेगा!
+      state.quizLevel++; // Level sirf sahi uttar par badhega!
       creditReferralCommission(reward);
       saveActiveState();
       showToast(`Correct Answer! +${reward} POM`, "🌟");
     } else {
-      state.energy--; // गलत उत्तर पर केवल 1 एनर्जी कटेगी
+      state.energy--; // Galat par sirf 1 Heart katega, level nahi badhega!
       saveActiveState();
       showToast("Incorrect answer! -1 ❤️ lost", "❌");
-      // बग फिक्स: गलत उत्तर पर लेवल आगे नहीं बढ़ेगा!
     }
 
     updateHUD();
@@ -555,7 +539,7 @@ function submitQuizAnswer(selectedIdx, correctIdx, btnElement) {
   }, 600);
 }
 
-// --- आउट-ऑफ-एनर्जी पॉपअप ---
+// --- ENERGY RECHARGE MODAL ---
 function openEnergyModal() {
   document.getElementById('energyModal')?.classList.remove('hidden');
 }
@@ -593,7 +577,7 @@ function watchAdAndRefill(amount) {
   }
 }
 
-// --- कम्युनिटी टास्क ---
+// --- COMMUNITY TASKS ---
 function renderTasks() {
   const container = document.getElementById('tasksListContainer');
   if (!container) return;
@@ -653,9 +637,9 @@ function claimTaskReward(idx) {
   showToast(`+${state.tasks[idx].reward} POM Claimed!`, "🎁");
 }
 
-// --- रेफरल सिस्टम ---
+// --- DIRECT BOT-FATHER MINI APP REFERRAL ENGINE ---
 function getReferralLink() {
-  return `https://t.me/${CONFIG.BOT_USERNAME}?startapp=ref_${state.telegram_id}`;
+  return `https://t.me/${CONFIG.BOT_USERNAME}/${CONFIG.APP_SHORT_NAME}?startapp=ref_${state.telegram_id}`;
 }
 
 function creditReferralCommission(amount) {
@@ -693,7 +677,40 @@ function shareReferralToTelegram() {
   }
 }
 
-// --- TONCONNECT & ऑन-चेन सत्यापन ---
+// Friends tab khulte hi database se fresh upline count fetch karna
+async function fetchLatestUserData() {
+  if (CONFIG.BACKEND_API_URL && state.telegram_id && state.telegram_id !== "pioneer") {
+    try {
+      const res = await fetch(`${CONFIG.BACKEND_API_URL}/api/user/sync`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          telegram_id: state.telegram_id,
+          username: window.Telegram?.WebApp?.initDataUnsafe?.user?.username || "",
+          first_name: window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name || "",
+          start_param: ""
+        })
+      });
+      const data = await res.json();
+      if (data && data.user) {
+        if (data.user.referrals) {
+          state.tier1Users = data.user.referrals.tier1?.length || 0;
+          state.tier2Users = data.user.referrals.tier2?.length || 0;
+          state.tier3Users = data.user.referrals.tier3?.length || 0;
+        }
+        if (data.user.unclaimedCommission !== undefined) {
+          state.unclaimedCommission = data.user.unclaimedCommission;
+        }
+        saveActiveState();
+        updateHUD();
+      }
+    } catch (e) {
+      console.warn("Silent sync error:", e);
+    }
+  }
+}
+
+// --- TONCONNECT & ON-CHAIN VERIFICATION ---
 function initRealTonConnect() {
   try {
     if (window.TON_CONNECT_UI) {
@@ -706,7 +723,6 @@ function initRealTonConnect() {
       tonConnectUI.onStatusChange(wallet => {
         if (wallet && wallet.account) {
           state.tonConnected = true;
-          // कनेक्ट होते ही यूज़र-फ्रेंडली एड्रेस में बदलना
           state.tonAddress = convertTonToUserFriendly(wallet.account.address);
           saveActiveState();
           updateHUD();
@@ -829,7 +845,7 @@ function connectPiWallet() {
   showToast("Pi Network Pioneer Connected!", "π");
 }
 
-// --- HUD अपडेटर ---
+// --- HUD DISPLAY UPDATER ---
 function updateHUD() {
   safeSetText('userBalanceDisplay', state.balance);
   safeSetText('walletTotalPomDisplay', `${state.balance} POM`);
@@ -837,6 +853,7 @@ function updateHUD() {
   safeSetText('tier1UsersCount', state.tier1Users);
   safeSetText('tier2UsersCount', state.tier2Users);
   safeSetText('tier3UsersCount', state.tier3Users);
+  safeSetText('unclaimedCommissionDisplay', `${(state.unclaimedCommission || 0).toFixed(1)} POM`);
 
   const isQuizTab = !document.getElementById('tabQuiz').classList.contains('hidden');
   safeSetText('labelLevel', isQuizTab ? (state.lang === 'hi' ? 'क्विज़ लेवल' : 'Quiz Level') : (state.lang === 'hi' ? 'माइन लेवल' : 'Mine Level'));
@@ -871,18 +888,14 @@ function updateHUD() {
   safeSetText('walletAirdropMult', state.isVerified ? "2x Verified Multiplier" : "1x Base Multiplier");
   safeSetText('walletVerificationText', state.isVerified ? "Status: Verified Pioneer" : "Status: Unverified");
 
-  // TON वॉलेट एड्रेस का सही डिस्प्ले (UQ... वाला सुंदर फ़ॉर्मेट)
   if (state.tonConnected) {
     safeSetText('tonStatusBadge', 'TON Connected');
     let displayAddr = state.tonAddress || "Connected";
-    
-    // अगर लोकल स्टोरेज में पुराना 0: वाला एड्रेस पड़ा हो तो तुरंत कन्वर्ट करें
     if (displayAddr.includes(':')) {
       displayAddr = convertTonToUserFriendly(displayAddr);
       state.tonAddress = displayAddr;
       saveActiveState();
     }
-    
     let shortAddr = displayAddr;
     if (shortAddr.length > 12) {
       shortAddr = `${shortAddr.slice(0, 6)}...${shortAddr.slice(-4)}`;
@@ -898,7 +911,7 @@ function updateHUD() {
   }
 }
 
-// --- व्हाइटपेपर मोडल रेंडर ---
+// --- WHITEPAPER MODAL ---
 function renderDocsContent() {
   const container = document.getElementById('docsBodyContainer');
   if (!container) return;
@@ -930,7 +943,7 @@ function openDocsModal() {
 }
 function closeDocsModal() { document.getElementById('docsModal')?.classList.add('hidden'); }
 
-// --- एडमिन कंसोल ---
+// --- MASTER ADMIN MODAL ---
 function openAdminModal() { document.getElementById('adminModal')?.classList.remove('hidden'); }
 function closeAdminModal() { document.getElementById('adminModal')?.classList.add('hidden'); }
 
@@ -985,7 +998,7 @@ function refreshAdminDashboard() {
 }
 
 function copyTelegramChannelHint() {
-  const postText = `🧠 Proof of Mind (POM) Community Intellect Drop!\n\nSolve Level ${state.mineLevel} now.\nTarget Length: ${currentTargetTiles.length} Letters\nLetter Pool: ${currentScrambledTiles.join(' ')}\n\nMine block now 👉 https://t.me/${CONFIG.BOT_USERNAME}?startapp=ref_channel`;
+  const postText = `🧠 Proof of Mind (POM) Community Intellect Drop!\n\nSolve Level ${state.mineLevel} now.\nTarget Length: ${currentTargetTiles.length} Letters\nLetter Pool: ${currentScrambledTiles.join(' ')}\n\nMine block now 👉 https://t.me/${CONFIG.BOT_USERNAME}/${CONFIG.APP_SHORT_NAME}?startapp=ref_channel`;
   navigator.clipboard.writeText(postText);
   showToast("Telegram post copied to clipboard!", "📋");
 }
@@ -1077,7 +1090,7 @@ function adminResetAllData() {
   showToast("State reset to defaults", "🔄");
 }
 
-// --- ऐप स्टार्ट लॉजिक ---
+// --- BOOTSTRAP INITIALIZATION ---
 async function startApp() {
   let startParam = "";
   let tgUser = null;
@@ -1116,13 +1129,17 @@ async function startApp() {
       });
       const data = await res.json();
       if (data && data.user) {
-        if (data.user.referrals?.tier1) {
-          state.tier1Users = data.user.referrals.tier1.length;
+        if (data.user.referrals) {
+          state.tier1Users = data.user.referrals.tier1?.length || 0;
+          state.tier2Users = data.user.referrals.tier2?.length || 0;
+          state.tier3Users = data.user.referrals.tier3?.length || 0;
         }
         if (data.user.balance !== undefined) state.balance = data.user.balance;
         if (data.user.mineLevel !== undefined) state.mineLevel = data.user.mineLevel;
         if (data.user.quizLevel !== undefined) state.quizLevel = data.user.quizLevel;
         if (data.user.isVerified !== undefined) state.isVerified = data.user.isVerified;
+        if (data.user.unclaimedCommission !== undefined) state.unclaimedCommission = data.user.unclaimedCommission;
+        saveActiveState();
         updateHUD();
       }
     } catch (err) {
