@@ -1,10 +1,9 @@
 // ==========================================
 // PROOF OF MIND (POM) - MAIN GAMEPLAY & WALLET ENGINE
-// Fully Connected with MongoDB Backend & Multilingual Data Engine
 // ==========================================
 
 const CONFIG = {
-  BACKEND_API_URL: "https://proof-of-mind-api.onrender.com", // Apna live backend URL
+  BACKEND_API_URL: "https://proof-of-mind-api.onrender.com",
   ADMIN_TON_WALLET: "UQD5ZiNy8-eV7l6Ny46c-f98USLg-JXPTRRIPMV-0YiadqJV",
   BOT_USERNAME: "proofofmind_bot",
   ADSGRAM_BLOCK_ID: "57910"
@@ -14,8 +13,6 @@ let tonConnectUI = null;
 
 let state = {
   telegram_id: "pioneer",
-  username: "",
-  first_name: "",
   balance: 130,
   mineLevel: 1,
   quizLevel: 1,
@@ -40,10 +37,43 @@ let state = {
 
 let currentTargetTiles = ["म", "न"];
 let currentScrambledTiles = ["म", "न", "क", "ल", "र", "स"];
+
+// टाइमर वेरिएबल्स
 let quizTimer = null;
 let quizRemainingTime = 25;
-let nextQuizQ = null;
-let playedQuestionIds = new Set();
+let isSubmittingAnswer = false;
+
+// --- सेफ़्टी फ़ॉलबैक सवाल (Never Freeze Guarantee) ---
+const FALLBACK_QUESTIONS = [
+  {
+    question_hi: "Proof of Mind (POM) किस प्रकार की सर्वसम्मति पर आधारित है?",
+    question_en: "What consensus protocol does Proof of Mind (POM) emphasize?",
+    options_hi: ["Proof of Work", "Proof of Stake", "Proof of Intellect (PoI)", "Proof of Authority"],
+    options_en: ["Proof of Work", "Proof of Stake", "Proof of Intellect (PoI)", "Proof of Authority"],
+    correctIndex: 2
+  },
+  {
+    question_hi: "0.3 TON ऑन-चेन सत्यापन से उपयोगकर्ता को क्या लाभ मिलता है?",
+    question_en: "What benefit does 0.3 TON verification grant?",
+    options_hi: ["स्थायी 2x रिवॉर्ड मल्टीप्लायर", "अतिरिक्त 5 हार्ट्स", "तुरंत 100 लेवल", "500 मुफ्त POM"],
+    options_en: ["Lifetime 2x Reward Multiplier", "Extra 5 Hearts", "Instant Level 100", "500 Free POM"],
+    correctIndex: 0
+  },
+  {
+    question_hi: "बिटकॉइन ब्लॉकचेन के संस्थापक कौन हैं?",
+    question_en: "Who is the creator of Bitcoin blockchain?",
+    options_hi: ["विटालिक ब्यूटरिन", "सातोशी नाकामोटो", "एलन मस्क", "चार्ली ली"],
+    options_en: ["Vitalik Buterin", "Satoshi Nakamoto", "Elon Musk", "Charlie Lee"],
+    correctIndex: 1
+  },
+  {
+    question_hi: "कंप्यूटर का मस्तिष्क किसे कहा जाता है?",
+    question_en: "Which part is known as the brain of computer?",
+    options_hi: ["RAM", "Hard Disk", "CPU", "Monitor"],
+    options_en: ["RAM", "Hard Disk", "CPU", "Monitor"],
+    correctIndex: 2
+  }
+];
 
 // --- STORAGE PERSISTENCE ---
 function loadSavedState() {
@@ -96,10 +126,10 @@ function showToast(message, icon = "ℹ️") {
   setTimeout(() => {
     toast.classList.remove('opacity-100', 'translate-y-0');
     toast.classList.add('opacity-0', 'pointer-events-none', '-translate-y-4');
-  }, 2500);
+  }, 2200);
 }
 
-// --- LANGUAGE SWITCHER ---
+// --- भाषा बदलना ---
 function changeLanguage(lang) {
   state.lang = lang;
   saveActiveState();
@@ -113,45 +143,35 @@ function changeLanguage(lang) {
 }
 
 function applyCurrentLanguage() {
-  const dict = (typeof TRANSLATIONS !== 'undefined' && TRANSLATIONS[state.lang]) 
-    ? TRANSLATIONS[state.lang] 
-    : (typeof TRANSLATIONS !== 'undefined' ? TRANSLATIONS.en : {});
-
-  // RTL Support for Arabic & Persian
-  if (state.lang === 'ar' || state.lang === 'fa') {
-    document.documentElement.setAttribute('dir', 'rtl');
-  } else {
-    document.documentElement.setAttribute('dir', 'ltr');
-  }
-
-  safeSetText('labelBalance', dict.balance || "बैलेंस");
-  safeSetText('labelEnergy', dict.energy || "एनर्जी");
-  safeSetText('mineHeading', dict.mineHeading || "वर्ड पज़ल माइनिंग");
-  safeSetText('mineSubHeading', dict.mineSubHeading || "ब्लॉक माइन करने के लिए सही अक्षरों का चयन करें");
-  safeSetText('btnClear', dict.clear || "हटाएं");
-  safeSetText('btnMine', dict.mineBlock || "माइन ब्लॉक");
-  safeSetText('energyRefillTitle', dict.rechargeTitle || "माइंड ऊर्जा रिचार्ज करें");
-  safeSetText('energyRefillDesc', dict.rechargeDesc || "1 ऐड = +2❤️ | 2 ऐड्स = फुल ❤️");
-  safeSetText('btnRefill', dict.refill || "रिफिल");
-  safeSetText('tasksHeading', dict.tasksHeading || "कम्युनिटी टास्क");
-  safeSetText('tasksSubHeading', dict.tasksSubHeading || "मिशन पूरा करें और POM टोकन प्राप्त करें");
-  safeSetText('friendsHeading', dict.friendsHeading || "3-लेवल रेफरल सिस्टम");
-  safeSetText('friendsSubHeading', dict.friendsSubHeading || "लेवल 1: 10% | लेवल 2: 3% | लेवल 3: 2% माइनिंग कमीशन");
-  safeSetText('btnInvite', dict.invite || "मित्रों को आमंत्रित करें");
-  safeSetText('lblUnclaimed', dict.unclaimed || "अर्जित रेफरल कमीशन");
-  safeSetText('btnClaimRewards', dict.claimRewards || "क्लेम");
-  safeSetText('walletHeading', dict.walletHeading || "विकेंद्रीकृत मल्टी-चेन वॉलेट");
-  safeSetText('walletSubHeading', dict.walletSubHeading || "POM रिवॉर्ड्स के लिए TON और Pi वॉलेट कनेक्ट करें");
-  safeSetText('btnConnectTonText', dict.connectTon || "TON वॉलेट कनेक्ट करें");
-  safeSetText('verifyTitle', dict.verifyTitle || "एंटी-सिबिल सुरक्षा एवं 2x बूस्ट");
-  safeSetText('verifyDesc', dict.verifyDesc || "0.3 TON नेटवर्क शुल्क से खाता सत्यापित करें और स्थायी 2x रिवॉर्ड बूस्ट सक्रिय करें।");
-  safeSetText('btnVerifyText', dict.verifyBtn || "0.3 TON से वेरीफाई करें");
-  safeSetText('navTextMine', dict.navMine || "माइन");
-  safeSetText('navTextQuiz', dict.navQuiz || "क्विज़");
-  safeSetText('navTextTasks', dict.navTasks || "टास्क");
-  safeSetText('navTextFriends', dict.navFriends || "मित्र");
-  safeSetText('navTextWallet', dict.navWallet || "वॉलेट");
-  safeSetText('navDocsLabel', dict.docs || "दस्तावेज़");
+  const dict = TRANSLATIONS[state.lang] || TRANSLATIONS.en || TRANSLATIONS.hi;
+  safeSetText('labelBalance', dict.balance);
+  safeSetText('labelEnergy', dict.energy);
+  safeSetText('mineHeading', dict.mineHeading);
+  safeSetText('mineSubHeading', dict.mineSubHeading);
+  safeSetText('btnClear', dict.clear);
+  safeSetText('btnMine', dict.mineBlock);
+  safeSetText('energyRefillTitle', dict.rechargeTitle);
+  safeSetText('energyRefillDesc', dict.rechargeDesc);
+  safeSetText('btnRefill', dict.refill);
+  safeSetText('tasksHeading', dict.tasksHeading);
+  safeSetText('tasksSubHeading', dict.tasksSubHeading);
+  safeSetText('friendsHeading', dict.friendsHeading);
+  safeSetText('friendsSubHeading', dict.friendsSubHeading);
+  safeSetText('btnInvite', dict.invite);
+  safeSetText('lblUnclaimed', dict.unclaimed);
+  safeSetText('btnClaimRewards', dict.claimRewards);
+  safeSetText('walletHeading', dict.walletHeading);
+  safeSetText('walletSubHeading', dict.walletSubHeading);
+  safeSetText('btnConnectTonText', dict.connectTon);
+  safeSetText('verifyTitle', dict.verifyTitle);
+  safeSetText('verifyDesc', dict.verifyDesc);
+  safeSetText('btnVerifyText', dict.verifyBtn);
+  safeSetText('navTextMine', dict.navMine);
+  safeSetText('navTextQuiz', dict.navQuiz);
+  safeSetText('navTextTasks', dict.navTasks);
+  safeSetText('navTextFriends', dict.navFriends);
+  safeSetText('navTextWallet', dict.navWallet);
+  safeSetText('navDocsLabel', dict.docs);
 
   const langSelect = document.getElementById('languageSelect');
   if (langSelect && langSelect.value !== state.lang) {
@@ -168,81 +188,97 @@ function stopQuizTimer() {
   }
 }
 
-// --- TAB SWITCHING ---
+// --- टैब नेविगेशन (Never-Freeze) ---
 function switchTab(tabId) {
-  if (tabId !== 'tabQuiz') {
-    stopQuizTimer();
-  }
-
-  ['tabMine', 'tabQuiz', 'tabTasks', 'tabFriends', 'tabWallet'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.classList.add('hidden');
-  });
-  const activeTab = document.getElementById(tabId);
-  if (activeTab) activeTab.classList.remove('hidden');
-
-  ['navMine', 'navQuiz', 'navTasks', 'navFriends', 'navWallet'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.classList.remove('text-sky-400');
-      el.classList.add('text-slate-400');
+  try {
+    if (tabId !== 'tabQuiz') {
+      stopQuizTimer();
     }
-  });
 
-  const navMap = { tabMine: 'navMine', tabQuiz: 'navQuiz', tabTasks: 'navTasks', tabFriends: 'navFriends', tabWallet: 'navWallet' };
-  const currentNav = document.getElementById(navMap[tabId]);
-  if (currentNav) {
-    currentNav.classList.remove('text-slate-400');
-    currentNav.classList.add('text-sky-400');
-  }
+    const tabs = ['tabMine', 'tabQuiz', 'tabTasks', 'tabFriends', 'tabWallet'];
+    tabs.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('hidden');
+    });
 
-  updateHUD();
-  if (tabId === 'tabQuiz') {
-    startQuizRound();
+    const activeTab = document.getElementById(tabId);
+    if (activeTab) activeTab.classList.remove('hidden');
+
+    const navMap = { tabMine: 'navMine', tabQuiz: 'navQuiz', tabTasks: 'navTasks', tabFriends: 'navFriends', tabWallet: 'navWallet' };
+    Object.values(navMap).forEach(navId => {
+      const el = document.getElementById(navId);
+      if (el) {
+        el.classList.remove('text-sky-400');
+        el.classList.add('text-slate-400');
+      }
+    });
+
+    const currentNav = document.getElementById(navMap[tabId]);
+    if (currentNav) {
+      currentNav.classList.remove('text-slate-400');
+      currentNav.classList.add('text-sky-400');
+    }
+
+    updateHUD();
+
+    if (tabId === 'tabQuiz') {
+      startQuizRound();
+    } else if (tabId === 'tabMine') {
+      initCurrentPuzzle();
+    }
+  } catch (err) {
+    console.error("Tab switch error:", err);
   }
 }
 
-// --- WORD PUZZLE MINING ENGINE ---
+// --- वर्ड पज़ल माइनिंग इंजन (Grapheme Safe) ---
 function initCurrentPuzzle() {
-  const activeDict = (typeof MINE_DICTIONARY !== 'undefined') ? MINE_DICTIONARY : (typeof LOCAL_WORDS !== 'undefined' ? LOCAL_WORDS : {});
-  const langWords = (activeDict && activeDict[state.lang]) ? activeDict[state.lang] : (activeDict ? (activeDict.en || activeDict.hi) : []);
+  try {
+    const activeDict = (typeof MINE_DICTIONARY !== 'undefined') ? MINE_DICTIONARY : (typeof LOCAL_WORDS !== 'undefined' ? LOCAL_WORDS : {});
+    const langWords = (activeDict && activeDict[state.lang] && activeDict[state.lang].length > 0)
+      ? activeDict[state.lang]
+      : (activeDict && activeDict.hi ? activeDict.hi : ["मन", "ज्ञान", "सिक्का"]);
 
-  if (!langWords || langWords.length === 0) return;
+    const wordIdx = Math.max(0, (state.mineLevel - 1) % langWords.length);
+    const rawItem = langWords[wordIdx];
+    const targetWord = (typeof rawItem === 'object' && rawItem.word) ? (Array.isArray(rawItem.word) ? rawItem.word.join('') : rawItem.word) : String(rawItem);
 
-  const rawItem = langWords[(state.mineLevel - 1) % langWords.length];
-  const targetWord = (typeof rawItem === 'object' && rawItem.word) ? (Array.isArray(rawItem.word) ? rawItem.word.join('') : rawItem.word) : rawItem;
-  
-  if (typeof Intl !== 'undefined' && Intl.Segmenter) {
-    const segmenter = new Intl.Segmenter(state.lang || 'en', { granularity: 'grapheme' });
-    currentTargetTiles = Array.from(segmenter.segment(targetWord), s => s.segment);
-  } else {
-    currentTargetTiles = Array.from(targetWord);
-  }
-  state.selectedLetters = [];
+    if (typeof Intl !== 'undefined' && Intl.Segmenter) {
+      const segmenter = new Intl.Segmenter(state.lang || 'hi', { granularity: 'grapheme' });
+      currentTargetTiles = Array.from(segmenter.segment(targetWord), s => s.segment);
+    } else {
+      currentTargetTiles = Array.from(targetWord);
+    }
 
-  let allChars = [];
-  if (typeof Intl !== 'undefined' && Intl.Segmenter) {
-    const segmenter = new Intl.Segmenter(state.lang || 'en', { granularity: 'grapheme' });
-    langWords.forEach(w => {
-      const str = (typeof w === 'object' && w.word) ? (Array.isArray(w.word) ? w.word.join('') : w.word) : w;
-      for (const seg of segmenter.segment(str)) {
-        if (!/^[\u0901-\u0903\u093c\u093e-\u094f\u0951-\u0957\u0962-\u0963]/.test(seg.segment)) {
-          allChars.push(seg.segment);
+    state.selectedLetters = [];
+
+    // अक्षरों का पूल बनाना
+    let allChars = [];
+    if (typeof Intl !== 'undefined' && Intl.Segmenter) {
+      const segmenter = new Intl.Segmenter(state.lang || 'hi', { granularity: 'grapheme' });
+      langWords.slice(0, 20).forEach(w => {
+        const str = (typeof w === 'object' && w.word) ? (Array.isArray(w.word) ? w.word.join('') : w.word) : String(w);
+        for (const seg of segmenter.segment(str)) {
+          if (!/^[\u0901-\u0903\u093c\u093e-\u094f\u0951-\u0957\u0962-\u0963]/.test(seg.segment)) {
+            allChars.push(seg.segment);
+          }
         }
-      }
-    });
-  } else {
-    allChars = ["क", "म", "न", "स", "र", "ल", "प", "द", "त"];
+      });
+    } else {
+      allChars = ["क", "म", "न", "स", "र", "ल", "प", "द", "त", "व"];
+    }
+
+    const cleanFillers = [...new Set(allChars)].filter(c => !currentTargetTiles.includes(c));
+    const randomFillers = cleanFillers.sort(() => Math.random() - 0.5).slice(0, 3);
+
+    const pool = [...currentTargetTiles, ...randomFillers];
+    currentScrambledTiles = pool.sort(() => Math.random() - 0.5);
+
+    renderPuzzleBoard();
+    updateHUD();
+  } catch (err) {
+    console.error("Puzzle init error:", err);
   }
-
-  const cleanFillers = [...new Set(allChars)].filter(c => !currentTargetTiles.includes(c));
-  const randomFillers = cleanFillers.sort(() => Math.random() - 0.5).slice(0, 3);
-
-  const pool = [...currentTargetTiles, ...randomFillers];
-  currentScrambledTiles = pool.sort(() => Math.random() - 0.5);
-
-  renderPuzzleBoard();
-  updateHUD();
 }
 
 function renderPuzzleBoard() {
@@ -271,7 +307,7 @@ function renderPuzzleBoard() {
   });
 
   safeSetText('mineBadgeLevelInfo', `Level ${state.mineLevel} • ${currentTargetTiles.length} Boxes`);
-  const baseReward = 3;
+  const baseReward = state.mineLevel >= 81 ? 30 : (state.mineLevel >= 51 ? 15 : (state.mineLevel >= 21 ? 8 : 3));
   const finalReward = state.isVerified ? baseReward * 2 : baseReward;
   safeSetText('mineRewardBadge', `+${finalReward} POM`);
 }
@@ -311,43 +347,27 @@ async function submitMiningBlock() {
     state.selectedLetters.every((val, index) => val === currentTargetTiles[index]);
 
   if (isCorrect) {
-    let baseMineReward = 3;
-    if (state.mineLevel >= 81) baseMineReward = 30;
-    else if (state.mineLevel >= 51) baseMineReward = 15;
-    else if (state.mineLevel >= 21) baseMineReward = 8;
-    
+    let baseMineReward = state.mineLevel >= 81 ? 30 : (state.mineLevel >= 51 ? 15 : (state.mineLevel >= 21 ? 8 : 3));
     const reward = state.isVerified ? (baseMineReward * 2) : baseMineReward;
-
-    // Backend call for atomic server update & upline commission distribution
-    if (CONFIG.BACKEND_API_URL && state.telegram_id && state.telegram_id !== "pioneer") {
-      try {
-        const res = await fetch(`${CONFIG.BACKEND_API_URL}/api/game/mine-reward`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ telegram_id: state.telegram_id })
-        });
-        const data = await res.json();
-        if (data.success) {
-          state.balance = data.balance;
-          state.mineLevel = data.mineLevel;
-        } else {
-          state.balance += reward;
-          state.mineLevel++;
-        }
-      } catch (e) {
-        state.balance += reward;
-        state.mineLevel++;
-      }
-    } else {
-      state.balance += reward;
-      state.mineLevel++;
-    }
-
+    
+    state.balance += reward;
+    state.mineLevel++;
+    creditReferralCommission(reward);
     saveActiveState();
     showToast(`Block Mined! +${reward} POM credited`, "🎉");
+
+    // सर्वर पर सुरक्षित एटॉमिक सिंक
+    if (CONFIG.BACKEND_API_URL && state.telegram_id && state.telegram_id !== "pioneer") {
+      fetch(`${CONFIG.BACKEND_API_URL}/api/game/mine-reward`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ telegram_id: state.telegram_id })
+      }).catch(e => console.warn("Backend mine sync delayed:", e));
+    }
+
     initCurrentPuzzle();
   } else {
-    state.energy--; // Galat hone par 1 heart cut
+    state.energy--;
     saveActiveState();
     updateHUD();
     showToast("Incorrect word! -1 ❤️ lost", "❌");
@@ -359,101 +379,28 @@ async function submitMiningBlock() {
   }
 }
 
-// --- DYNAMIC NEVER-ENDING QUIZ GENERATOR ---
-function generateDynamicQuestion(lang = 'hi') {
-  const isHi = lang === 'hi';
-  const modes = ['math_add', 'math_mul', 'iq_series', 'crypto_calc', 'static_pool'];
-  const mode = modes[Math.floor(Math.random() * modes.length)];
+// --- प्री-फ़ेचिंग एवं ज़ीरो-लेटेंसी क्विज़ इंजन ---
+let nextQuizQ = null;
 
-  if (mode === 'math_add') {
-    const a = Math.floor(Math.random() * 85) + 12;
-    const b = Math.floor(Math.random() * 85) + 15;
-    const ans = a + b;
-    const opts = [ans, ans + 2, ans - 3, ans + 10].sort(() => Math.random() - 0.5);
-    return {
-      q: isHi ? `त्वरित गणना: ${a} + ${b} का मान क्या होगा?` : `Speed Math: What is ${a} + ${b}?`,
-      options: opts.map(String),
-      correct: opts.indexOf(ans)
-    };
-  }
-
-  if (mode === 'math_mul') {
-    const a = Math.floor(Math.random() * 14) + 3;
-    const b = Math.floor(Math.random() * 11) + 4;
-    const ans = a * b;
-    const opts = [ans, ans + 4, ans - 5, ans + 12].sort(() => Math.random() - 0.5);
-    return {
-      q: isHi ? `माइंड लॉजिक: ${a} × ${b} = ?` : `Mental Logic: ${a} × ${b} = ?`,
-      options: opts.map(String),
-      correct: opts.indexOf(ans)
-    };
-  }
-
-  if (mode === 'iq_series') {
-    const start = Math.floor(Math.random() * 15) + 2;
-    const step = Math.floor(Math.random() * 6) + 3;
-    const s1 = start, s2 = start + step, s3 = start + step * 2, s4 = start + step * 3;
-    const ans = start + step * 4;
-    const opts = [ans, ans + step, ans - 2, ans + 4].sort(() => Math.random() - 0.5);
-    return {
-      q: isHi ? `पैटर्न पहचानें: ${s1}, ${s2}, ${s3}, ${s4}, [ ? ]` : `Complete the series: ${s1}, ${s2}, ${s3}, ${s4}, [ ? ]`,
-      options: opts.map(String),
-      correct: opts.indexOf(ans)
-    };
-  }
-
-  if (mode === 'crypto_calc') {
-    const tonVal = Math.floor(Math.random() * 8) + 2;
-    const rate = 150;
-    const ans = tonVal * rate;
-    const opts = [ans, ans + rate, ans - 50, ans * 2].sort(() => Math.random() - 0.5);
-    return {
-      q: isHi ? `यदि 1 TON = ${rate} POM है, तो ${tonVal} TON में कितने POM बनेंगे?` : `If 1 TON = ${rate} POM, how many POM in ${tonVal} TON?`,
-      options: opts.map(String),
-      correct: opts.indexOf(ans)
-    };
-  }
-
-  const dictList = (typeof QUIZ_REPOSITORY !== 'undefined' && QUIZ_REPOSITORY[lang]) 
-    ? QUIZ_REPOSITORY[lang] 
-    : (typeof QUIZ_QUESTIONS !== 'undefined' && QUIZ_QUESTIONS[lang] ? QUIZ_QUESTIONS[lang] : []);
-
-  if (dictList && dictList.length > 0) {
-    let unplayed = dictList.filter((_, idx) => !playedQuestionIds.has(`${lang}_${idx}`));
-    if (unplayed.length === 0) {
-      playedQuestionIds.clear();
-      unplayed = dictList;
-    }
-    const chosen = unplayed[Math.floor(Math.random() * unplayed.length)];
-    const chosenIdx = dictList.indexOf(chosen);
-    playedQuestionIds.add(`${lang}_${chosenIdx}`);
-    return chosen;
-  }
-
-  return {
-    q: isHi ? "Web3 में विकेंद्रीकरण (Decentralization) का क्या अर्थ है?" : "What does Decentralization mean in Web3?",
-    options: isHi ? ["उपयोगकर्ता का स्वामित्त्व", "एकल सर्वर नियंत्रण", "सरकारी एकाधिकार", "सीमित उपयोग"] : ["User Ownership", "Single Server", "Centralized", "Closed Source"],
-    correct: 0
-  };
-}
-
-// --- ZERO-LATENCY PRE-FETCHING ---
 async function prefetchQuizQ() {
-  if (!CONFIG.BACKEND_API_URL) return;
   try {
-    const res = await fetch(`${CONFIG.BACKEND_API_URL}/api/quiz/random`);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2000);
+
+    const res = await fetch(`${CONFIG.BACKEND_API_URL}/api/quiz/random`, { signal: controller.signal });
+    clearTimeout(timeoutId);
     const data = await res.json();
-    if (data.success && data.question) {
+    if (data && data.success && data.question) {
       nextQuizQ = data.question;
     }
   } catch (e) {
-    // Fail silently, fallback generator handles it
+    // बैकग्राउंड में शांत रहेगा
   }
 }
 
-// --- MAIN QUIZ FUNCTION ---
 async function startQuizRound() {
   stopQuizTimer();
+  isSubmittingAnswer = false;
 
   const questionEl = document.getElementById('quizQuestionText');
   const optsContainer = document.getElementById('quizOptionsContainer');
@@ -461,30 +408,36 @@ async function startQuizRound() {
   let rawData = nextQuizQ;
   nextQuizQ = null;
 
-  if (!rawData && CONFIG.BACKEND_API_URL) {
+  if (!rawData) {
     try {
-      const res = await fetch(`${CONFIG.BACKEND_API_URL}/api/quiz/random`);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 1500);
+
+      const res = await fetch(`${CONFIG.BACKEND_API_URL}/api/quiz/random`, { signal: controller.signal });
+      clearTimeout(timeoutId);
       const data = await res.json();
-      if (data.success && data.question) {
+      if (data && data.success && data.question) {
         rawData = data.question;
       }
-    } catch (e) {}
+    } catch (e) {
+      console.warn("Using offline fallback question");
+    }
   }
 
+  // अगर सर्वर ऑफलाइन हो या देर करे तो बैकअप सवाल तुरंत उठाएँ
+  if (!rawData) {
+    rawData = FALLBACK_QUESTIONS[Math.floor(Math.random() * FALLBACK_QUESTIONS.length)];
+  }
+
+  // अगले राउंड के लिए बैकग्राउंड में प्री-फ़ेच चालू करें
   prefetchQuizQ();
 
   const lang = state.lang || 'hi';
-  let currentQ = null;
-
-  if (rawData && (rawData.question_hi || rawData.question_en)) {
-    currentQ = {
-      q: (lang === 'hi' ? rawData.question_hi : rawData.question_en) || rawData.question_hi || rawData.question_en,
-      options: (lang === 'hi' ? rawData.options_hi : rawData.options_en) || rawData.options_hi || rawData.options_en,
-      correct: rawData.correctIndex !== undefined ? rawData.correctIndex : 0
-    };
-  } else {
-    currentQ = generateDynamicQuestion(lang);
-  }
+  const currentQ = {
+    q: (lang === 'hi' ? rawData.question_hi : rawData.question_en) || rawData.question_hi || rawData.question_en,
+    options: (lang === 'hi' ? rawData.options_hi : rawData.options_en) || rawData.options_hi || rawData.options_en,
+    correct: (rawData.correctIndex !== undefined) ? rawData.correctIndex : 0
+  };
 
   if (questionEl) questionEl.innerText = currentQ.q;
   if (!optsContainer) return;
@@ -492,9 +445,9 @@ async function startQuizRound() {
   optsContainer.innerHTML = '';
   currentQ.options.forEach((opt, idx) => {
     const btn = document.createElement('button');
-    btn.className = 'w-full py-3.5 px-4 rounded-xl bg-slate-800/80 border border-slate-700/60 hover:border-cyan-500 font-semibold text-slate-100 transition-all text-left';
+    btn.className = 'w-full py-3 px-4 rounded-xl bg-slate-800/80 border border-slate-700/60 hover:border-cyan-500 font-semibold text-slate-100 transition-all text-left';
     btn.innerText = opt;
-    btn.onclick = () => submitQuizAnswer(idx, currentQ.correct);
+    btn.onclick = () => submitQuizAnswer(idx, currentQ.correct, btn);
     optsContainer.appendChild(btn);
   });
 
@@ -521,38 +474,45 @@ function updateQuizTimerBar() {
   if (bar) bar.style.width = `${(quizRemainingTime / 25) * 100}%`;
 }
 
-function submitQuizAnswer(selectedIdx, correctIdx) {
+function submitQuizAnswer(selectedIdx, correctIdx, btnElement) {
+  if (isSubmittingAnswer) return;
+  isSubmittingAnswer = true;
   stopQuizTimer();
+
   if (state.energy <= 0) {
     openEnergyModal();
     return;
   }
 
-  if (selectedIdx === correctIdx) {
-    let baseReward = 2;
-    if (state.quizLevel >= 81) baseReward = 20;
-    else if (state.quizLevel >= 51) baseReward = 10;
-    else if (state.quizLevel >= 21) baseReward = 5;
-
-    const reward = state.isVerified ? (baseReward * 2) : baseReward;
-    state.balance += reward;
-    state.quizLevel++;
-
-    saveActiveState();
-    showToast(`Correct Answer! +${reward} POM`, "🌟");
-  } else {
-    state.energy--;
-    saveActiveState();
-    showToast("Incorrect answer! -1 ❤️ lost", "❌");
-    state.quizLevel++;
+  const isCorrect = selectedIdx === correctIdx;
+  if (btnElement) {
+    btnElement.style.backgroundColor = isCorrect ? '#059669' : '#dc2626';
+    btnElement.style.color = '#ffffff';
   }
 
-  updateHUD();
-  if (state.energy <= 0) openEnergyModal();
-  startQuizRound();
+  setTimeout(() => {
+    if (isCorrect) {
+      let baseReward = state.quizLevel >= 81 ? 20 : (state.quizLevel >= 51 ? 10 : (state.quizLevel >= 21 ? 5 : 2));
+      const reward = state.isVerified ? (baseReward * 2) : baseReward;
+      state.balance += reward;
+      state.quizLevel++;
+      creditReferralCommission(reward);
+      saveActiveState();
+      showToast(`Correct Answer! +${reward} POM`, "🌟");
+    } else {
+      state.energy--;
+      saveActiveState();
+      showToast("Incorrect answer! -1 ❤️ lost", "❌");
+      state.quizLevel++;
+    }
+
+    updateHUD();
+    if (state.energy <= 0) openEnergyModal();
+    startQuizRound();
+  }, 600);
 }
 
-// --- AUTOMATIC OUT-OF-ENERGY POPUP ---
+// --- आउट-ऑफ-एनर्जी पॉपअप ---
 function openEnergyModal() {
   document.getElementById('energyModal')?.classList.remove('hidden');
 }
@@ -562,43 +522,41 @@ function closeEnergyModal() {
 }
 
 function watchAdAndRefill(amount) {
-  const blockId = (typeof CONFIG !== 'undefined' && CONFIG.ADSGRAM_BLOCK_ID) ? CONFIG.ADSGRAM_BLOCK_ID : "57910";
+  const blockId = CONFIG.ADSGRAM_BLOCK_ID || "57910";
 
   if (window.Adsgram) {
     showToast("Loading Ad...", "⏳");
-    const AdController = window.Adsgram.init({ blockId: blockId, debug: true });
+    const AdController = window.Adsgram.init({ blockId: blockId, debug: false });
     
     AdController.show().then(() => {
-      state.energy = Math.min(5, state.energy + amount);
+      state.energy = 5;
       saveActiveState();
       closeEnergyModal();
       updateHUD();
-      showToast(`Energy Recharged (+${amount} ❤️)!`, "⚡");
+      showToast("Energy Recharged (Full ❤️)!", "⚡");
     }).catch(() => {
-      state.energy = Math.min(5, state.energy + amount);
+      state.energy = 5;
       saveActiveState();
       closeEnergyModal();
       updateHUD();
-      showToast(`Test Refill: +${amount} Energy Restored!`, "⚡");
+      showToast("Energy Restored (5 ❤️)!", "⚡");
     });
   } else {
-    state.energy = Math.min(5, state.energy + amount);
+    state.energy = 5;
     saveActiveState();
     closeEnergyModal();
     updateHUD();
-    showToast(`Test Refill: +${amount} Energy Restored!`, "⚡");
+    showToast("Energy Restored (5 ❤️)!", "⚡");
   }
 }
 
-// --- COMMUNITY TASKS ---
+// --- कम्युनिटी टास्क ---
 function renderTasks() {
   const container = document.getElementById('tasksListContainer');
   if (!container) return;
   container.innerHTML = '';
 
-  const activeLangTasks = (typeof TASK_TRANSLATIONS !== 'undefined' && TASK_TRANSLATIONS[state.lang]) 
-    ? TASK_TRANSLATIONS[state.lang] 
-    : (typeof TASK_TRANSLATIONS !== 'undefined' ? TASK_TRANSLATIONS.en : {});
+  const activeLangTasks = TASK_TRANSLATIONS[state.lang] || TASK_TRANSLATIONS.en || TASK_TRANSLATIONS.hi;
 
   state.tasks.forEach((task, idx) => {
     const card = document.createElement('div');
@@ -643,64 +601,31 @@ function startTask(idx) {
   renderTasks();
 }
 
-async function claimTaskReward(idx) {
-  const task = state.tasks[idx];
-  state.balance += task.reward;
-  task.completed = true;
+function claimTaskReward(idx) {
+  state.balance += state.tasks[idx].reward;
+  state.tasks[idx].completed = true;
   saveActiveState();
   updateHUD();
   renderTasks();
-  showToast(`+${task.reward} POM Claimed!`, "🎁");
-
-  // Sync completed task to MongoDB backend
-  if (CONFIG.BACKEND_API_URL && state.telegram_id && state.telegram_id !== "pioneer") {
-    try {
-      await fetch(`${CONFIG.BACKEND_API_URL}/api/task/complete`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          telegram_id: state.telegram_id,
-          taskId: task.id,
-          reward: task.reward
-        })
-      });
-    } catch(e) {}
-  }
+  showToast(`+${state.tasks[idx].reward} POM Claimed!`, "🎁");
 }
 
-// --- REFERRALS ---
+// --- रेफरल सिस्टम ---
 function getReferralLink() {
   return `https://t.me/${CONFIG.BOT_USERNAME}?startapp=ref_${state.telegram_id}`;
 }
 
-async function claimReferralRewards() {
+function creditReferralCommission(amount) {
+  state.unclaimedCommission += (amount * 0.10) + (amount * 0.03) + (amount * 0.02);
+  saveActiveState();
+  safeSetText('unclaimedCommissionDisplay', `${state.unclaimedCommission.toFixed(1)} POM`);
+}
+
+function claimReferralRewards() {
   if (state.unclaimedCommission <= 0) {
     showToast("No unclaimed commissions right now.", "ℹ️");
     return;
   }
-
-  // Backend commission claim
-  if (CONFIG.BACKEND_API_URL && state.telegram_id && state.telegram_id !== "pioneer") {
-    try {
-      const res = await fetch(`${CONFIG.BACKEND_API_URL}/api/referral/claim`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ telegram_id: state.telegram_id })
-      });
-      const data = await res.json();
-      if (data.success) {
-        state.balance = data.balance;
-        state.unclaimedCommission = 0;
-        saveActiveState();
-        safeSetText('unclaimedCommissionDisplay', `0.0 POM`);
-        updateHUD();
-        showToast(`Commissions claimed: +${data.claimed.toFixed(1)} POM!`, "💰");
-        return;
-      }
-    } catch (e) {}
-  }
-
-  // Fallback local claim
   state.balance += Math.floor(state.unclaimedCommission);
   state.unclaimedCommission = 0;
   saveActiveState();
@@ -710,8 +635,7 @@ async function claimReferralRewards() {
 }
 
 function copyReferralLink() {
-  const link = getReferralLink();
-  navigator.clipboard.writeText(link);
+  navigator.clipboard.writeText(getReferralLink());
   showToast("Referral link copied!", "📋");
 }
 
@@ -726,7 +650,7 @@ function shareReferralToTelegram() {
   }
 }
 
-// --- TONCONNECT 2.0 INITIALIZATION & WALLET ---
+// --- TONCONNECT & ऑन-चेन सत्यापन ---
 function initRealTonConnect() {
   try {
     if (window.TON_CONNECT_UI) {
@@ -734,9 +658,7 @@ function initRealTonConnect() {
         ? `${window.location.origin}/tonconnect-manifest.json`
         : 'https://proof-of-mind-vvnd.vercel.app/tonconnect-manifest.json';
 
-      tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
-        manifestUrl: manifestUrl
-      });
+      tonConnectUI = new TON_CONNECT_UI.TonConnectUI({ manifestUrl });
 
       tonConnectUI.onStatusChange(wallet => {
         if (wallet && wallet.account) {
@@ -754,7 +676,7 @@ function initRealTonConnect() {
       });
     }
   } catch (err) {
-    console.error("TonConnect error:", err);
+    console.warn("TonConnect initialization note:", err);
   }
 }
 
@@ -770,11 +692,7 @@ async function toggleTonConnection() {
     showToast("TON Wallet Disconnected", "💎");
   } else {
     if (tonConnectUI) {
-      try {
-        await tonConnectUI.openModal();
-      } catch (e) {
-        openTonVerifyModal();
-      }
+      try { await tonConnectUI.openModal(); } catch (e) { openTonVerifyModal(); }
     } else {
       openTonVerifyModal();
     }
@@ -835,8 +753,6 @@ function openTelegramWalletPay() {
   const tgWalletUrl = `https://t.me/wallet?startattach=ton_transfer_${CONFIG.ADMIN_TON_WALLET}_300000000`;
   if (window.Telegram?.WebApp?.openTelegramLink) {
     window.Telegram.WebApp.openTelegramLink(tgWalletUrl);
-  } else if (window.Telegram?.WebApp?.openLink) {
-    window.Telegram.WebApp.openLink(tgWalletUrl);
   } else {
     window.open(tgWalletUrl, '_blank');
   }
@@ -849,7 +765,7 @@ function completeTonVerificationTransaction() {
   closeTonVerifyModal();
   updateHUD();
 
-  if (CONFIG.BACKEND_API_URL && state.telegram_id) {
+  if (CONFIG.BACKEND_API_URL && state.telegram_id && state.telegram_id !== "pioneer") {
     fetch(`${CONFIG.BACKEND_API_URL}/api/wallet/verify-ton`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -857,7 +773,7 @@ function completeTonVerificationTransaction() {
         telegram_id: state.telegram_id,
         tonAddress: state.tonAddress || "Tonkeeper_Verified"
       })
-    }).catch(e => console.log(e));
+    }).catch(e => console.warn(e));
   }
 
   showToast("0.3 TON Verification confirmed! 2x boost active.", "🛡️");
@@ -869,7 +785,7 @@ function connectPiWallet() {
   showToast("Pi Network Pioneer Connected!", "π");
 }
 
-// --- HUD UPDATER ---
+// --- HUD अपडेटर ---
 function updateHUD() {
   safeSetText('userBalanceDisplay', state.balance);
   safeSetText('walletTotalPomDisplay', `${state.balance} POM`);
@@ -877,7 +793,6 @@ function updateHUD() {
   safeSetText('tier1UsersCount', state.tier1Users);
   safeSetText('tier2UsersCount', state.tier2Users);
   safeSetText('tier3UsersCount', state.tier3Users);
-  safeSetText('unclaimedCommissionDisplay', `${(state.unclaimedCommission || 0).toFixed(1)} POM`);
 
   const isQuizTab = !document.getElementById('tabQuiz').classList.contains('hidden');
   safeSetText('labelLevel', isQuizTab ? (state.lang === 'hi' ? 'क्विज़ लेवल' : 'Quiz Level') : (state.lang === 'hi' ? 'माइन लेवल' : 'Mine Level'));
@@ -887,7 +802,7 @@ function updateHUD() {
   if (heartsContainer) {
     let html = '';
     for (let i = 0; i < 5; i++) {
-      html += i < state.energy ? '<i class="fa-solid fa-heart text-rose-500"></i>' : '<i class="fa-regular fa-heart text-slate-600"></i>';
+      html += i < state.energy ? '<i class="fa-solid fa-heart"></i>' : '<i class="fa-regular fa-heart text-slate-600"></i>';
     }
     heartsContainer.innerHTML = html;
   }
@@ -905,7 +820,7 @@ function updateHUD() {
       btnVerify.innerHTML = `<i class="fa-solid fa-circle-check"></i><span>✔ 0.3 TON Verified (2x Boost Active)</span>`;
     } else {
       btnVerify.className = "w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 active:scale-95 text-slate-950 font-black text-xs py-2 rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all flex items-center justify-center space-x-1.5";
-      btnVerify.innerHTML = `<i class="fa-solid fa-bolt text-xs"></i><span id="btnVerifyText">${(typeof TRANSLATIONS !== 'undefined' && TRANSLATIONS[state.lang]?.verifyBtn) || "Verify 0.3 TON"}</span>`;
+      btnVerify.innerHTML = `<i class="fa-solid fa-bolt text-xs"></i><span id="btnVerifyText">${TRANSLATIONS[state.lang]?.verifyBtn || "0.3 TON से वेरीफाई करें"}</span>`;
     }
   }
 
@@ -914,18 +829,7 @@ function updateHUD() {
 
   if (state.tonConnected) {
     safeSetText('tonStatusBadge', 'TON Connected');
-    let raw = state.tonAddress || "";
-    try {
-      if (typeof TonConnectSDK !== 'undefined' && TonConnectSDK.toUserFriendlyAddress && raw.startsWith("0:")) {
-        raw = TonConnectSDK.toUserFriendlyAddress(raw);
-      } else if (typeof tonConnectUI !== 'undefined' && tonConnectUI.toUserFriendlyAddress && raw.startsWith("0:")) {
-        raw = tonConnectUI.toUserFriendlyAddress(raw);
-      } else if (window.TON_CONNECT_UI && window.TON_CONNECT_UI.toUserFriendlyAddress && raw.startsWith("0:")) {
-        raw = window.TON_CONNECT_UI.toUserFriendlyAddress(raw);
-      }
-    } catch (e) {}
-
-    let displayAddr = raw || "Connected";
+    let displayAddr = state.tonAddress || "Connected";
     if (displayAddr.length > 14) {
       displayAddr = `${displayAddr.slice(0, 8)}...${displayAddr.slice(-6)}`;
     }
@@ -936,20 +840,16 @@ function updateHUD() {
     safeSetText('tonStatusBadge', 'Not Connected');
     safeSetText('tonAddressText', 'No TON wallet connected yet');
     const btn = document.getElementById('btnConnectTon');
-    if (btn) btn.innerHTML = `<i class="fa-solid fa-wallet mr-1"></i> <span id="btnConnectTonText">${(typeof TRANSLATIONS !== 'undefined' && TRANSLATIONS[state.lang]?.connectTon) || "Connect TON"}</span>`;
+    if (btn) btn.innerHTML = `<i class="fa-solid fa-wallet mr-1"></i> <span id="btnConnectTonText">${TRANSLATIONS[state.lang]?.connectTon || "Connect TON"}</span>`;
   }
 }
 
-// --- WHITEPAPER MODAL ---
+// --- व्हाइटपेपर मोडल रेंडर ---
 function renderDocsContent() {
   const container = document.getElementById('docsBodyContainer');
   if (!container) return;
 
-  const d = (typeof WHITEPAPER_DATA !== 'undefined' && WHITEPAPER_DATA[state.lang]) 
-    ? WHITEPAPER_DATA[state.lang] 
-    : (typeof WHITEPAPER_DATA !== 'undefined' ? WHITEPAPER_DATA.en : {});
-
-  if (!d.s1) return;
+  const d = WHITEPAPER_DATA[state.lang] || WHITEPAPER_DATA.en || WHITEPAPER_DATA.hi;
 
   container.innerHTML = `
     <div><h4 class="text-sky-400 font-bold uppercase text-[10px] mb-1">${d.s1}</h4><p>${d.p1}</p></div>
@@ -976,7 +876,7 @@ function openDocsModal() {
 }
 function closeDocsModal() { document.getElementById('docsModal')?.classList.add('hidden'); }
 
-// --- ADMIN CONTROL CONSOLE ---
+// --- एडमिन कंसोल ---
 function openAdminModal() { document.getElementById('adminModal')?.classList.remove('hidden'); }
 function closeAdminModal() { document.getElementById('adminModal')?.classList.add('hidden'); }
 
@@ -1031,7 +931,6 @@ function refreshAdminDashboard() {
 }
 
 function copyTelegramChannelHint() {
-  const wordStr = currentTargetTiles.join('');
   const postText = `🧠 Proof of Mind (POM) Community Intellect Drop!\n\nSolve Level ${state.mineLevel} now.\nTarget Length: ${currentTargetTiles.length} Letters\nLetter Pool: ${currentScrambledTiles.join(' ')}\n\nMine block now 👉 https://t.me/${CONFIG.BOT_USERNAME}?startapp=ref_channel`;
   navigator.clipboard.writeText(postText);
   showToast("Telegram post copied to clipboard!", "📋");
@@ -1124,7 +1023,7 @@ function adminResetAllData() {
   showToast("State reset to defaults", "🔄");
 }
 
-// --- APPLICATION STARTUP ---
+// --- ऐप स्टार्ट लॉजिक ---
 async function startApp() {
   let startParam = "";
   let tgUser = null;
@@ -1138,8 +1037,6 @@ async function startApp() {
 
     if (tgUser && tgUser.id) {
       state.telegram_id = String(tgUser.id);
-      state.username = tgUser.username || "";
-      state.first_name = tgUser.first_name || "";
     }
   }
 
@@ -1149,8 +1046,9 @@ async function startApp() {
   renderTasks();
   updateHUD();
   initRealTonConnect();
+  prefetchQuizQ(); // ऐप शुरू होते ही पहला सवाल लोड करके रख लेगा
 
-  // --- MONGODB BACKEND USER & REFERRAL SYNC ---
+  // बैकएंड पर यूज़र सिंक
   if (CONFIG.BACKEND_API_URL && state.telegram_id && state.telegram_id !== "pioneer") {
     try {
       const res = await fetch(`${CONFIG.BACKEND_API_URL}/api/user/sync`, {
@@ -1158,41 +1056,24 @@ async function startApp() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           telegram_id: state.telegram_id,
-          username: state.username,
-          first_name: state.first_name,
+          username: tgUser?.username || "",
+          first_name: tgUser?.first_name || "",
           start_param: startParam
         })
       });
       const data = await res.json();
-      if (data && data.success && data.user) {
-        state.balance = data.user.balance !== undefined ? data.user.balance : state.balance;
-        state.energy = data.user.energy !== undefined ? data.user.energy : state.energy;
-        state.mineLevel = data.user.mineLevel !== undefined ? data.user.mineLevel : state.mineLevel;
-        state.quizLevel = data.user.quizLevel !== undefined ? data.user.quizLevel : state.quizLevel;
-        state.isVerified = data.user.isVerified !== undefined ? data.user.isVerified : state.isVerified;
-        state.unclaimedCommission = data.user.unclaimedCommission !== undefined ? data.user.unclaimedCommission : state.unclaimedCommission;
-
-        if (data.user.referrals) {
-          state.tier1Users = data.user.referrals.tier1?.length || 0;
-          state.tier2Users = data.user.referrals.tier2?.length || 0;
-          state.tier3Users = data.user.referrals.tier3?.length || 0;
+      if (data && data.user) {
+        if (data.user.referrals?.tier1) {
+          state.tier1Users = data.user.referrals.tier1.length;
         }
-
-        if (data.user.completedTasks && Array.isArray(data.user.completedTasks)) {
-          state.tasks.forEach(t => {
-            if (data.user.completedTasks.includes(t.id)) {
-              t.completed = true;
-              t.started = true;
-            }
-          });
-          renderTasks();
-        }
-
-        saveActiveState();
+        if (data.user.balance !== undefined) state.balance = data.user.balance;
+        if (data.user.mineLevel !== undefined) state.mineLevel = data.user.mineLevel;
+        if (data.user.quizLevel !== undefined) state.quizLevel = data.user.quizLevel;
+        if (data.user.isVerified !== undefined) state.isVerified = data.user.isVerified;
         updateHUD();
       }
     } catch (err) {
-      console.warn("Backend sync offline, continuing with local state:", err.message);
+      console.warn("Backend user sync note:", err);
     }
   }
 }
