@@ -2,7 +2,7 @@
 // PROOF OF MIND (POM) - MULTILINGUAL DATA ENGINE
 // ==========================================
 
-export const TRANSLATIONS = {
+const TRANSLATIONS = {
   hi: {
     balance: "बैलेंस", level: "लेवल", energy: "एनर्जी",
     mineHeading: "वर्ड पज़ल माइनिंग", mineSubHeading: "ब्लॉक माइन करने के लिए सही अक्षरों का चयन करें",
@@ -137,7 +137,7 @@ export const TRANSLATIONS = {
   }
 };
 
-export const TASK_TRANSLATIONS = {
+const TASK_TRANSLATIONS = {
   hi: {
     tg_ch: "आधिकारिक घोषणा चैनल से जुड़ें",
     tg_grp: "पब्लिक कम्युनिटी ग्रुप में शामिल हों",
@@ -210,7 +210,7 @@ export const TASK_TRANSLATIONS = {
   }
 };
 
-export const LOCAL_WORDS = {
+const LOCAL_WORDS = {
   hi: [
     { word: ["म", "न"], fillers: ["क", "ल", "र", "स"] },
     { word: ["ट", "न"], fillers: ["प", "य", "व", "द"] },
@@ -245,7 +245,7 @@ export const LOCAL_WORDS = {
   ],
   bn: [
     { word: ["ম", "ন"], fillers: ["ক", "ল", "ব", "র"] },
-    { word: ["জ্ঞ", "া", "ন"], fillers: ["ভ", "ব", "ন", "দ"] }, // Fixed: split characters
+    { word: ["জ্ঞ", "া", "ন"], fillers: ["ভ", "ব", "ন", "দ"] },
     { word: ["জ", "া", "ল"], fillers: ["প", "ঠ", "স", "হ"] }
   ],
   vi: [
@@ -265,8 +265,7 @@ export const LOCAL_WORDS = {
   ]
 };
 
-// Consolidated Quiz Repository (All Questions Merged)
-export const QUIZ_REPOSITORY = {
+const QUIZ_REPOSITORY = {
   hi: [
     { q: "POM बौद्धिक सत्यापन के लिए किस सर्वसम्मति का उपयोग करता है?", options: ["Proof of Work", "Proof of Intellect", "Proof of Stake", "Proof of Authority"], correct: 1 },
     { q: "POM टोकन की कुल आपूर्ति (Total Supply) कितनी है?", options: ["500 मिलियन", "1 अरब (1 Billion)", "2 अरब", "100 मिलियन"], correct: 1 },
@@ -274,7 +273,8 @@ export const QUIZ_REPOSITORY = {
     { q: "टेलीग्राम मिनी ऐप्स को कौन सा ब्लॉकचेन सपोर्ट करता है?", options: ["Solana", "The Open Network (TON)", "Bitcoin L1", "Cardano"], correct: 1 },
     { q: "TON नेटवर्क का मूल टोकन कौन सा है?", options: ["TON", "BTC", "ETH", "SOL"], correct: 0 },
     { q: "POM टोकन की प्राथमिक उपयोगिता क्या है?", options: ["गवर्नेंस एवं माइनिंग", "स्टोरेज", "DNS", "NFT"], correct: 0 },
-    { q: "POM के साथ कौन सा 60M+ समुदाय जुड़ा है?", options: ["Pi Network", "Cardano", "Polkadot", "Ripple"], correct: 0 }
+    { q: "POM के साथ कौन सा 60M+ समुदाय जुड़ा है?", options: ["Pi Network", "Cardano", "Polkadot", "Ripple"], correct: 0 },
+    { q: "POM में कौन सा तेज़ ब्लॉकचेन नेटवर्क जुड़ा है?", options: ["TON ब्लॉकचेन", "बिटकॉइन", "डॉजकॉइन", "लिटकॉइन"], correct: 0 }
   ],
   en: [
     { q: "What consensus protocol does Proof of Mind implement?", options: ["Proof of Work", "Proof of Intellect", "Proof of Stake", "Proof of Authority"], correct: 1 },
@@ -283,14 +283,16 @@ export const QUIZ_REPOSITORY = {
     { q: "Which native blockchain directly powers Telegram Mini Apps?", options: ["Solana", "The Open Network (TON)", "Bitcoin L1", "Cardano"], correct: 1 },
     { q: "What is the native token of TON Network?", options: ["TON", "BTC", "ETH", "SOL"], correct: 0 },
     { q: "What is the primary utility of POM token?", options: ["Governance & Mining", "File Storage", "DNS", "NFT Art"], correct: 0 },
-    { q: "Which ecosystem connects 60M+ pioneers with POM?", options: ["Pi Network", "Cardano", "Polkadot", "Ripple"], correct: 0 }
+    { q: "Which ecosystem connects 60M+ pioneers with POM?", options: ["Pi Network", "Cardano", "Polkadot", "Ripple"], correct: 0 },
+    { q: "What is the fastest layer-1 blockchain integrated in POM?", options: ["TON Blockchain", "Bitcoin", "Dogecoin", "Litecoin"], correct: 0 }
   ],
   ru: [
     { q: "Какой консенсус использует проект Proof of Mind?", options: ["Proof of Work", "Proof of Intellect", "Proof of Stake", "Proof of Authority"], correct: 1 },
     { q: "Какова общая эмиссия токенов POM?", options: ["500 Миллионов", "1 Миллиард", "2 Миллиарда", "100 Миллионов"], correct: 1 },
     { q: "Что дает верификация за 0.3 TON?", options: ["Постоянный 2x множитель", "5 бесплатных сердец", "100-й уровень", "500 POM"], correct: 0 },
     { q: "Какой нативный токен сети TON?", options: ["TON", "BTC", "ETH", "SOL"], correct: 0 },
-    { q: "Какое сообщество из 60M+ пионеров связано с POM?", options: ["Pi Network", "Cardano", "Polkadot", "Ripple"], correct: 0 }
+    { q: "Какое сообщество из 60M+ пионеров связано с POM?", options: ["Pi Network", "Cardano", "Polkadot", "Ripple"], correct: 0 },
+    { q: "Какой быстрый блокчейн интегрирован в POM?", options: ["TON", "Bitcoin", "Dogecoin", "Litecoin"], correct: 0 }
   ],
   zh: [
     { q: "Proof of Mind (POM) 采用何种共识机制？", options: ["工作量证明 (PoW)", "智力证明 (PoI)", "权益证明 (PoS)", "权威证明 (PoA)"], correct: 1 },
@@ -343,7 +345,7 @@ export const QUIZ_REPOSITORY = {
   ]
 };
 
-export const WHITEPAPER_DATA = {
+const WHITEPAPER_DATA = {
   hi: {
     s1: "१. विज़न एवं प्रूफ ऑफ इंटेलेक्ट (PoI)",
     p1: "प्रूफ ऑफ माइंड (POM) बिजली और हार्डवेयर की अनावश्यक बर्बादी के स्थान पर मानव बौद्धिक सर्वसम्मति को ऑन-चेन लागू करता है। उपयोगकर्ता शब्द पहेलियां और सत्यापित क्विज़ हल करके अपनी सक्रिय बौद्धिक क्षमता प्रमाणित करते हैं और विकेंद्रीकृत टोकन माइन करते हैं।",
@@ -476,7 +478,7 @@ export const WHITEPAPER_DATA = {
   }
 };
 
-export const MINE_DICTIONARY = {
+const MINE_DICTIONARY = {
   en: ["MIND", "TON", "NODE", "COIN", "HASH", "BLOCK", "PROOF", "BRAIN", "CHAIN", "TOKEN"],
   hi: ["मन", "ज्ञान", "बुद्धि", "सोच", "चेतना", "प्रमाण", "सत्य", "मस्तिष्क", "सिक्का", "नेटवर्क"],
   ru: ["РАЗУМ", "МОЗГ", "БЛОК", "УЗЕЛ", "ТОКЕН", "СЕТЬ", "МЫСЛЬ", "КЛЮЧ"],
@@ -489,14 +491,12 @@ export const MINE_DICTIONARY = {
   fa: ["ذهن", "مغز", "بلاک", "گره", "توکن", "اثبات", "دانش", "هوش"]
 };
 
-// CommonJS Backward Compatibility (Node.js environments ke liye)
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = {
-    TRANSLATIONS,
-    TASK_TRANSLATIONS,
-    LOCAL_WORDS,
-    QUIZ_REPOSITORY,
-    WHITEPAPER_DATA,
-    MINE_DICTIONARY
-  };
+// Global Attachments
+if (typeof window !== 'undefined') {
+  window.TRANSLATIONS = TRANSLATIONS;
+  window.TASK_TRANSLATIONS = TASK_TRANSLATIONS;
+  window.LOCAL_WORDS = LOCAL_WORDS;
+  window.QUIZ_REPOSITORY = QUIZ_REPOSITORY;
+  window.WHITEPAPER_DATA = WHITEPAPER_DATA;
+  window.MINE_DICTIONARY = MINE_DICTIONARY;
 }
