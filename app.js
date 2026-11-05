@@ -38,12 +38,68 @@ let state = {
 let currentTargetTiles = ["म", "न"];
 let currentScrambledTiles = ["म", "न", "क", "ल", "र", "स"];
 
-// टाइमर वेरिएबल्स
 let quizTimer = null;
 let quizRemainingTime = 25;
 let isSubmittingAnswer = false;
 
-// --- सेफ़्टी फ़ॉलबैक सवाल (Never Freeze Guarantee) ---
+// --- TON रॉ हेक्स एड्रेस (0:...) को यूज़र-फ्रेंडली (UQ...) में बदलने का इनबिल्ट कनवर्टर ---
+function convertTonToUserFriendly(rawAddress) {
+  if (!rawAddress || typeof rawAddress !== 'string') return rawAddress;
+  if (!rawAddress.includes(':')) return rawAddress;
+
+  // 1. TonConnect SDK मेथड का प्रयास
+  try {
+    if (window.TON_CONNECT_UI && typeof window.TON_CONNECT_UI.toUserFriendlyAddress === 'function') {
+      return window.TON_CONNECT_UI.toUserFriendlyAddress(rawAddress);
+    }
+    if (typeof TonConnectSDK !== 'undefined' && typeof TonConnectSDK.toUserFriendlyAddress === 'function') {
+      return TonConnectSDK.toUserFriendlyAddress(rawAddress);
+    }
+  } catch(e) {
+    console.warn("SDK conversion fallback:", e);
+  }
+
+  // 2. शुद्ध जावास्क्रिप्ट फॉलबैक (CRC16 + Base64url)
+  try {
+    const parts = rawAddress.split(':');
+    const wc = parseInt(parts[0], 10);
+    const hex = parts[1];
+    if (hex.length !== 64) return rawAddress;
+
+    const bytes = new Uint8Array(36);
+    bytes[0] = 0x51; // नॉन-बाउंसएबल मुख्य नेटवर्क टैग ('UQ...')
+    bytes[1] = wc === -1 ? 0xFF : (wc & 0xFF);
+
+    for (let i = 0; i < 32; i++) {
+      bytes[2 + i] = parseInt(hex.substr(i * 2, 2), 16);
+    }
+
+    let crc = 0;
+    for (let i = 0; i < 34; i++) {
+      crc ^= (bytes[i] << 8);
+      for (let j = 0; j < 8; j++) {
+        if (crc & 0x8000) {
+          crc = ((crc << 1) ^ 0x1021) & 0xFFFF;
+        } else {
+          crc = (crc << 1) & 0xFFFF;
+        }
+      }
+    }
+    bytes[34] = (crc >> 8) & 0xFF;
+    bytes[35] = crc & 0xFF;
+
+    let binary = '';
+    for (let i = 0; i < bytes.length; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  } catch (err) {
+    console.error("Manual TON conversion error:", err);
+    return rawAddress;
+  }
+}
+
+// --- बैकअप सवाल (सुरक्षा फ़ॉलबैक) ---
 const FALLBACK_QUESTIONS = [
   {
     question_hi: "Proof of Mind (POM) किस प्रकार की सर्वसम्मति पर आधारित है?",
@@ -58,13 +114,6 @@ const FALLBACK_QUESTIONS = [
     options_hi: ["स्थायी 2x रिवॉर्ड मल्टीप्लायर", "अतिरिक्त 5 हार्ट्स", "तुरंत 100 लेवल", "500 मुफ्त POM"],
     options_en: ["Lifetime 2x Reward Multiplier", "Extra 5 Hearts", "Instant Level 100", "500 Free POM"],
     correctIndex: 0
-  },
-  {
-    question_hi: "बिटकॉइन ब्लॉकचेन के संस्थापक कौन हैं?",
-    question_en: "Who is the creator of Bitcoin blockchain?",
-    options_hi: ["विटालिक ब्यूटरिन", "सातोशी नाकामोटो", "एलन मस्क", "चार्ली ली"],
-    options_en: ["Vitalik Buterin", "Satoshi Nakamoto", "Elon Musk", "Charlie Lee"],
-    correctIndex: 1
   },
   {
     question_hi: "कंप्यूटर का मस्तिष्क किसे कहा जाता है?",
@@ -188,7 +237,7 @@ function stopQuizTimer() {
   }
 }
 
-// --- टैब नेविगेशन (Never-Freeze) ---
+// --- टैब नेविगेशन ---
 function switchTab(tabId) {
   try {
     if (tabId !== 'tabQuiz') {
@@ -231,7 +280,7 @@ function switchTab(tabId) {
   }
 }
 
-// --- वर्ड पज़ल माइनिंग इंजन (Grapheme Safe) ---
+// --- वर्ड पज़ल माइनिंग इंजन ---
 function initCurrentPuzzle() {
   try {
     const activeDict = (typeof MINE_DICTIONARY !== 'undefined') ? MINE_DICTIONARY : (typeof LOCAL_WORDS !== 'undefined' ? LOCAL_WORDS : {});
@@ -252,7 +301,6 @@ function initCurrentPuzzle() {
 
     state.selectedLetters = [];
 
-    // अक्षरों का पूल बनाना
     let allChars = [];
     if (typeof Intl !== 'undefined' && Intl.Segmenter) {
       const segmenter = new Intl.Segmenter(state.lang || 'hi', { granularity: 'grapheme' });
@@ -356,13 +404,12 @@ async function submitMiningBlock() {
     saveActiveState();
     showToast(`Block Mined! +${reward} POM credited`, "🎉");
 
-    // सर्वर पर सुरक्षित एटॉमिक सिंक
     if (CONFIG.BACKEND_API_URL && state.telegram_id && state.telegram_id !== "pioneer") {
       fetch(`${CONFIG.BACKEND_API_URL}/api/game/mine-reward`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ telegram_id: state.telegram_id })
-      }).catch(e => console.warn("Backend mine sync delayed:", e));
+      }).catch(e => console.warn(e));
     }
 
     initCurrentPuzzle();
@@ -393,9 +440,7 @@ async function prefetchQuizQ() {
     if (data && data.success && data.question) {
       nextQuizQ = data.question;
     }
-  } catch (e) {
-    // बैकग्राउंड में शांत रहेगा
-  }
+  } catch (e) {}
 }
 
 async function startQuizRound() {
@@ -420,16 +465,14 @@ async function startQuizRound() {
         rawData = data.question;
       }
     } catch (e) {
-      console.warn("Using offline fallback question");
+      console.warn("Using fallback question");
     }
   }
 
-  // अगर सर्वर ऑफलाइन हो या देर करे तो बैकअप सवाल तुरंत उठाएँ
   if (!rawData) {
     rawData = FALLBACK_QUESTIONS[Math.floor(Math.random() * FALLBACK_QUESTIONS.length)];
   }
 
-  // अगले राउंड के लिए बैकग्राउंड में प्री-फ़ेच चालू करें
   prefetchQuizQ();
 
   const lang = state.lang || 'hi';
@@ -458,12 +501,12 @@ async function startQuizRound() {
     updateQuizTimerBar();
     if (quizRemainingTime <= 0) {
       stopQuizTimer();
-      state.energy--;
+      state.energy--; // समय समाप्त पर केवल 1 हार्ट कटेगा
       saveActiveState();
       updateHUD();
       showToast("Time up! -1 ❤️ lost", "⌛");
       if (state.energy <= 0) openEnergyModal();
-      state.quizLevel++;
+      // ध्यान दें: टाइमर खत्म होने पर लेवल नहीं बढ़ेगा, यूज़र उसी लेवल पर अगला सवाल हल करेगा
       startQuizRound();
     }
   }, 1000);
@@ -495,15 +538,15 @@ function submitQuizAnswer(selectedIdx, correctIdx, btnElement) {
       let baseReward = state.quizLevel >= 81 ? 20 : (state.quizLevel >= 51 ? 10 : (state.quizLevel >= 21 ? 5 : 2));
       const reward = state.isVerified ? (baseReward * 2) : baseReward;
       state.balance += reward;
-      state.quizLevel++;
+      state.quizLevel++; // लेवल केवल सही उत्तर पर ही बढ़ेगा!
       creditReferralCommission(reward);
       saveActiveState();
       showToast(`Correct Answer! +${reward} POM`, "🌟");
     } else {
-      state.energy--;
+      state.energy--; // गलत उत्तर पर केवल 1 एनर्जी कटेगी
       saveActiveState();
       showToast("Incorrect answer! -1 ❤️ lost", "❌");
-      state.quizLevel++;
+      // बग फिक्स: गलत उत्तर पर लेवल आगे नहीं बढ़ेगा!
     }
 
     updateHUD();
@@ -663,7 +706,8 @@ function initRealTonConnect() {
       tonConnectUI.onStatusChange(wallet => {
         if (wallet && wallet.account) {
           state.tonConnected = true;
-          state.tonAddress = wallet.account.address;
+          // कनेक्ट होते ही यूज़र-फ्रेंडली एड्रेस में बदलना
+          state.tonAddress = convertTonToUserFriendly(wallet.account.address);
           saveActiveState();
           updateHUD();
           showToast("TON Wallet Connected!", "💎");
@@ -827,13 +871,23 @@ function updateHUD() {
   safeSetText('walletAirdropMult', state.isVerified ? "2x Verified Multiplier" : "1x Base Multiplier");
   safeSetText('walletVerificationText', state.isVerified ? "Status: Verified Pioneer" : "Status: Unverified");
 
+  // TON वॉलेट एड्रेस का सही डिस्प्ले (UQ... वाला सुंदर फ़ॉर्मेट)
   if (state.tonConnected) {
     safeSetText('tonStatusBadge', 'TON Connected');
     let displayAddr = state.tonAddress || "Connected";
-    if (displayAddr.length > 14) {
-      displayAddr = `${displayAddr.slice(0, 8)}...${displayAddr.slice(-6)}`;
+    
+    // अगर लोकल स्टोरेज में पुराना 0: वाला एड्रेस पड़ा हो तो तुरंत कन्वर्ट करें
+    if (displayAddr.includes(':')) {
+      displayAddr = convertTonToUserFriendly(displayAddr);
+      state.tonAddress = displayAddr;
+      saveActiveState();
     }
-    safeSetText('tonAddressText', `Address: ${displayAddr}`);
+    
+    let shortAddr = displayAddr;
+    if (shortAddr.length > 12) {
+      shortAddr = `${shortAddr.slice(0, 6)}...${shortAddr.slice(-4)}`;
+    }
+    safeSetText('tonAddressText', `Address: ${shortAddr}`);
     const btn = document.getElementById('btnConnectTon');
     if (btn) btn.innerHTML = '<i class="fa-solid fa-link-slash mr-1"></i> Disconnect TON';
   } else {
@@ -1046,9 +1100,8 @@ async function startApp() {
   renderTasks();
   updateHUD();
   initRealTonConnect();
-  prefetchQuizQ(); // ऐप शुरू होते ही पहला सवाल लोड करके रख लेगा
+  prefetchQuizQ();
 
-  // बैकएंड पर यूज़र सिंक
   if (CONFIG.BACKEND_API_URL && state.telegram_id && state.telegram_id !== "pioneer") {
     try {
       const res = await fetch(`${CONFIG.BACKEND_API_URL}/api/user/sync`, {
@@ -1073,7 +1126,7 @@ async function startApp() {
         updateHUD();
       }
     } catch (err) {
-      console.warn("Backend user sync note:", err);
+      console.warn("Backend sync note:", err);
     }
   }
 }
