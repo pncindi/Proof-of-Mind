@@ -37,8 +37,8 @@ let state = {
 
 let currentTargetTiles = ["म", "न"];
 let currentScrambledTiles = ["म", "न", "क", "ल", "र", "स"];
-let quizTimer = null;
-let quizRemainingTime = 25;
+let Timer = null;
+let RemainingTime = 25;
 
 // --- STORAGE PERSISTENCE ---
 function loadSavedState() {
@@ -416,27 +416,73 @@ function generateDynamicQuestion(lang = 'hi') {
   };
 }
 
-function startQuizRound() {
-  stopQuizTimer();
+// --- प्री-फ़ेचिंग वेरिएबल (Zero-Latency के लिए) ---
+let nextQuizQ = null;
 
-  const currentQ = generateDynamicQuestion(state.lang || 'hi');
-  if (!currentQ) return;
+async function prefetchQuizQ() {
+    try {
+        const res = await fetch('https://proof-of-mind-api.onrender.com/api/quiz/random');
+        const data = await res.json();
+        if (data.success) {
+            nextQuizQ = data.question;
+        }
+    } catch (e) {
+        console.error("Prefetch error:", e);
+    }
+}
 
-  const questionEl = document.getElementById('quizQuestionText');
-  const optsContainer = document.getElementById('quizOptionsContainer');
-  if (questionEl) questionEl.innerText = currentQ.q;
-  if (!optsContainer) return;
+// --- मुख्य क्विज़ फ़ंक्शन (MongoDB कनेक्टेड) ---
+async function startQuizRound() {
+    stopQuizTimer();
 
-  optsContainer.innerHTML = '';
-  currentQ.options.forEach((opt, idx) => {
-    const btn = document.createElement('button');
-    btn.className = 'w-full py-3.5 px-4 rounded-xl bg-slate-800/90 border border-slate-700/60 hover:border-cyan-500 font-semibold text-slate-100 transition-all text-center active:scale-95 text-sm sm:text-base';
-    btn.innerText = opt;
-    btn.onclick = () => submitQuizAnswer(idx, currentQ.correct);
-    optsContainer.appendChild(btn);
-  });
+    const questionEl = document.getElementById('quizQuestionText');
+    const optsContainer = document.getElementById('quizOptionsContainer');
 
-  quizRemainingTime = 25;
+    // 1. अगर प्री-फ़ेच में सवाल तैयार है तो तुरंत उठाएँ, नहीं तो API से लाएँ
+    let rawData = nextQuizQ;
+    nextQuizQ = null;
+
+    if (!rawData) {
+        if (questionEl) questionEl.innerText = "लोड हो रहा है...";
+        try {
+            const res = await fetch('https://proof-of-mind-api.onrender.com/api/quiz/random');
+            const data = await res.json();
+            if (data.success) {
+                rawData = data.question;
+            }
+        } catch (e) {
+            if (questionEl) questionEl.innerText = "सवाल लोड नहीं हो सका!";
+            return;
+        }
+    }
+
+    // बैकग्राउंड में तुरंत अगला सवाल लोड करके रख लें (0 सेकंड लैग)
+    prefetchQuizQ();
+
+    if (!rawData) return;
+
+    // 2. यूज़र की भाषा (Hindi/English) के अनुसार सवाल और ऑप्शन सेट करना
+    const lang = (typeof state !== 'undefined' && state.lang) ? state.lang : 'hi';
+    const currentQ = {
+        q: (lang === 'hi' ? rawData.question_hi : rawData.question_en) || rawData.question_hi || rawData.question_en,
+        options: (lang === 'hi' ? rawData.options_hi : rawData.options_en) || rawData.options_hi || rawData.options_en,
+        correct: rawData.correctIndex
+    };
+
+    if (questionEl) questionEl.innerText = currentQ.q;
+    if (!optsContainer) return;
+
+    // 3. ऑप्शन बटन रेंडर करना (आपके मौजूदा स्टाइल के साथ)
+    optsContainer.innerHTML = '';
+    currentQ.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'w-full py-3.5 px-4 rounded-xl bg-slate-800/80 border border-slate-700/60 hover:border-cyan-500 font-semibold text-slate-100 transition-all text-left';
+        btn.innerText = opt;
+        btn.onclick = () => submitQuizAnswer(idx, currentQ.correct);
+        optsContainer.appendChild(btn);
+    });
+
+    quizRemainingTime = 25;
   updateQuizTimerBar();
   quizTimer = setInterval(() => {
     quizRemainingTime--;
