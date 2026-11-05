@@ -210,141 +210,43 @@ const TASK_TRANSLATIONS = {
   }
 };
 
-const LOCAL_WORDS = {
+// ==========================================
+// 100+ वर्ड पज़ल माइनिंग डिक्शनरी (Never-Ending Words)
+// ==========================================
+const MINE_DICTIONARY = {
   hi: [
-    { word: ["म", "न"], fillers: ["क", "ल", "र", "स"] },
-    { word: ["ट", "न"], fillers: ["प", "य", "व", "द"] },
-    { word: ["वे", "ब"], fillers: ["स", "ग", "ल", "ज"] },
-    { word: ["ज्ञा", "न"], fillers: ["भा", "र", "त", "व"] }
+    "मन", "ज्ञान", "बुद्धि", "सोच", "चेतना", "प्रमाण", "सत्य", "मस्तिष्क", "सिक्का", "नेटवर्क",
+    "ब्लॉक", "चेन", "टोकन", "माइन", "नोड", "वॉलेट", "वेब", "स्मार्ट", "डेटा", "पाई",
+    "हैश", "गैस", "कार्ड", "कोड", "बॉट", "कॉइन", "लिंक", "बैंक", "सुरक्षा", "खाता",
+    "सत्यापन", "कुंजी", "रुपया", "डिजिटल", "सर्वर", "प्रूफ", "माइंड", "तर्क", "ध्यान", "शक्ति",
+    "लक्ष्य", "ऊर्जा", "मित्र", "टास्क", "संसार", "संज्ञान", "विचार", "विद्या", "मेधा", "मनीषा",
+    "दिशा", "समय", "गति", "नियम", "यंत्र", "तंत्र", "मंत्र", "सिद्धि", "साधना", "कर्म",
+    "मार्ग", "दृष्टि", "सृष्टि", "अक्षर", "शब्द", "अर्थ", "भाव", "अनुभव", "बोध", "प्रज्ञा",
+    "धारण", "स्मृति", "विवेक", "संवाद", "क्रांति", "विकास", "परिवर्तन", "सहयोग", "समुदाय", "सम्पत्ति",
+    "मूल्य", "संचय", "वितरण", "विनिमय", "व्यापार", "प्रणाली", "प्रक्रिया", "संरचना", "प्रौद्योगिकी", "भविष्य"
   ],
   en: [
-    { word: ["T", "O", "N"], fillers: ["E", "P", "L", "X"] },
-    { word: ["W", "E", "B"], fillers: ["R", "A", "Z", "Q"] },
-    { word: ["B", "O", "T"], fillers: ["K", "N", "M", "S"] },
-    { word: ["N", "O", "D", "E"], fillers: ["L", "Q", "Y", "P"] }
+    "MIND", "TON", "NODE", "COIN", "HASH", "BLOCK", "PROOF", "BRAIN", "CHAIN", "TOKEN",
+    "SMART", "DATA", "GAS", "CODE", "BOT", "LINK", "BANK", "USER", "KEY", "LOGIC",
+    "INTEL", "CYBER", "WEB", "PEER", "VAULT", "DEFI", "MINT", "STAKE", "LEDGER", "VALID",
+    "SPEED", "TASK", "FRIEND", "POWER", "ENERGY", "FUTURE", "SECURE", "ENGINE", "SYSTEM", "ASSET",
+    "MERIT", "GLOBAL", "SCALE", "QUEST", "LEARN", "THINK", "MEMORY", "REWARD", "COMMUNITY", "NETWORK"
   ],
-  ru: [
-    { word: ["Т", "О", "Н"], fillers: ["К", "Б", "В", "Д"] },
-    { word: ["С", "Е", "Т", "Ь"], fillers: ["У", "М", "Р", "Л"] },
-    { word: ["У", "М"], fillers: ["З", "Н", "А", "Я"] }
-  ],
-  zh: [
-    { word: ["智", "能"], fillers: ["块", "链", "心", "网"] },
-    { word: ["区", "块"], fillers: ["通", "信", "币", "力"] },
-    { word: ["脑", "力"], fillers: ["学", "天", "道", "算"] }
-  ],
-  es: [
-    { word: ["R", "E", "D"], fillers: ["A", "L", "M", "T"] },
-    { word: ["M", "E", "N", "T", "E"], fillers: ["P", "Q", "S", "O"] },
-    { word: ["N", "O", "D", "O"], fillers: ["B", "C", "K", "Y"] }
-  ],
-  ar: [
-    { word: ["ع", "ق", "ل"], fillers: ["ب", "ت", "ك", "و"] },
-    { word: ["ش", "ب", "ك", "ة"], fillers: ["م", "ن", "ل", "ر"] },
-    { word: ["ك", "ت", "ل", "ة"], fillers: ["س", "د", "ف", "ي"] }
-  ],
-  bn: [
-    { word: ["ম", "ন"], fillers: ["ক", "ল", "ব", "র"] },
-    { word: ["জ্ঞ", "া", "ন"], fillers: ["ভ", "ব", "ন", "দ"] },
-    { word: ["জ", "া", "ল"], fillers: ["প", "ঠ", "স", "হ"] }
-  ],
-  vi: [
-    { word: ["T", "R", "I"], fillers: ["A", "O", "N", "K"] },
-    { word: ["M", "A", "N", "G"], fillers: ["E", "P", "U", "L"] },
-    { word: ["K", "H", "O", "I"], fillers: ["C", "B", "T", "D"] }
-  ],
-  id: [
-    { word: ["A", "K", "A", "L"], fillers: ["P", "S", "B", "D"] },
-    { word: ["B", "L", "O", "K"], fillers: ["M", "N", "T", "R"] },
-    { word: ["J", "A", "R", "I", "N", "G"], fillers: ["O", "P", "K", "L"] }
-  ],
-  fa: [
-    { word: ["ذ", "ه", "ن"], fillers: ["ك", "ت", "ب", "ل"] },
-    { word: ["ش", "ب", "ک", "ه"], fillers: ["م", "ر", "د", "و"] },
-    { word: ["ب", "ل", "و", "ک"], fillers: ["س", "ف", "ی", "ن"] }
-  ]
+  ru: ["РАЗУМ", "МОЗГ", "БЛОК", "УЗЕЛ", "ТОКЕН", "СЕТЬ", "МЫСЛЬ", "КЛЮЧ", "ХЭШ", "ДАННЫЕ", "СИЛА", "ЦЕЛЬ", "СВЯЗЬ"],
+  zh: ["思维", "大脑", "区块", "节点", "代币", "共识", "网络", "证明", "智慧", "数据", "哈希", "智能", "资产"],
+  es: ["MENTE", "NODO", "BLOQUE", "TOKEN", "RED", "PRUEBA", "CEREBRO", "DATOS", "CLAVE", "VALOR", "SISTEMA", "LOGICA"],
+  ar: ["عقل", "دماغ", "كتلة", "عقدة", "رمز", "شبكة", "إثبات", "فكر", "بيانات", "أمان", "نظام", "مفتاح"],
+  bn: ["মন", "জ্ঞান", "বুদ্ধি", "টোকেন", "ব্লক", "প্রমাণ", "জাল", "চিন্তা", "শক্তি", "ডাটা", "স্মার্ট", "মুদ্রা"],
+  vi: ["TRI", "NAO", "KHOI", "NUT", "TOKEN", "MANG", "CHUNG", "MINDA", "DU LIEU", "KHOA", "TRI TUE"],
+  id: ["AKAL", "OTAK", "PIKIR", "KOIN", "BLOK", "BUKTI", "SIMPUL", "JARINGAN", "DATA", "KUNCI", "CERDAS"],
+  fa: ["ذهن", "مغز", "بلاک", "گره", "توکن", "اثبات", "دانش", "هوش", "داده", "سامانه", "کلید"]
 };
 
-const QUIZ_REPOSITORY = {
-  hi: [
-    { q: "POM बौद्धिक सत्यापन के लिए किस सर्वसम्मति का उपयोग करता है?", options: ["Proof of Work", "Proof of Intellect", "Proof of Stake", "Proof of Authority"], correct: 1 },
-    { q: "POM टोकन की कुल आपूर्ति (Total Supply) कितनी है?", options: ["500 मिलियन", "1 अरब (1 Billion)", "2 अरब", "100 मिलियन"], correct: 1 },
-    { q: "0.3 TON ऑन-चेन सत्यापन से क्या स्थायी लाभ मिलता है?", options: ["स्थायी 2x रिवॉर्ड मल्टीप्लायर", "अतिरिक्त 5 हार्ट्स", "तुरंत 100 लेवल", "500 मुफ्त POM"], correct: 0 },
-    { q: "टेलीग्राम मिनी ऐप्स को कौन सा ब्लॉकचेन सपोर्ट करता है?", options: ["Solana", "The Open Network (TON)", "Bitcoin L1", "Cardano"], correct: 1 },
-    { q: "TON नेटवर्क का मूल टोकन कौन सा है?", options: ["TON", "BTC", "ETH", "SOL"], correct: 0 },
-    { q: "POM टोकन की प्राथमिक उपयोगिता क्या है?", options: ["गवर्नेंस एवं माइनिंग", "स्टोरेज", "DNS", "NFT"], correct: 0 },
-    { q: "POM के साथ कौन सा 60M+ समुदाय जुड़ा है?", options: ["Pi Network", "Cardano", "Polkadot", "Ripple"], correct: 0 },
-    { q: "POM में कौन सा तेज़ ब्लॉकचेन नेटवर्क जुड़ा है?", options: ["TON ब्लॉकचेन", "बिटकॉइन", "डॉजकॉइन", "लिटकॉइन"], correct: 0 }
-  ],
-  en: [
-    { q: "What consensus protocol does Proof of Mind implement?", options: ["Proof of Work", "Proof of Intellect", "Proof of Stake", "Proof of Authority"], correct: 1 },
-    { q: "What is the total hard-cap supply of POM tokens?", options: ["500 Million", "1 Billion (POM)", "2 Billion", "100 Million"], correct: 1 },
-    { q: "What permanent benefit does 0.3 TON verification grant?", options: ["Permanent 2x Multiplier", "Extra 5 Hearts", "Instant Level 100", "500 Free POM"], correct: 0 },
-    { q: "Which native blockchain directly powers Telegram Mini Apps?", options: ["Solana", "The Open Network (TON)", "Bitcoin L1", "Cardano"], correct: 1 },
-    { q: "What is the native token of TON Network?", options: ["TON", "BTC", "ETH", "SOL"], correct: 0 },
-    { q: "What is the primary utility of POM token?", options: ["Governance & Mining", "File Storage", "DNS", "NFT Art"], correct: 0 },
-    { q: "Which ecosystem connects 60M+ pioneers with POM?", options: ["Pi Network", "Cardano", "Polkadot", "Ripple"], correct: 0 },
-    { q: "What is the fastest layer-1 blockchain integrated in POM?", options: ["TON Blockchain", "Bitcoin", "Dogecoin", "Litecoin"], correct: 0 }
-  ],
-  ru: [
-    { q: "Какой консенсус использует проект Proof of Mind?", options: ["Proof of Work", "Proof of Intellect", "Proof of Stake", "Proof of Authority"], correct: 1 },
-    { q: "Какова общая эмиссия токенов POM?", options: ["500 Миллионов", "1 Миллиард", "2 Миллиарда", "100 Миллионов"], correct: 1 },
-    { q: "Что дает верификация за 0.3 TON?", options: ["Постоянный 2x множитель", "5 бесплатных сердец", "100-й уровень", "500 POM"], correct: 0 },
-    { q: "Какой нативный токен сети TON?", options: ["TON", "BTC", "ETH", "SOL"], correct: 0 },
-    { q: "Какое сообщество из 60M+ пионеров связано с POM?", options: ["Pi Network", "Cardano", "Polkadot", "Ripple"], correct: 0 },
-    { q: "Какой быстрый блокчейн интегрирован в POM?", options: ["TON", "Bitcoin", "Dogecoin", "Litecoin"], correct: 0 }
-  ],
-  zh: [
-    { q: "Proof of Mind (POM) 采用何种共识机制？", options: ["工作量证明 (PoW)", "智力证明 (PoI)", "权益证明 (PoS)", "权威证明 (PoA)"], correct: 1 },
-    { q: "POM 代币的总供应量是多少？", options: ["5亿", "10亿 (1 Billion)", "20亿", "1亿"], correct: 1 },
-    { q: "0.3 TON 链上验证提供什么核心权益？", options: ["永久 2x 奖励加速", "额外 5 颗心", "直升 100 级", "500 空投代币"], correct: 0 },
-    { q: "TON 网络的代币是什么？", options: ["TON", "BTC", "ETH", "SOL"], correct: 0 },
-    { q: "与 POM 结合的 6000万+ 先锋网络是？", options: ["Pi Network", "Cardano", "Polkadot", "Ripple"], correct: 0 }
-  ],
-  es: [
-    { q: "¿Qué consenso implementa Proof of Mind?", options: ["Proof of Work", "Proof of Intellect", "Proof of Stake", "Proof of Authority"], correct: 1 },
-    { q: "¿Cuál es el suministro total de POM?", options: ["500 Millones", "1 Mil Millones (1B)", "2 Mil Millones", "100 Millones"], correct: 1 },
-    { q: "¿Qué beneficio otorga la verificación de 0.3 TON?", options: ["Multiplicador 2x Permanente", "5 Corazones Extra", "Nivel 100 Instantáneo", "500 POM Gratis"], correct: 0 },
-    { q: "¿Cuál es el token nativo de la red TON?", options: ["TON", "BTC", "ETH", "SOL"], correct: 0 },
-    { q: "¿Qué red de 60M+ pioneros se integra con POM?", options: ["Pi Network", "Cardano", "Polkadot", "Ripple"], correct: 0 }
-  ],
-  ar: [
-    { q: "ما هو بروتوكول الإجماع الذي يطبقه POM؟", options: ["Proof of Work", "Proof of Intellect", "Proof of Stake", "Proof of Authority"], correct: 1 },
-    { q: "ما هو إجمالي المعروض من عملة POM؟", options: ["500 مليون", "1 مليار (1 Billion)", "2 مليار", "100 مليون"], correct: 1 },
-    { q: "ما الميزة الدائمة لتوثيق 0.3 TON؟", options: ["مضاعف 2x دائم", "5 قلوب إضافية", "المستوى 100 فوراً", "500 POM مجاناً"], correct: 0 },
-    { q: "ما هو الرمز الأصلي لشبكة TON؟", options: ["TON", "BTC", "ETH", "SOL"], correct: 0 },
-    { q: "ما المجتمع المكون من 60 مليون+ رائد المرتبط بـ POM؟", options: ["Pi Network", "Cardano", "Polkadot", "Ripple"], correct: 0 }
-  ],
-  bn: [
-    { q: "POM কোন ঐক্যমত্য প্রোটোকল প্রয়োগ করে?", options: ["Proof of Work", "Proof of Intellect", "Proof of Stake", "Proof of Authority"], correct: 1 },
-    { q: "POM টোকেনের মোট সরবরাহ কত?", options: ["৫০০ মিলিয়ন", "১ বিলিয়ন (1 Billion)", "২ বিলিয়ন", "১০০ মিলিয়ন"], correct: 1 },
-    { q: "০.৩ TON যাচাইকরণ কী স্থায়ী সুবিধা দেয়?", options: ["স্থায়ী ২x গুণক বুস্ট", "অতিরিক্ত ৫ হার্ট", "তাত্ক্ষণিক লেভেল ১০০", "৫০০ বিনামূল্যের POM"], correct: 0 },
-    { q: "TON নেটওয়ার্কের নেটিভ টোকেন কোনটি?", options: ["TON", "BTC", "ETH", "SOL"], correct: 0 },
-    { q: "POM-এর সাথে ৬০ মিলিয়নের বেশি পাইওনিয়ার যুক্ত কোন নেটওয়ার্ক?", options: ["Pi Network", "Cardano", "Polkadot", "Ripple"], correct: 0 }
-  ],
-  vi: [
-    { q: "Proof of Mind triển khai giao thức đồng thuận nào?", options: ["Proof of Work", "Proof of Intellect", "Proof of Stake", "Proof of Authority"], correct: 1 },
-    { q: "Tổng cung tối đa của token POM là bao nhiêu?", options: ["500 Triệu", "1 Tỷ (1 Billion)", "2 Tỷ", "100 Triệu"], correct: 1 },
-    { q: "Xác minh on-chain 0.3 TON mang lại lợi ích vĩnh viễn gì?", options: ["Nhân đôi 2x vĩnh viễn", "Thêm 5 Tim", "Cấp 100 ngay lập tức", "500 POM miễn phí"], correct: 0 },
-    { q: "Token gốc của mạng TON là gì?", options: ["TON", "BTC", "ETH", "SOL"], correct: 0 },
-    { q: "Hệ sinh thái 60M+ pioneer nào kết nối với POM?", options: ["Pi Network", "Cardano", "Polkadot", "Ripple"], correct: 0 }
-  ],
-  id: [
-    { q: "Protokol konsensus apa yang diterapkan oleh POM?", options: ["Proof of Work", "Proof of Intellect", "Proof of Stake", "Proof of Authority"], correct: 1 },
-    { q: "Berapa total pasokan maksimal token POM?", options: ["500 Juta", "1 Miliar (1 Billion)", "2 Miliar", "100 Juta"], correct: 1 },
-    { q: "Manfaat permanen apa yang diberikan verifikasi 0.3 TON?", options: ["Pengali 2x Permanen", "Ekstra 5 Hati", "Level 100 Instan", "500 POM Gratis"], correct: 0 },
-    { q: "Apa token asli dari Jaringan TON?", options: ["TON", "BTC", "ETH", "SOL"], correct: 0 },
-    { q: "Komunitas 60M+ pionir mana yang terhubung ke POM?", options: ["Pi Network", "Cardano", "Polkadot", "Ripple"], correct: 0 }
-  ],
-  fa: [
-    { q: "پروتکل اجماع اثبات ذهن (POM) چیست؟", options: ["Proof of Work", "Proof of Intellect", "Proof of Stake", "Proof of Authority"], correct: 1 },
-    { q: "مجموع کل عرضه توکن POM چقدر است؟", options: ["۵۰۰ میلیون", "۱ میلیارد (1 Billion)", "۲ میلیارد", "۱۰۰ میلیون"], correct: 1 },
-    { q: "تایید ۰.۳ TON چه مزیت دائمی دارد؟", options: ["ضریب دائمی ۲ برابری", "۵ قلب اضافی", "سطح ۱۰۰ آنی", "۵۰۰ توکن رایگان"], correct: 0 },
-    { q: "توکن اصلی شبکه TON چیست؟", options: ["TON", "BTC", "ETH", "SOL"], correct: 0 },
-    { q: "کدام جامعه بیش از ۶۰ میلیونی به POM متصل است؟", options: ["Pi Network", "Cardano", "Polkadot", "Ripple"], correct: 0 }
-  ]
-};
+const LOCAL_WORDS = MINE_DICTIONARY;
 
+// ==========================================
+// व्हाइटपेपर डेटा (10 भाषाएँ)
+// ==========================================
 const WHITEPAPER_DATA = {
   hi: {
     s1: "१. विज़न एवं प्रूफ ऑफ इंटेलेक्ट (PoI)",
@@ -374,9 +276,9 @@ const WHITEPAPER_DATA = {
   },
   ru: {
     s1: "1. Концепция и Proof of Intellect (PoI)",
-    p1: "Proof of Mind заменяет затраты электроэнергии на децентрализованный человеческий интеллект. Пользователи решают головоломки и квизы для майнинга токенов POM.",
+    p1: "Proof of Mind заменяет затраты электроэнергии на децентрализованный человеческий интеллект.",
     s2: "2. Токеномика 1 Миллиард POM",
-    s3: "3. Меритократическая Команда (Секция 3.1)",
+    s3: "3. Меритократическая Команда",
     p3: "10% для Core Team распределяются исключительно за заслуги среди лидеров майнинга.",
     s4: "4. Архитектура TON и Pi Network",
     p4: "Интеграция блокчейна TON и экосистемы Pi Network для 60М+ пользователей.",
@@ -387,9 +289,9 @@ const WHITEPAPER_DATA = {
   },
   zh: {
     s1: "1. 智力证明共识 (PoI)",
-    p1: "Proof of Mind 用人类认知共识取代高能耗硬件挖矿。先锋通过解开智力区块和问答验证真实智慧并挖取 POM 代币。",
+    p1: "Proof of Mind 用人类认知共识取代高能耗硬件挖矿。",
     s2: "2. 10 亿 POM 代币经济学",
-    s3: "3. 绩效核心团队机制 (第 3.1 节)",
+    s3: "3. 绩效核心团队机制",
     p3: "10% 的团队份额严格基于智力贡献排行榜选拔，非私人预留。",
     s4: "4. TON 与 Pi Network 双架构",
     p4: "连接 Telegram 原生 TON 链与拥有 6000 万先锋的 Pi Network 生态。",
@@ -400,13 +302,13 @@ const WHITEPAPER_DATA = {
   },
   es: {
     s1: "1. Resumen y Prueba de Intelecto (PoI)",
-    p1: "POM reemplaza el desperdicio de energía física con consenso cognitivo humano en la blockchain de TON y Pi Network.",
+    p1: "POM reemplaza el desperdicio de energía con consenso cognitivo humano en TON y Pi Network.",
     s2: "2. Tokenomics de 1 Mil Millones POM",
-    s3: "3. Equipo Central Meritocrático (Sección 3.1)",
-    p3: "El 10% del Core Team se asigna por mérito a los mineros líderes de la comunidad.",
+    s3: "3. Equipo Central Meritocrático",
+    p3: "El 10% del Core Team se asigna por mérito a los mineros líderes.",
     s4: "4. Arquitectura Dual TON y Pi Network",
     p4: "Puente entre TON Telegram y los 60 millones de pioneros de Pi Network.",
-    s5: "5. Defensa Sybil con 0.3 TON y Multiplicador 2x",
+    s5: "5. Defensa Sybil con 0.3 TON",
     p5: "La verificación on-chain otorga un bono permanente de 2x.",
     s6: "6. Hoja de Ruta y TGE",
     p6: "Mini App -> Integración PoI -> Listado DEX y TGE oficial."
@@ -415,88 +317,65 @@ const WHITEPAPER_DATA = {
     s1: "١. إثبات الذكاء (PoI)",
     p1: "يستبدل POM إهدار الطاقة بتعدين الذكاء البشري الموثق عبر بلوكتشين TON وشبكة Pi.",
     s2: "٢. اقتصاديات التوكن (1 مليار POM)",
-    s3: "٣. فريق الجدارة اللامركزي (قسم 3.1)",
+    s3: "٣. فريق الجدارة اللامركزي",
     p3: "توزيع حصة 10% بناءً على أداء لوحة الصدارة الفعلي فقط.",
     s4: "٤. الربط بين TON و Pi Network",
     p4: "دمج بين مستخدمي تيليجرام وشبكة Pi الرائدة.",
-    s5: "٥. حماية سيبيل بـ 0.3 TON ومضاعف 2x",
+    s5: "٥. حماية سيبيل بـ 0.3 TON",
     p5: "توثيق الحساب بـ 0.3 TON يمنح مضاعف أرباح دائم.",
-    s6: "٦. خريطة الطريق والإدراج في المنصات",
-    p6: "إطلاق التطبيق المصغر -> محرك PoI -> الإدراج في البورصات اللامركزية."
+    s6: "٦. خريطة الطريق والإدراج",
+    p6: "إطلاق التطبيق المصغر -> محرك PoI -> الإدراج في البورصات."
   },
   bn: {
     s1: "১. প্রমাণ বুদ্ধিমত্তা (PoI)",
     p1: "বিদ্যুৎ অপচয়ের পরিবর্তে মানুষের বুদ্ধিভিত্তিক ঐক্যমত্য অন-চেইনে প্রমাণ করে POM টোকেন মাইন করা হয়।",
     s2: "২. ১ বিলিয়ন POM টোকেনমিক্স",
-    s3: "৩. মেধাভিত্তিক কোর টিম (ধারা ৩.১)",
+    s3: "৩. মেধাভিত্তিক কোর টিম",
     p3: "১০% কোর টিম বরাদ্দ সেরা মাইনারদের মেধার ভিত্তিতে বণ্টিত হয়।",
     s4: "৪. TON ও Pi Network যুগ্ম নেটওয়ার্ক",
     p4: "টেলিগ্রামের TON এবং Pi নেটওয়ার্কের ৬০ মিলিয়ন পাইওনিয়ারদের সংযোগ।",
-    s5: "৫. ০.৩ TON সিবিল সুরক্ষা ও ২x বুস্ট",
+    s5: "৫. ০.৩ TON সিবিল সুরক্ষা",
     p5: "অন-চেন ভেরিফিকেশনের মাধ্যমে আজীবন দ্বিগুণ রিওয়ার্ড সক্রিয় হয়।",
     s6: "৬. রোডম্যাপ ও TGE লিস্টিং",
     p6: "মিনি অ্যাপ লঞ্চ -> PoI ইঞ্জিন -> TGE ও DEX এক্সচেঞ্জ লিস্টিং।"
   },
   vi: {
     s1: "1. Bằng Chứng Trí Tuệ (PoI)",
-    p1: "Proof of Mind thay thế việc lãng phí điện năng bằng sự đồng thuận nhận thức của con người trên TON và Pi Network.",
+    p1: "Proof of Mind thay thế việc lãng phí điện năng bằng sự đồng thuận nhận thức của con người.",
     s2: "2. Tokenomics 1 Tỷ POM",
-    s3: "3. Đội Ngũ Cốt Lõi Dựa Trên Năng Lực (Mục 3.1)",
+    s3: "3. Đội Ngũ Cốt Lõi",
     p3: "Phân bổ 10% được trao dựa trên bảng xếp hạng đóng góp trí tuệ thực tế.",
     s4: "4. Kiến Trúc Kép TON & Pi Network",
     p4: "Kết nối hệ sinh thái TON Telegram và 60M+ người tiên phong Pi Network.",
-    s5: "5. Bảo Vệ Sybil 0.3 TON & Nhân Đôi 2x",
+    s5: "5. Bảo Vệ Sybil 0.3 TON",
     p5: "Xác minh on-chain 0.3 TON kích hoạt nhân đôi phần thưởng vĩnh viễn.",
     s6: "6. Lộ Trình & Niêm Yết TGE",
-    p6: "Mini App -> Tích hợp PoI -> Sự kiện TGE và niêm yết trên các sàn DEX."
+    p6: "Mini App -> Tích hợp PoI -> TGE và niêm yết trên các sàn DEX."
   },
   id: {
     s1: "1. Bukti Intelek (Proof of Intellect)",
-    p1: "Proof of Mind menggantikan pemborosan energi perangkat keras dengan konsensus kognitif manusia di TON dan Pi Network.",
+    p1: "Proof of Mind menggantikan pemborosan energi dengan konsensus kognitif manusia.",
     s2: "2. Tokenomics 1 Miliar POM",
-    s3: "3. Tim Inti Berbasis Prestasi (Bagian 3.1)",
-    p3: "Alokasi 10% diberikan murni berdasarkan performa papan peringkat penambangan.",
+    s3: "3. Tim Inti Berbasis Prestasi",
+    p3: "Alokasi 10% diberikan murni berdasarkan performa papan peringkat.",
     s4: "4. Arsitektur Ganda TON & Pi Network",
     p4: "Menghubungkan ekosistem TON Telegram dengan 60 juta pionir Pi Network.",
-    s5: "5. Perlindungan Sybil 0.3 TON & Pengali 2x",
+    s5: "5. Perlindungan Sybil 0.3 TON",
     p5: "Verifikasi on-chain mengaktifkan pengali hadiah 2x permanen seumur hidup.",
     s6: "6. Peta Jalan & Peluncuran TGE",
     p6: "Peluncuran Mini App -> Mesin PoI -> TGE dan pencatatan bursa DEX."
   },
   fa: {
     s1: "۱. اثبات هوش و ذهن (PoI)",
-    p1: "اثبات ذهن (POM) اتلاف برق سخت‌افزاری را با اجماع شناختی انسان روی TON و Pi Network جایگزین می‌کند.",
+    p1: "اثبات ذهن (POM) اتلاف برق سخت‌افزاری را با اجماع شناختی انسان جایگزین می‌کند.",
     s2: "۲. توکنومیکس ۱ میلیارد POM",
-    s3: "۳. تیم اصلی مبتنی بر شایستگی (بخش ۳.۱)",
+    s3: "۳. تیم اصلی شایسته‌سالار",
     p3: "تخصیص ۱۰٪ تیم بر اساس شایستگی به رتبه‌های برتر لیدربورد تعلق می‌گیرد.",
     s4: "۴. معماری دوگانه TON و Pi Network",
     p4: "پل میان TON تلگرام و جامعه ۶۰ میلیونی پیشگامان پای نتورک.",
-    s5: "۵. دفاع سیبیل ۰.۳ TON و ضریب ۲ برابری",
+    s5: "۵. دفاع سیبیل ۰.۳ TON",
     p5: "تایید آن‌چین ضریب پاداش استخراج ۲ برابری دائمی را فعال می‌کند.",
-    s6: "۶. نقشه راه و لیست شدن در صرافی‌ها",
+    s6: "۶. نقشه راه و لیست شدن",
     p6: "مینی‌اپلیکیشن تلگرام -> موتور PoI -> رویداد TGE و عرضه در DEX."
   }
 };
-
-const MINE_DICTIONARY = {
-  en: ["MIND", "TON", "NODE", "COIN", "HASH", "BLOCK", "PROOF", "BRAIN", "CHAIN", "TOKEN"],
-  hi: ["मन", "ज्ञान", "बुद्धि", "सोच", "चेतना", "प्रमाण", "सत्य", "मस्तिष्क", "सिक्का", "नेटवर्क"],
-  ru: ["РАЗУМ", "МОЗГ", "БЛОК", "УЗЕЛ", "ТОКЕН", "СЕТЬ", "МЫСЛЬ", "КЛЮЧ"],
-  zh: ["思维", "大脑", "区块", "节点", "代币", "共识", "网络", "证明"],
-  es: ["MENTE", "NODO", "BLOQUE", "TOKEN", "RED", "PRUEBA", "CEREBRO", "DATOS"],
-  ar: ["عقل", "دماغ", "كتلة", "عقدة", "رمز", "شبكة", "إثبات", "فكر"],
-  bn: ["মন", "জ্ঞান", "বুদ্ধি", "টোকেন", "ব্লক", "প্রমাণ", "জাল", "চিন্তা"],
-  vi: ["TRI", "NAO", "KHOI", "NUT", "TOKEN", "MANG", "CHUNG", "MINDA"],
-  id: ["AKAL", "OTAK", "PIKIR", "KOIN", "BLOK", "BUKTI", "SIMPUL", "JARINGAN"],
-  fa: ["ذهن", "مغز", "بلاک", "گره", "توکن", "اثبات", "دانش", "هوش"]
-};
-
-// Global Attachments
-if (typeof window !== 'undefined') {
-  window.TRANSLATIONS = TRANSLATIONS;
-  window.TASK_TRANSLATIONS = TASK_TRANSLATIONS;
-  window.LOCAL_WORDS = LOCAL_WORDS;
-  window.QUIZ_REPOSITORY = QUIZ_REPOSITORY;
-  window.WHITEPAPER_DATA = WHITEPAPER_DATA;
-  window.MINE_DICTIONARY = MINE_DICTIONARY;
-}
