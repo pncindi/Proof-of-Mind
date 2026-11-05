@@ -31,6 +31,7 @@ const userSchema = new mongoose.Schema({
   tonAddress: { type: String, default: null },
   referrer_id: { type: String, default: null },
   unclaimedCommission: { type: Number, default: 0 },
+  completedTasks: [{ type: String }],
   referrals: {
     tier1: [{ type: String }],
     tier2: [{ type: String }],
@@ -42,61 +43,86 @@ const User = mongoose.model('User', userSchema);
 
 // 1. यूज़र सिंक एवं रेफरल ट्रैकिंग
 app.post('/api/user/sync', async (req, res) => {
-  try {
-    const { telegram_id, username, first_name, start_param } = req.body;
-    if (!telegram_id) return res.status(400).json({ error: "telegram_id missing" });
-
-    let user = await User.findOne({ telegram_id: String(telegram_id) });
-
-    if (!user) {
-      let referrerId = null;
-      if (start_param && start_param.startsWith('ref_')) {
-        referrerId = start_param.replace('ref_', '').trim();
-        if (referrerId === String(telegram_id)) referrerId = null;
-      }
-
-      user = new User({
-        telegram_id: String(telegram_id),
-        username: username || "",
-        first_name: first_name || "",
-        referrer_id: referrerId
-      });
-      await user.save();
-
-      // 3-लेवल रेफरल नेटवर्क में ID जोड़ना
-      if (referrerId) {
-        const upline1 = await User.findOne({ telegram_id: referrerId });
-        if (upline1) {
-          if (!upline1.referrals.tier1.includes(user.telegram_id)) {
-            upline1.referrals.tier1.push(user.telegram_id);
-            await upline1.save();
-          }
-
-          if (upline1.referrer_id) {
-            const upline2 = await User.findOne({ telegram_id: upline1.referrer_id });
-            if (upline2 && !upline2.referrals.tier2.includes(user.telegram_id)) {
-              upline2.referrals.tier2.push(user.telegram_id);
-              await upline2.save();
-            }
-
-            if (upline2 && upline2.referrer_id) {
-              const upline3 = await User.findOne({ telegram_id: upline2.referrer_id });
-              if (upline3 && !upline3.referrals.tier3.includes(user.telegram_id)) {
-                upline3.referrals.tier3.push(user.telegram_id);
-                await upline3.save();
-              }
-            }
-          }
+    try {
+        const { telegram_id, username, first_name, start_param } = req.body;
+        if (!telegram_id) {
+            return res.status(400).json({ error: "telegram_id is required" });
         }
-      }
+
+        let user = await User.findOne({ telegram_id });
+
+        // अगर नया यूज़र है
+        if (!user) {
+            let inviterId = null;
+            if (start_param && start_param.startsWith("ref_")) {
+                inviterId = start_param.replace("ref_", "").trim();
+                if (inviterId === telegram_id) inviterId = null;
+            }
+
+            user = new User({
+                telegram_id,
+                username,
+                first_name,
+                referrer_id: inviterId
+            });
+
+            await user.save();
+
+            // इनवाइटर के Tier 1 में जोड़ें
+            if (inviterId) {
+                await User.findOneAndUpdate(
+                    { telegram_id: inviterId },
+                    { $addToSet: { "referrals.tier1": telegram_id } }
+                );
+            }
+        } else {
+            // पुराना यूज़र है तो जानकारी अपडेट करें
+            if (username) user.username = username;
+            await user.save();
+        }
+
+        // फ्रंटएंड को ताज़ा डेटा रिटर्न करें
+        res.json({
+            success: true,
+            user: {
+                telegram_id: user.telegram_id,
+                balance: user.balance,
+                energy: user.energy,
+                quizLevel: user.quizLevel,
+                mineLevel: user.mineLevel,
+                completedTasks: user.completedTasks || [],
+                referrals: user.referrals
+            }
+        });
+    } catch (err) {
+        console.error("User sync error:", err);
+        res.status(500).json({ error: "Internal server error" });
     }
-
-    res.json({ success: true, user });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
 });
+app.post('/api/user/save-progress', async (req, res) => {
+    try {
+        const { telegram_id, balance, energy, quizLevel, mineLevel, completedTasks } = req.body;
+        if (!telegram_id) return res.status(400).json({ error: "telegram_id missing" });
 
+        const updateData = {};
+        if (balance !== undefined) updateData.balance = balance;
+        if (energy !== undefined) updateData.energy = energy;
+        if (quizLevel !== undefined) updateData.quizLevel = quizLevel;
+        if (mineLevel !== undefined) updateData.mineLevel = mineLevel;
+        if (completedTasks !== undefined) updateData.completedTasks = completedTasks;
+
+        const updatedUser = await User.findOneAndUpdate(
+            { telegram_id },
+            { $set: updateData },
+            { new: true }
+        );
+
+        res.json({ success: true, user: updatedUser });
+    } catch (err) {
+        console.error("Save progress error:", err);
+        res.status(500).json({ error: "Failed to save progress" });
+    }
+});
 // 2. माइनिंग ब्लॉक रिवॉर्ड और कमीशन डिस्ट्रीब्यूशन
 app.post('/api/game/mine-reward', async (req, res) => {
   try {
