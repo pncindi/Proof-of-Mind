@@ -61,6 +61,14 @@ const questionSchema = new mongoose.Schema({
 
 const Question = mongoose.model('Question', questionSchema);
 
+const puzzleSchema = new mongoose.Schema({
+  level: { type: Number, required: true },
+  word_hi: { type: String, required: true },
+  word_en: { type: String, required: true },
+  reward: { type: Number, default: 3 }
+});
+
+const PuzzleWord = mongoose.model('PuzzleWord', puzzleSchema, 'puzzle_words');
 const EMERGENCY_QUESTIONS = [
   {
     question_hi: "Proof of Mind (POM) किस प्रकार की सर्वसम्मति पर आधारित है?",
@@ -297,6 +305,29 @@ app.get('/api/quiz/random', async (req, res) => {
   } catch (err) {
     const fallback = EMERGENCY_QUESTIONS[Math.floor(Math.random() * EMERGENCY_QUESTIONS.length)];
     res.json({ success: true, question: fallback });
+  }
+});
+// --- पज़ल वर्ड फेच API ---
+app.get('/api/puzzle/word', async (req, res) => {
+  try {
+    const level = parseInt(req.query.level) || 1;
+    let wordDoc = await PuzzleWord.findOne({ level: level });
+    
+    if (!wordDoc) {
+      const totalWords = await PuzzleWord.countDocuments();
+      if (totalWords > 0) {
+        const cycleLevel = ((level - 1) % totalWords) + 1;
+        wordDoc = await PuzzleWord.findOne({ level: cycleLevel });
+      }
+    }
+
+    if (!wordDoc) {
+      wordDoc = { level: level, word_hi: "मन", word_en: "MIND", reward: 3 };
+    }
+
+    res.json({ success: true, puzzle: wordDoc });
+  } catch (err) {
+    res.json({ success: true, puzzle: { level: 1, word_hi: "मन", word_en: "MIND", reward: 3 } });
   }
 });
 
