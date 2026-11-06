@@ -6,7 +6,7 @@ const CONFIG = {
   BACKEND_API_URL: "https://proof-of-mind-api.onrender.com",
   ADMIN_TON_WALLET: "UQD5ZiNy8-eV7l6Ny46c-f98USLg-JXPTRRIPMV-0YiadqJV",
   BOT_USERNAME: "proofofmind_bot",
-  APP_SHORT_NAME: "app", // Direct Mini App identifier
+  APP_SHORT_NAME: "app",
   ADSGRAM_BLOCK_ID: "57910"
 };
 
@@ -43,7 +43,7 @@ let quizTimer = null;
 let quizRemainingTime = 25;
 let isSubmittingAnswer = false;
 
-// --- TON ADDRESS FORMATTER (Raw 0:... ko User-friendly UQ... me badalna) ---
+// --- TON एड्रेस कनवर्टर (0:... को UQ... में बदलना) ---
 function convertTonToUserFriendly(rawAddress) {
   if (!rawAddress || typeof rawAddress !== 'string') return rawAddress;
   if (!rawAddress.includes(':')) return rawAddress;
@@ -61,7 +61,7 @@ function convertTonToUserFriendly(rawAddress) {
     if (hex.length !== 64) return rawAddress;
 
     const bytes = new Uint8Array(36);
-    bytes[0] = 0x51; // Non-bounceable Mainnet tag ('UQ...')
+    bytes[0] = 0x51;
     bytes[1] = wc === -1 ? 0xFF : (wc & 0xFF);
 
     for (let i = 0; i < 32; i++) {
@@ -89,25 +89,25 @@ function convertTonToUserFriendly(rawAddress) {
   }
 }
 
-// --- FALLBACK QUESTIONS ---
+// --- बैकअप सवाल ---
 const FALLBACK_QUESTIONS = [
   {
-    question_hi: "Proof of Mind (POM) kis prakar ki sarvasammati par aadharit hai?",
+    question_hi: "Proof of Mind (POM) किस प्रकार की सर्वसम्मति पर आधारित है?",
     question_en: "What consensus protocol does Proof of Mind (POM) emphasize?",
     options_hi: ["Proof of Work", "Proof of Stake", "Proof of Intellect (PoI)", "Proof of Authority"],
     options_en: ["Proof of Work", "Proof of Stake", "Proof of Intellect (PoI)", "Proof of Authority"],
     correctIndex: 2
   },
   {
-    question_hi: "0.3 TON on-chain satyapan se kya labh milta hai?",
+    question_hi: "0.3 TON सत्यापन से क्या लाभ मिलता है?",
     question_en: "What benefit does 0.3 TON verification grant?",
-    options_hi: ["2x Permanent Boost", "Extra 5 Hearts", "Instant Level 100", "500 Free POM"],
+    options_hi: ["स्थायी 2x रिवॉर्ड मल्टीप्लायर", "अतिरिक्त 5 हार्ट्स", "तुरंत 100 लेवल", "500 मुफ्त POM"],
     options_en: ["Lifetime 2x Reward Multiplier", "Extra 5 Hearts", "Instant Level 100", "500 Free POM"],
     correctIndex: 0
   }
 ];
 
-// --- STORAGE PERSISTENCE ---
+// --- स्टोरेज पर्सीस्टेंस ---
 function loadSavedState() {
   try {
     const saved = localStorage.getItem('POM_USER_STATE');
@@ -161,7 +161,7 @@ function showToast(message, icon = "ℹ️") {
   }, 2200);
 }
 
-// --- LANGUAGE SWITCHING ---
+// --- भाषा बदलना ---
 function changeLanguage(lang) {
   state.lang = lang;
   saveActiveState();
@@ -220,7 +220,7 @@ function stopQuizTimer() {
   }
 }
 
-// --- TAB NAVIGATION ---
+// --- टैब नेविगेशन ---
 function switchTab(tabId) {
   try {
     if (tabId !== 'tabQuiz') {
@@ -265,7 +265,7 @@ function switchTab(tabId) {
   }
 }
 
-// --- WORD PUZZLE MINING ENGINE ---
+// --- वर्ड पज़ल माइनिंग इंजन ---
 function initCurrentPuzzle() {
   try {
     const activeDict = (typeof MINE_DICTIONARY !== 'undefined') ? MINE_DICTIONARY : (typeof LOCAL_WORDS !== 'undefined' ? LOCAL_WORDS : {});
@@ -411,7 +411,7 @@ async function submitMiningBlock() {
   }
 }
 
-// --- ZERO-LATENCY PRE-FETCHING QUIZ ENGINE ---
+// --- क्विज़ इंजन ---
 let nextQuizQ = null;
 
 async function prefetchQuizQ() {
@@ -449,9 +449,7 @@ async function startQuizRound() {
       if (data && data.success && data.question) {
         rawData = data.question;
       }
-    } catch (e) {
-      console.warn("Using fallback question");
-    }
+    } catch (e) {}
   }
 
   if (!rawData) {
@@ -491,7 +489,6 @@ async function startQuizRound() {
       updateHUD();
       showToast("Time up! -1 ❤️ lost", "⌛");
       if (state.energy <= 0) openEnergyModal();
-      // Level same rahega, user usi level par naya sawal try karega
       startQuizRound();
     }
   }, 1000);
@@ -523,12 +520,21 @@ function submitQuizAnswer(selectedIdx, correctIdx, btnElement) {
       let baseReward = state.quizLevel >= 81 ? 20 : (state.quizLevel >= 51 ? 10 : (state.quizLevel >= 21 ? 5 : 2));
       const reward = state.isVerified ? (baseReward * 2) : baseReward;
       state.balance += reward;
-      state.quizLevel++; // Level sirf sahi uttar par badhega!
+      state.quizLevel++; // लेवल आगे बढ़ा
       creditReferralCommission(reward);
       saveActiveState();
       showToast(`Correct Answer! +${reward} POM`, "🌟");
+
+      // फिक्स: सीधे MongoDB में क्विज़ लेवल और बैलेंस स्थायी सेव करना
+      if (CONFIG.BACKEND_API_URL && state.telegram_id && state.telegram_id !== "pioneer") {
+        fetch(`${CONFIG.BACKEND_API_URL}/api/game/quiz-reward`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ telegram_id: state.telegram_id })
+        }).catch(e => console.warn(e));
+      }
     } else {
-      state.energy--; // Galat par sirf 1 Heart katega, level nahi badhega!
+      state.energy--;
       saveActiveState();
       showToast("Incorrect answer! -1 ❤️ lost", "❌");
     }
@@ -539,7 +545,7 @@ function submitQuizAnswer(selectedIdx, correctIdx, btnElement) {
   }, 600);
 }
 
-// --- ENERGY RECHARGE MODAL ---
+// --- आउट-ऑफ-एनर्जी पॉपअप ---
 function openEnergyModal() {
   document.getElementById('energyModal')?.classList.remove('hidden');
 }
@@ -577,7 +583,7 @@ function watchAdAndRefill(amount) {
   }
 }
 
-// --- COMMUNITY TASKS ---
+// --- कम्युनिटी टास्क ---
 function renderTasks() {
   const container = document.getElementById('tasksListContainer');
   if (!container) return;
@@ -637,7 +643,7 @@ function claimTaskReward(idx) {
   showToast(`+${state.tasks[idx].reward} POM Claimed!`, "🎁");
 }
 
-// --- DIRECT BOT-FATHER MINI APP REFERRAL ENGINE ---
+// --- रेफरल सिस्टम ---
 function getReferralLink() {
   return `https://t.me/${CONFIG.BOT_USERNAME}/${CONFIG.APP_SHORT_NAME}?startapp=ref_${state.telegram_id}`;
 }
@@ -677,7 +683,6 @@ function shareReferralToTelegram() {
   }
 }
 
-// Friends tab khulte hi database se fresh upline count fetch karna
 async function fetchLatestUserData() {
   if (CONFIG.BACKEND_API_URL && state.telegram_id && state.telegram_id !== "pioneer") {
     try {
@@ -710,7 +715,7 @@ async function fetchLatestUserData() {
   }
 }
 
-// --- TONCONNECT & ON-CHAIN VERIFICATION ---
+// --- TONCONNECT & ऑन-चेन सत्यापन ---
 function initRealTonConnect() {
   try {
     if (window.TON_CONNECT_UI) {
@@ -735,9 +740,7 @@ function initRealTonConnect() {
         }
       });
     }
-  } catch (err) {
-    console.warn("TonConnect initialization note:", err);
-  }
+  } catch (err) {}
 }
 
 async function toggleTonConnection() {
@@ -785,7 +788,7 @@ async function triggerTonConnectPayment() {
     messages: [
       {
         address: CONFIG.ADMIN_TON_WALLET,
-        amount: "300000000" // 0.3 TON
+        amount: "300000000"
       }
     ]
   };
@@ -794,7 +797,6 @@ async function triggerTonConnectPayment() {
     await tonConnectUI.sendTransaction(transaction);
     completeTonVerificationTransaction();
   } catch (err) {
-    console.error("Payment error:", err);
     showToast("Transaction cancelled or failed", "❌");
   }
 }
@@ -845,7 +847,7 @@ function connectPiWallet() {
   showToast("Pi Network Pioneer Connected!", "π");
 }
 
-// --- HUD DISPLAY UPDATER ---
+// --- HUD अपडेटर ---
 function updateHUD() {
   safeSetText('userBalanceDisplay', state.balance);
   safeSetText('walletTotalPomDisplay', `${state.balance} POM`);
@@ -911,7 +913,7 @@ function updateHUD() {
   }
 }
 
-// --- WHITEPAPER MODAL ---
+// --- व्हाइटपेपर मोडल ---
 function renderDocsContent() {
   const container = document.getElementById('docsBodyContainer');
   if (!container) return;
@@ -943,7 +945,7 @@ function openDocsModal() {
 }
 function closeDocsModal() { document.getElementById('docsModal')?.classList.add('hidden'); }
 
-// --- MASTER ADMIN MODAL ---
+// --- एडमिन कंसोल ---
 function openAdminModal() { document.getElementById('adminModal')?.classList.remove('hidden'); }
 function closeAdminModal() { document.getElementById('adminModal')?.classList.add('hidden'); }
 
@@ -1090,7 +1092,7 @@ function adminResetAllData() {
   showToast("State reset to defaults", "🔄");
 }
 
-// --- BOOTSTRAP INITIALIZATION ---
+// --- ऐप स्टार्ट लॉजिक ---
 async function startApp() {
   let startParam = "";
   let tgUser = null;
