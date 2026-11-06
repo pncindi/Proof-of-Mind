@@ -266,16 +266,22 @@ function switchTab(tabId) {
 }
 
 // --- वर्ड पज़ल माइनिंग इंजन ---
-function initCurrentPuzzle() {
+async function initCurrentPuzzle() {
   try {
-    const activeDict = (typeof MINE_DICTIONARY !== 'undefined') ? MINE_DICTIONARY : (typeof LOCAL_WORDS !== 'undefined' ? LOCAL_WORDS : {});
-    const langWords = (activeDict && activeDict[state.lang] && activeDict[state.lang].length > 0)
-      ? activeDict[state.lang]
-      : (activeDict && activeDict.hi ? activeDict.hi : ["मन", "ज्ञान", "सिक्का"]);
+    let targetWord = state.lang === 'en' ? "MIND" : "मन";
 
-    const wordIdx = Math.max(0, (state.mineLevel - 1) % langWords.length);
-    const rawItem = langWords[wordIdx];
-    const targetWord = (typeof rawItem === 'object' && rawItem.word) ? (Array.isArray(rawItem.word) ? rawItem.word.join('') : rawItem.word) : String(rawItem);
+    // सीधे MongoDB बैकएंड से लेवल के अनुसार शब्द लाना
+    if (CONFIG.BACKEND_API_URL) {
+      try {
+        const res = await fetch(`${CONFIG.BACKEND_API_URL}/api/puzzle/word?level=${state.mineLevel}`);
+        const data = await res.json();
+        if (data && data.success && data.puzzle) {
+          targetWord = state.lang === 'en' ? data.puzzle.word_en : data.puzzle.word_hi;
+        }
+      } catch (err) {
+        console.warn("Using offline puzzle word");
+      }
+    }
 
     if (typeof Intl !== 'undefined' && Intl.Segmenter) {
       const segmenter = new Intl.Segmenter(state.lang || 'hi', { granularity: 'grapheme' });
@@ -286,22 +292,11 @@ function initCurrentPuzzle() {
 
     state.selectedLetters = [];
 
-    let allChars = [];
-    if (typeof Intl !== 'undefined' && Intl.Segmenter) {
-      const segmenter = new Intl.Segmenter(state.lang || 'hi', { granularity: 'grapheme' });
-      langWords.slice(0, 20).forEach(w => {
-        const str = (typeof w === 'object' && w.word) ? (Array.isArray(w.word) ? w.word.join('') : w.word) : String(w);
-        for (const seg of segmenter.segment(str)) {
-          if (!/^[\u0901-\u0903\u093c\u093e-\u094f\u0951-\u0957\u0962-\u0963]/.test(seg.segment)) {
-            allChars.push(seg.segment);
-          }
-        }
-      });
-    } else {
-      allChars = ["क", "म", "न", "स", "र", "ल", "प", "द", "त", "व"];
-    }
+    const fallbackLetters = state.lang === 'en'
+      ? ["A", "B", "C", "D", "E", "R", "S", "T", "L", "N"]
+      : ["क", "म", "न", "स", "र", "ल", "प", "द", "त", "व"];
 
-    const cleanFillers = [...new Set(allChars)].filter(c => !currentTargetTiles.includes(c));
+    const cleanFillers = fallbackLetters.filter(c => !currentTargetTiles.includes(c));
     const randomFillers = cleanFillers.sort(() => Math.random() - 0.5).slice(0, 3);
 
     const pool = [...currentTargetTiles, ...randomFillers];
