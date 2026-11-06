@@ -26,7 +26,7 @@ if (!MONGO_URI) {
     .catch(err => console.error("MongoDB Connection Error:", err));
 }
 
-// --- DATABASE SCHEMA ---
+// --- डेटाबेस स्कीमा ---
 const userSchema = new mongoose.Schema({
   telegram_id: { type: String, required: true, unique: true },
   username: { type: String, default: "" },
@@ -63,7 +63,7 @@ const Question = mongoose.model('Question', questionSchema);
 
 const EMERGENCY_QUESTIONS = [
   {
-    question_hi: "Proof of Mind (POM) kis prakar ki sarvasammati par aadharit hai?",
+    question_hi: "Proof of Mind (POM) किस प्रकार की सर्वसम्मति पर आधारित है?",
     question_en: "What consensus protocol does Proof of Mind (POM) emphasize?",
     options_hi: ["Proof of Work", "Proof of Stake", "Proof of Intellect (PoI)", "Proof of Authority"],
     options_en: ["Proof of Work", "Proof of Stake", "Proof of Intellect (PoI)", "Proof of Authority"],
@@ -71,16 +71,16 @@ const EMERGENCY_QUESTIONS = [
     reward: 5
   },
   {
-    question_hi: "0.3 TON on-chain satyapan se kya labh milta hai?",
-    question_en: "What benefit does 0.3 TON verification grant?",
-    options_hi: ["2x Permanent Boost", "Extra 5 Hearts", "Instant Level 100", "500 Free POM"],
-    options_en: ["2x Permanent Boost", "Extra 5 Hearts", "Instant Level 100", "500 Free POM"],
+    question_hi: "0.3 TON सत्यापन से उपयोगकर्ता को क्या स्थायी लाभ मिलता है?",
+    question_en: "What lifetime benefit does 0.3 TON verification grant?",
+    options_hi: ["स्थायी 2x रिवॉर्ड मल्टीप्लायर", "अतिरिक्त 5 हार्ट्स", "तुरंत 100 लेवल", "500 मुफ्त POM"],
+    options_en: ["Lifetime 2x Reward Multiplier", "Extra 5 Hearts", "Instant Level 100", "500 Free POM"],
     correctIndex: 0,
     reward: 5
   }
 ];
 
-// --- 1. FULL 3-TIER REFERRAL & USER SYNC ENGINE ---
+// --- 1. संपूर्ण 3-टियर रेफरल एवं यूज़र सिंक इंजन ---
 app.post('/api/user/sync', async (req, res) => {
   try {
     const { telegram_id, username, first_name, start_param } = req.body;
@@ -94,7 +94,7 @@ app.post('/api/user/sync', async (req, res) => {
     let inviterId = null;
     if (start_param && typeof start_param === 'string' && start_param.startsWith("ref_")) {
       inviterId = start_param.replace("ref_", "").trim();
-      if (inviterId === tidStr) inviterId = null; // Self-referral block
+      if (inviterId === tidStr) inviterId = null;
     }
 
     let isNewReferral = false;
@@ -119,16 +119,13 @@ app.post('/api/user/sync', async (req, res) => {
       await user.save();
     }
 
-    // 3-Level Hierarchy Builder
     if (isNewReferral && user.referrer_id) {
-      // Tier 1: Direct Inviter
       const up1 = await User.findOneAndUpdate(
         { telegram_id: user.referrer_id },
         { $addToSet: { "referrals.tier1": tidStr } },
         { new: true }
       );
 
-      // Tier 2: Upline of Inviter
       if (up1 && up1.referrer_id) {
         const up2 = await User.findOneAndUpdate(
           { telegram_id: up1.referrer_id },
@@ -136,7 +133,6 @@ app.post('/api/user/sync', async (req, res) => {
           { new: true }
         );
 
-        // Tier 3: Third degree Upline
         if (up2 && up2.referrer_id) {
           await User.findOneAndUpdate(
             { telegram_id: up2.referrer_id },
@@ -169,7 +165,7 @@ app.post('/api/user/sync', async (req, res) => {
   }
 });
 
-// --- 2. MINE REWARD & 3-TIER COMMISSION DISTRIBUTION (10%, 3%, 2%) ---
+// --- 2. माइनिंग रिवॉर्ड एवं कमीशन वितरण ---
 app.post('/api/game/mine-reward', async (req, res) => {
   try {
     const { telegram_id } = req.body;
@@ -180,7 +176,7 @@ app.post('/api/game/mine-reward', async (req, res) => {
 
     const now = Date.now();
     if (user.lastMineTimestamp && (now - user.lastMineTimestamp < 1500)) {
-      return res.status(429).json({ error: "Mining too fast. Rate limited." });
+      return res.status(429).json({ error: "Mining too fast. Anti-bot triggered." });
     }
 
     let baseReward = 3;
@@ -199,7 +195,6 @@ app.post('/api/game/mine-reward', async (req, res) => {
       { new: true }
     );
 
-    // Auto-credit commission across 3 upline levels
     if (updatedUser.referrer_id) {
       const up1 = await User.findOne({ telegram_id: updatedUser.referrer_id });
       if (up1) {
@@ -223,32 +218,49 @@ app.post('/api/game/mine-reward', async (req, res) => {
   }
 });
 
-// --- 3. PROGRESS SAVING ---
-app.post('/api/user/save-progress', async (req, res) => {
+// --- 3. क्विज़ रिवॉर्ड एवं परमानेंट प्रोग्रेस सेव (नया फिक्स) ---
+app.post('/api/game/quiz-reward', async (req, res) => {
   try {
-    const { telegram_id, balance, energy, quizLevel, mineLevel, completedTasks } = req.body;
-    if (!telegram_id) return res.status(400).json({ error: "telegram_id missing" });
+    const { telegram_id } = req.body;
+    if (!telegram_id) return res.status(400).json({ error: "telegram_id required" });
 
-    const updateData = {};
-    if (balance !== undefined) updateData.balance = balance;
-    if (energy !== undefined) updateData.energy = energy;
-    if (quizLevel !== undefined) updateData.quizLevel = quizLevel;
-    if (mineLevel !== undefined) updateData.mineLevel = mineLevel;
-    if (completedTasks !== undefined) updateData.completedTasks = completedTasks;
+    const user = await User.findOne({ telegram_id: String(telegram_id) });
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    let baseReward = user.quizLevel >= 81 ? 20 : (user.quizLevel >= 51 ? 10 : (user.quizLevel >= 21 ? 5 : 2));
+    const reward = user.isVerified ? (baseReward * 2) : baseReward;
 
     const updatedUser = await User.findOneAndUpdate(
       { telegram_id: String(telegram_id) },
-      { $set: updateData },
+      { $inc: { balance: reward, quizLevel: 1 } },
       { new: true }
     );
 
-    res.json({ success: true, user: updatedUser });
+    // क्विज़ पर भी 3-लेवल रेफरल कमीशन
+    if (updatedUser.referrer_id) {
+      const up1 = await User.findOne({ telegram_id: updatedUser.referrer_id });
+      if (up1) {
+        await User.updateOne({ telegram_id: up1.telegram_id }, { $inc: { unclaimedCommission: reward * 0.10 } });
+        if (up1.referrer_id) {
+          const up2 = await User.findOne({ telegram_id: up1.referrer_id });
+          if (up2) {
+            await User.updateOne({ telegram_id: up2.telegram_id }, { $inc: { unclaimedCommission: reward * 0.03 } });
+            if (up2.referrer_id) {
+              await User.updateOne({ telegram_id: up2.referrer_id }, { $inc: { unclaimedCommission: reward * 0.02 } });
+            }
+          }
+        }
+      }
+    }
+
+    res.json({ success: true, balance: updatedUser.balance, quizLevel: updatedUser.quizLevel });
   } catch (err) {
-    res.status(500).json({ error: "Failed to save progress" });
+    console.error("Quiz reward error:", err);
+    res.status(500).json({ error: err.message });
   }
 });
 
-// --- 4. 0.3 TON ON-CHAIN VERIFICATION ---
+// --- 4. 0.3 TON ऑन-चेन सत्यापन ---
 app.post('/api/wallet/verify-ton', async (req, res) => {
   try {
     const { telegram_id, tonAddress } = req.body;
@@ -265,7 +277,7 @@ app.post('/api/wallet/verify-ton', async (req, res) => {
   }
 });
 
-// --- 5. ZERO-LATENCY QUIZ QUESTION FETCHER ---
+// --- 5. ज़ीरो-लेटेंसी क्विज़ रैंडमाइज़र ---
 app.get('/api/quiz/random', async (req, res) => {
   try {
     let question = null;
