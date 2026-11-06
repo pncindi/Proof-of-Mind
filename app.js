@@ -1150,3 +1150,39 @@ if (document.readyState === 'loading') {
 } else {
   startApp();
 }
+
+// ==========================================
+// ADMIN ACCESS & SECURITY (User ID: 8760962244)
+// ==========================================
+function checkAdminAccess() {
+  const ADMIN_ID = "8760962244";
+  const currentUserId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
+  const adminBtn = document.getElementById('adminBtn');
+
+  // सिर्फ आपकी टेलीग्राम आईडी मैच होने पर बटन स्क्रीन पर दिखेगा
+  if (adminBtn && String(currentUserId) === ADMIN_ID) {
+    adminBtn.style.display = 'inline-flex';
+  }
+}
+
+// ऐप और टेलीग्राम वेब-एप लोड होते ही चेक चलाएं
+setTimeout(checkAdminAccess, 300);
+if (window.Telegram?.WebApp) {
+  window.Telegram.WebApp.ready();
+  checkAdminAccess();
+}
+
+// एडमिन मोडल की सुरक्षा (ताकि कोई इंस्पेक्ट करके भी न खोल सके)
+const prevOpenAdminModal = window.openAdminModal || (typeof openAdminModal === 'function' ? openAdminModal : null);
+window.openAdminModal = function() {
+  const ADMIN_ID = "8760962244";
+  const currentUserId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
+  
+  if (String(currentUserId) !== ADMIN_ID) {
+    console.warn("Unauthorized admin access attempt");
+    return;
+  }
+  if (prevOpenAdminModal) {
+    prevOpenAdminModal();
+  }
+};
