@@ -42,6 +42,7 @@ let currentScrambledTiles = ["म", "न", "क", "ल", "र", "स"];
 let quizTimer = null;
 let quizRemainingTime = 25;
 let isSubmittingAnswer = false;
+let isClaimingCommission = false;
 
 // --- TON एड्रेस कनवर्टर (0:... को UQ... में बदलना) ---
 function convertTonToUserFriendly(rawAddress) {
@@ -113,7 +114,11 @@ function loadSavedState() {
     const saved = localStorage.getItem('POM_USER_STATE');
     if (saved) {
       const parsed = JSON.parse(saved);
+      const currentTid = state.telegram_id;
       state = Object.assign(state, parsed);
+      if (currentTid && currentTid !== "pioneer") {
+        state.telegram_id = currentTid;
+      }
     }
   } catch(e) {}
 }
@@ -121,6 +126,7 @@ function loadSavedState() {
 function saveActiveState() {
   try {
     localStorage.setItem('POM_USER_STATE', JSON.stringify({
+      telegram_id: state.telegram_id,
       balance: state.balance,
       mineLevel: state.mineLevel,
       quizLevel: state.quizLevel,
@@ -270,7 +276,6 @@ async function initCurrentPuzzle() {
   try {
     let targetWord = state.lang === 'en' ? "MIND" : "मन";
 
-    // सीधे MongoDB बैकएंड से लेवल के अनुसार शब्द लाना
     if (CONFIG.BACKEND_API_URL) {
       try {
         const res = await fetch(`${CONFIG.BACKEND_API_URL}/api/puzzle/word?level=${state.mineLevel}`);
@@ -380,8 +385,8 @@ async function submitMiningBlock() {
     
     state.balance += reward;
     state.mineLevel++;
-    creditReferralCommission(reward);
     saveActiveState();
+    updateHUD();
     showToast(`Block Mined! +${reward} POM credited`, "🎉");
 
     if (CONFIG.BACKEND_API_URL && state.telegram_id && state.telegram_id !== "pioneer") {
@@ -389,7 +394,17 @@ async function submitMiningBlock() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ telegram_id: state.telegram_id })
-      }).catch(e => console.warn(e));
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.success) {
+          state.balance = data.balance;
+          state.mineLevel = data.mineLevel;
+          saveActiveState();
+          updateHUD();
+        }
+      })
+      .catch(e => console.warn(e));
     }
 
     initCurrentPuzzle();
@@ -454,10 +469,18 @@ async function startQuizRound() {
   prefetchQuizQ();
 
   const lang = state.lang || 'hi';
+  const qText = (lang === 'hi' ? rawData.question_hi : rawData.question_en) || rawData.question || rawData.question_hi || rawData.question_en;
+  const optsList = (lang === 'hi' ? rawData.options_hi : rawData.options_en) || rawData.options || rawData.options_hi || rawData.options_en || [];
+  let correctIdx = rawData.correctIndex;
+  if (correctIdx === undefined || correctIdx === null) {
+    correctIdx = optsList.indexOf(rawData.answer);
+    if (correctIdx === -1) correctIdx = 0;
+  }
+
   const currentQ = {
-    q: (lang === 'hi' ? rawData.question_hi : rawData.question_en) || rawData.question_hi || rawData.question_en,
-    options: (lang === 'hi' ? rawData.options_hi : rawData.options_en) || rawData.options_hi || rawData.options_en,
-    correct: (rawData.correctIndex !== undefined) ? rawData.correctIndex : 0
+    q: qText,
+    options: optsList,
+    correct: correctIdx
   };
 
   if (questionEl) questionEl.innerText = currentQ.q;
@@ -515,18 +538,27 @@ function submitQuizAnswer(selectedIdx, correctIdx, btnElement) {
       let baseReward = state.quizLevel >= 81 ? 20 : (state.quizLevel >= 51 ? 10 : (state.quizLevel >= 21 ? 5 : 2));
       const reward = state.isVerified ? (baseReward * 2) : baseReward;
       state.balance += reward;
-      state.quizLevel++; // लेवल आगे बढ़ा
-      creditReferralCommission(reward);
+      state.quizLevel++;
       saveActiveState();
+      updateHUD();
       showToast(`Correct Answer! +${reward} POM`, "🌟");
 
-      // फिक्स: सीधे MongoDB में क्विज़ लेवल और बैलेंस स्थायी सेव करना
       if (CONFIG.BACKEND_API_URL && state.telegram_id && state.telegram_id !== "pioneer") {
         fetch(`${CONFIG.BACKEND_API_URL}/api/game/quiz-reward`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ telegram_id: state.telegram_id })
-        }).catch(e => console.warn(e));
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.success) {
+            state.balance = data.balance;
+            state.quizLevel = data.quizLevel;
+            saveActiveState();
+            updateHUD();
+          }
+        })
+        .catch(e => console.warn(e));
       }
     } else {
       state.energy--;
@@ -629,37 +661,100 @@ function startTask(idx) {
   renderTasks();
 }
 
-function claimTaskReward(idx) {
-  state.balance += state.tasks[idx].reward;
-  state.tasks[idx].completed = true;
+async function claimTaskReward(idx) {
+  const task = state.tasks[idx];
+  if (!task || task.completed) return;
+
+  task.completed = true;
+  state.balance += task.reward;
   saveActiveState();
   updateHUD();
   renderTasks();
-  showToast(`+${state.tasks[idx].reward} POM Claimed!`, "🎁");
+  showToast(`+${task.reward} POM Claimed!`, "🎁");
+
+  if (CONFIG.BACKEND_API_URL && state.telegram_id && state.telegram_id !== "pioneer") {
+    try {
+      const res = await fetch(`${CONFIG.BACKEND_API_URL}/api/task/claim`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          telegram_id: state.telegram_id,
+          taskId: task.id,
+          reward: task.reward
+        })
+      });
+      const data = await res.json();
+      if (data && data.success && data.balance !== undefined) {
+        state.balance = data.balance;
+        saveActiveState();
+        updateHUD();
+      }
+    } catch (e) {
+      console.warn("Task sync error:", e);
+    }
+  }
 }
 
-// --- रेफरल सिस्टम ---
+// --- रेफरल सिस्टम (सर्वर परमानेंट सेव के साथ फिक्स) ---
 function getReferralLink() {
   return `https://t.me/${CONFIG.BOT_USERNAME}/${CONFIG.APP_SHORT_NAME}?startapp=ref_${state.telegram_id}`;
 }
 
 function creditReferralCommission(amount) {
-  state.unclaimedCommission += (amount * 0.10) + (amount * 0.03) + (amount * 0.02);
-  saveActiveState();
-  safeSetText('unclaimedCommissionDisplay', `${state.unclaimedCommission.toFixed(1)} POM`);
+  // रेफरल कमीशन बैकएंड द्वारा अपलाइन के खाते में जोड़ा जाता है
+  safeSetText('unclaimedCommissionDisplay', `${(state.unclaimedCommission || 0).toFixed(1)} POM`);
 }
 
-function claimReferralRewards() {
-  if (state.unclaimedCommission <= 0) {
-    showToast("No unclaimed commissions right now.", "ℹ️");
+async function claimReferralRewards() {
+  if (isClaimingCommission) return;
+
+  const claimable = Math.floor(Number(state.unclaimedCommission || 0));
+  if (claimable <= 0) {
+    showToast("कम से कम 1 POM कमीशन होने पर क्लेम होगा!", "ℹ️");
     return;
   }
-  state.balance += Math.floor(state.unclaimedCommission);
-  state.unclaimedCommission = 0;
-  saveActiveState();
-  safeSetText('unclaimedCommissionDisplay', `0.0 POM`);
-  updateHUD();
-  showToast("Commissions claimed to balance!", "💰");
+
+  isClaimingCommission = true;
+
+  try {
+    if (CONFIG.BACKEND_API_URL && state.telegram_id && state.telegram_id !== "pioneer") {
+      const res = await fetch(`${CONFIG.BACKEND_API_URL}/api/referral/claim`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          telegram_id: state.telegram_id,
+          clientUnclaimed: state.unclaimedCommission
+        })
+      });
+      const data = await res.json();
+
+      if (data && data.success) {
+        state.balance = Number(data.balance);
+        state.unclaimedCommission = Number(data.unclaimedCommission || 0);
+        saveActiveState();
+        updateHUD();
+        showToast(`+${data.claimed} POM मेन बैलेंस में स्थायी रूप से जुड़ गए!`, "💰");
+      } else {
+        showToast(data?.error || "कोई क्लेम करने योग्य कमीशन नहीं है", "⚠️");
+        if (data?.balance !== undefined) state.balance = Number(data.balance);
+        if (data?.unclaimedCommission !== undefined) state.unclaimedCommission = Number(data.unclaimedCommission);
+        saveActiveState();
+        updateHUD();
+      }
+    } else {
+      // ऑफलाइन/लोकल मोड फॉलबैक
+      state.balance += claimable;
+      state.unclaimedCommission = Math.max(0, Number((state.unclaimedCommission - claimable).toFixed(2)));
+      saveActiveState();
+      updateHUD();
+      showToast(`+${claimable} POM मेन बैलेंस में जुड़ गए!`, "💰");
+    }
+  } catch (err) {
+    console.error("Referral claim error:", err);
+    showToast("सर्वर कनेक्शन एरर, कृपया पुनः प्रयास करें!", "❌");
+  } finally {
+    isClaimingCommission = false;
+  }
 }
 
 function copyReferralLink() {
@@ -698,8 +793,17 @@ async function fetchLatestUserData() {
           state.tier2Users = data.user.referrals.tier2?.length || 0;
           state.tier3Users = data.user.referrals.tier3?.length || 0;
         }
+        if (data.user.balance !== undefined) state.balance = Number(data.user.balance);
         if (data.user.unclaimedCommission !== undefined) {
-          state.unclaimedCommission = data.user.unclaimedCommission;
+          state.unclaimedCommission = Number(data.user.unclaimedCommission);
+        }
+        if (Array.isArray(data.user.completedTasks)) {
+          state.tasks.forEach(t => {
+            if (data.user.completedTasks.includes(t.id)) {
+              t.completed = true;
+              t.started = true;
+            }
+          });
         }
         saveActiveState();
         updateHUD();
@@ -850,7 +954,7 @@ function updateHUD() {
   safeSetText('tier1UsersCount', state.tier1Users);
   safeSetText('tier2UsersCount', state.tier2Users);
   safeSetText('tier3UsersCount', state.tier3Users);
-  safeSetText('unclaimedCommissionDisplay', `${(state.unclaimedCommission || 0).toFixed(1)} POM`);
+  safeSetText('unclaimedCommissionDisplay', `${Number(state.unclaimedCommission || 0).toFixed(1)} POM`);
 
   const isQuizTab = !document.getElementById('tabQuiz').classList.contains('hidden');
   safeSetText('labelLevel', isQuizTab ? (state.lang === 'hi' ? 'क्विज़ लेवल' : 'Quiz Level') : (state.lang === 'hi' ? 'माइन लेवल' : 'Mine Level'));
@@ -1092,6 +1196,8 @@ async function startApp() {
   let startParam = "";
   let tgUser = null;
 
+  loadSavedState();
+
   if (window.Telegram?.WebApp) {
     window.Telegram.WebApp.ready();
     window.Telegram.WebApp.expand();
@@ -1104,7 +1210,6 @@ async function startApp() {
     }
   }
 
-  loadSavedState();
   applyCurrentLanguage();
   initCurrentPuzzle();
   renderTasks();
@@ -1131,13 +1236,25 @@ async function startApp() {
           state.tier2Users = data.user.referrals.tier2?.length || 0;
           state.tier3Users = data.user.referrals.tier3?.length || 0;
         }
-        if (data.user.balance !== undefined) state.balance = data.user.balance;
-        if (data.user.mineLevel !== undefined) state.mineLevel = data.user.mineLevel;
-        if (data.user.quizLevel !== undefined) state.quizLevel = data.user.quizLevel;
-        if (data.user.isVerified !== undefined) state.isVerified = data.user.isVerified;
-        if (data.user.unclaimedCommission !== undefined) state.unclaimedCommission = data.user.unclaimedCommission;
+        if (data.user.balance !== undefined) state.balance = Number(data.user.balance);
+        if (data.user.mineLevel !== undefined) state.mineLevel = Number(data.user.mineLevel);
+        if (data.user.quizLevel !== undefined) state.quizLevel = Number(data.user.quizLevel);
+        if (data.user.isVerified !== undefined) state.isVerified = Boolean(data.user.isVerified);
+        if (data.user.unclaimedCommission !== undefined) {
+          state.unclaimedCommission = Number(data.user.unclaimedCommission);
+        }
+        if (Array.isArray(data.user.completedTasks)) {
+          state.tasks.forEach(t => {
+            if (data.user.completedTasks.includes(t.id)) {
+              t.completed = true;
+              t.started = true;
+            }
+          });
+          renderTasks();
+        }
         saveActiveState();
         updateHUD();
+        initCurrentPuzzle();
       }
     } catch (err) {
       console.warn("Backend sync note:", err);
@@ -1159,20 +1276,17 @@ function checkAdminAccess() {
   const currentUserId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
   const adminBtn = document.getElementById('adminBtn');
 
-  // सिर्फ आपकी टेलीग्राम आईडी मैच होने पर बटन स्क्रीन पर दिखेगा
   if (adminBtn && String(currentUserId) === ADMIN_ID) {
     adminBtn.style.display = 'inline-flex';
   }
 }
 
-// ऐप और टेलीग्राम वेब-एप लोड होते ही चेक चलाएं
 setTimeout(checkAdminAccess, 300);
 if (window.Telegram?.WebApp) {
   window.Telegram.WebApp.ready();
   checkAdminAccess();
 }
 
-// एडमिन मोडल की सुरक्षा (ताकि कोई इंस्पेक्ट करके भी न खोल सके)
 const prevOpenAdminModal = window.openAdminModal || (typeof openAdminModal === 'function' ? openAdminModal : null);
 window.openAdminModal = function() {
   const ADMIN_ID = "8760962244";
