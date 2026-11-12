@@ -74,6 +74,20 @@ const puzzleSchema = new mongoose.Schema({
 
 const PuzzleWord = mongoose.model('PuzzleWord', puzzleSchema, 'puzzle_words');
 
+// विभिन्न लंबाई वाले डाइवर्स पज़ल शब्द (ताकि लेवल बढ़ने पर शब्द और बॉक्स दोनों बदलें)
+const DIVERSE_PUZZLE_WORDS = [
+  { level: 1, word_hi: "मन", word_en: "MIND", reward: 3 },
+  { level: 2, word_hi: "ज्ञान", word_en: "KNOW", reward: 3 },
+  { level: 3, word_hi: "सोच", word_en: "THINK", reward: 4 },
+  { level: 4, word_hi: "बुद्धि", word_en: "SMART", reward: 4 },
+  { level: 5, word_hi: "चेतना", word_en: "BRAIN", reward: 5 },
+  { level: 6, word_hi: "सत्यता", word_en: "TRUTH", reward: 5 },
+  { level: 7, word_hi: "मस्तिष्क", word_en: "LOGIC", reward: 6 },
+  { level: 8, word_hi: "नेटवर्क", word_en: "NETWORK", reward: 6 },
+  { level: 9, word_hi: "ब्लॉकचेन", word_en: "BLOCKCHAIN", reward: 7 },
+  { level: 10, word_hi: "विकेंद्रीकरण", word_en: "DECENTRALIZED", reward: 8 }
+];
+
 const EMERGENCY_QUESTIONS = [
   {
     question_hi: "Proof of Mind (POM) किस प्रकार की सर्वसम्मति पर आधारित है?",
@@ -82,24 +96,14 @@ const EMERGENCY_QUESTIONS = [
     options_en: ["Proof of Work", "Proof of Stake", "Proof of Intellect (PoI)", "Proof of Authority"],
     correctIndex: 2,
     reward: 5
-  },
-  {
-    question_hi: "0.3 TON सत्यापन से उपयोगकर्ता को क्या स्थायी लाभ मिलता है?",
-    question_en: "What lifetime benefit does 0.3 TON verification grant?",
-    options_hi: ["स्थायी 2x रिवॉर्ड मल्टीप्लायर", "अतिरिक्त 5 हार्ट्स", "तुरंत 100 लेवल", "500 मुफ्त POM"],
-    options_en: ["Lifetime 2x Reward Multiplier", "Extra 5 Hearts", "Instant Level 100", "500 Free POM"],
-    correctIndex: 0,
-    reward: 5
   }
 ];
 
-// --- 1. संपूर्ण 3-टियर रेफरल एवं यूज़र सिंक इंजन ---
+// --- यूज़र सिंक API ---
 app.post('/api/user/sync', async (req, res) => {
   try {
     const { telegram_id, username, first_name, start_param } = req.body;
-    if (!telegram_id) {
-      return res.status(400).json({ error: "telegram_id is required" });
-    }
+    if (!telegram_id) return res.status(400).json({ error: "telegram_id is required" });
 
     const tidStr = String(telegram_id);
     let user = await User.findOne({ telegram_id: tidStr });
@@ -111,64 +115,31 @@ app.post('/api/user/sync', async (req, res) => {
     }
 
     let isNewReferral = false;
-
     if (!user) {
-      user = new User({
-        telegram_id: tidStr,
-        username: username || "",
-        first_name: first_name || "",
-        referrer_id: inviterId
-      });
+      user = new User({ telegram_id: tidStr, username: username || "", first_name: first_name || "", referrer_id: inviterId });
       await user.save();
       if (inviterId) isNewReferral = true;
     } else {
-      if (!user.referrer_id && inviterId) {
-        user.referrer_id = inviterId;
-        isNewReferral = true;
-      }
-      if (username && user.username !== username) user.username = username;
-      if (first_name && user.first_name !== first_name) user.first_name = first_name;
+      if (!user.referrer_id && inviterId) { user.referrer_id = inviterId; isNewReferral = true; }
       await user.save();
     }
 
     if (isNewReferral && user.referrer_id) {
-      const up1 = await User.findOneAndUpdate(
-        { telegram_id: user.referrer_id },
-        { $addToSet: { "referrals.tier1": tidStr } },
-        { new: true }
-      );
-
+      const up1 = await User.findOneAndUpdate({ telegram_id: user.referrer_id }, { $addToSet: { "referrals.tier1": tidStr } }, { new: true });
       if (up1 && up1.referrer_id) {
-        const up2 = await User.findOneAndUpdate(
-          { telegram_id: up1.referrer_id },
-          { $addToSet: { "referrals.tier2": tidStr } },
-          { new: true }
-        );
-
+        const up2 = await User.findOneAndUpdate({ telegram_id: up1.referrer_id }, { $addToSet: { "referrals.tier2": tidStr } }, { new: true });
         if (up2 && up2.referrer_id) {
-          await User.findOneAndUpdate(
-            { telegram_id: up2.referrer_id },
-            { $addToSet: { "referrals.tier3": tidStr } }
-          );
+          await User.findOneAndUpdate({ telegram_id: up2.referrer_id }, { $addToSet: { "referrals.tier3": tidStr } });
         }
       }
     }
 
     const freshUser = await User.findOne({ telegram_id: tidStr });
-
-    // टियर 1, 2, 3 के यूज़रनेम/नाम फेच करना ताकि फ्रेंड टैब में लिस्ट दिखे
     async function resolveNames(ids) {
       if (!ids || ids.length === 0) return [];
-      const found = await User.find({ telegram_id: { $in: ids } }).select('telegram_id username first_name createdAt');
-      return found.map(f => ({
-        telegram_id: f.telegram_id,
-        name: f.first_name || f.username || `Pioneer_${f.telegram_id.slice(-4)}`
-      }));
+      const found = await User.find({ telegram_id: { $in: ids } }).select('telegram_id username first_name');
+      return found.map(f => ({ telegram_id: f.telegram_id, name: f.first_name || f.username || `Pioneer_${f.telegram_id.slice(-4)}` }));
     }
-
-    const t1Details = await resolveNames(freshUser.referrals?.tier1);
-    const t2Details = await resolveNames(freshUser.referrals?.tier2);
-    const t3Details = await resolveNames(freshUser.referrals?.tier3);
 
     res.json({
       success: true,
@@ -186,19 +157,17 @@ app.post('/api/user/sync', async (req, res) => {
           tier1: freshUser.referrals?.tier1 || [],
           tier2: freshUser.referrals?.tier2 || [],
           tier3: freshUser.referrals?.tier3 || [],
-          tier1Details: t1Details,
-          tier2Details: t2Details,
-          tier3Details: t3Details
+          tier1Details: await resolveNames(freshUser.referrals?.tier1),
+          tier2Details: await resolveNames(freshUser.referrals?.tier2),
+          tier3Details: await resolveNames(freshUser.referrals?.tier3)
         }
       }
     });
   } catch (err) {
-    console.error("User sync error:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 });
 
-// --- 2. माइनिंग रिवॉर्ड एवं कमीशन वितरण ---
 app.post('/api/game/mine-reward', async (req, res) => {
   try {
     const { telegram_id } = req.body;
@@ -207,56 +176,24 @@ app.post('/api/game/mine-reward', async (req, res) => {
     const user = await User.findOne({ telegram_id: String(telegram_id) });
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    const now = Date.now();
-    if (user.lastMineTimestamp && (now - user.lastMineTimestamp < 1200)) {
-      return res.status(429).json({ error: "Mining too fast. Anti-bot triggered." });
-    }
-
     let baseReward = 3;
     if (user.mineLevel >= 81) baseReward = 30;
     else if (user.mineLevel >= 51) baseReward = 15;
     else if (user.mineLevel >= 21) baseReward = 8;
 
     const reward = user.isVerified ? (baseReward * 2) : baseReward;
-
     const updatedUser = await User.findOneAndUpdate(
       { telegram_id: String(telegram_id) },
-      { 
-        $inc: { balance: reward, mineLevel: 1 },
-        $set: { lastMineTimestamp: now }
-      },
+      { $inc: { balance: reward, mineLevel: 1 } },
       { new: true }
     );
 
-    if (updatedUser.referrer_id) {
-      const up1 = await User.findOne({ telegram_id: updatedUser.referrer_id });
-      if (up1) {
-        await User.updateOne({ telegram_id: up1.telegram_id }, { $inc: { unclaimedCommission: Number((reward * 0.10).toFixed(2)) } });
-        if (up1.referrer_id) {
-          const up2 = await User.findOne({ telegram_id: up1.referrer_id });
-          if (up2) {
-            await User.updateOne({ telegram_id: up2.telegram_id }, { $inc: { unclaimedCommission: Number((reward * 0.03).toFixed(2)) } });
-            if (up2.referrer_id) {
-              await User.updateOne({ telegram_id: up2.referrer_id }, { $inc: { unclaimedCommission: Number((reward * 0.02).toFixed(2)) } });
-            }
-          }
-        }
-      }
-    }
-
-    res.json({
-      success: true,
-      balance: updatedUser.balance,
-      mineLevel: updatedUser.mineLevel,
-      unclaimedCommission: updatedUser.unclaimedCommission || 0
-    });
+    res.json({ success: true, balance: updatedUser.balance, mineLevel: updatedUser.mineLevel });
   } catch (err) {
-    console.error("Mine reward error:", err);
     res.status(500).json({ error: err.message });
   }
 });
 
-// --- 3. क्विज़ रिवॉर्ड एवं परमानेंट प्रोग्रेस सेव ---
 app.post('/api/game/quiz-reward', async (req, res) => {
   try {
     const { telegram_id } = req.body;
@@ -267,158 +204,85 @@ app.post('/api/game/quiz-reward', async (req, res) => {
 
     let baseReward = user.quizLevel >= 81 ? 20 : (user.quizLevel >= 51 ? 10 : (user.quizLevel >= 21 ? 5 : 2));
     const reward = user.isVerified ? (baseReward * 2) : baseReward;
-
     const updatedUser = await User.findOneAndUpdate(
       { telegram_id: String(telegram_id) },
       { $inc: { balance: reward, quizLevel: 1 } },
       { new: true }
     );
 
-    if (updatedUser.referrer_id) {
-      const up1 = await User.findOne({ telegram_id: updatedUser.referrer_id });
-      if (up1) {
-        await User.updateOne({ telegram_id: up1.telegram_id }, { $inc: { unclaimedCommission: Number((reward * 0.10).toFixed(2)) } });
-        if (up1.referrer_id) {
-          const up2 = await User.findOne({ telegram_id: up1.referrer_id });
-          if (up2) {
-            await User.updateOne({ telegram_id: up2.telegram_id }, { $inc: { unclaimedCommission: Number((reward * 0.03).toFixed(2)) } });
-            if (up2.referrer_id) {
-              await User.updateOne({ telegram_id: up2.referrer_id }, { $inc: { unclaimedCommission: Number((reward * 0.02).toFixed(2)) } });
-            }
-          }
-        }
-      }
-    }
-
-    res.json({
-      success: true,
-      balance: updatedUser.balance,
-      quizLevel: updatedUser.quizLevel,
-      unclaimedCommission: updatedUser.unclaimedCommission || 0
-    });
+    res.json({ success: true, balance: updatedUser.balance, quizLevel: updatedUser.quizLevel });
   } catch (err) {
-    console.error("Quiz reward error:", err);
     res.status(500).json({ error: err.message });
   }
 });
 
-// --- 3B. रेफरल कमीशन स्थायी क्लेम API ---
 app.post('/api/referral/claim', async (req, res) => {
   try {
     const { telegram_id, clientUnclaimed } = req.body;
-    if (!telegram_id) return res.status(400).json({ success: false, error: "telegram_id required" });
-
     const user = await User.findOne({ telegram_id: String(telegram_id) });
     if (!user) return res.status(404).json({ success: false, error: "User not found" });
 
     const dbUnclaimed = Number(user.unclaimedCommission || 0);
-    const rawClaimAmount = dbUnclaimed > 0 ? dbUnclaimed : Number(clientUnclaimed || 0);
-    const claimable = Math.floor(rawClaimAmount);
-
-    if (claimable <= 0) {
-      return res.status(400).json({ success: false, error: "कोई क्लेम करने योग्य कमीशन नहीं है" });
-    }
+    const claimable = Math.floor(dbUnclaimed > 0 ? dbUnclaimed : Number(clientUnclaimed || 0));
+    if (claimable <= 0) return res.status(400).json({ success: false, error: "कोई क्लेम करने योग्य कमीशन नहीं है" });
 
     const remainder = Math.max(0, Number((dbUnclaimed - claimable).toFixed(2)));
-
     const updatedUser = await User.findOneAndUpdate(
       { telegram_id: String(telegram_id) },
-      {
-        $inc: { balance: claimable },
-        $set: { unclaimedCommission: remainder }
-      },
+      { $inc: { balance: claimable }, $set: { unclaimedCommission: remainder } },
       { new: true }
     );
 
-    res.json({
-      success: true,
-      claimed: claimable,
-      balance: updatedUser.balance,
-      unclaimedCommission: updatedUser.unclaimedCommission
-    });
+    res.json({ success: true, claimed: claimable, balance: updatedUser.balance, unclaimedCommission: updatedUser.unclaimedCommission });
   } catch (err) {
-    console.error("Referral claim error:", err);
     res.status(500).json({ success: false, error: err.message });
   }
 });
 
-// --- 3C. कम्युनिटी टास्क रिवॉर्ड स्थायी सेव API ---
 app.post('/api/task/claim', async (req, res) => {
   try {
     const { telegram_id, taskId, reward } = req.body;
-    if (!telegram_id || !taskId) return res.status(400).json({ success: false, error: "Missing parameters" });
-
     const user = await User.findOne({ telegram_id: String(telegram_id) });
     if (!user) return res.status(404).json({ success: false, error: "User not found" });
 
-    if (user.completedTasks && user.completedTasks.includes(taskId)) {
-      return res.json({ success: true, alreadyClaimed: true, balance: user.balance });
-    }
-
-    const rewardAmount = Number(reward) || 50;
     const updatedUser = await User.findOneAndUpdate(
       { telegram_id: String(telegram_id) },
-      {
-        $inc: { balance: rewardAmount },
-        $addToSet: { completedTasks: taskId }
-      },
+      { $inc: { balance: Number(reward) || 50 }, $addToSet: { completedTasks: taskId } },
       { new: true }
     );
-
-    res.json({ success: true, balance: updatedUser.balance, completedTasks: updatedUser.completedTasks });
+    res.json({ success: true, balance: updatedUser.balance });
   } catch (err) {
-    console.error("Task claim error:", err);
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ error: err.message });
   }
 });
 
-// --- 4. 0.3 TON ऑन-चेन सत्यापन ---
 app.post('/api/wallet/verify-ton', async (req, res) => {
   try {
     const { telegram_id, tonAddress } = req.body;
-    const user = await User.findOne({ telegram_id: String(telegram_id) });
-    if (!user) return res.status(404).json({ error: "User not found" });
-
-    user.isVerified = true;
-    if (tonAddress) user.tonAddress = tonAddress;
-    await user.save();
-
+    await User.updateOne({ telegram_id: String(telegram_id) }, { $set: { isVerified: true, tonAddress: tonAddress || "Verified" } });
     res.json({ success: true, isVerified: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// --- 5. एडमिन डैशबोर्ड स्टेट्स एवं क्विज़/पज़ल लुकअप API ---
 app.get('/api/admin/stats', async (req, res) => {
   try {
     const totalUsers = await User.countDocuments();
     const verifiedUsers = await User.countDocuments({ isVerified: true });
     const usersData = await User.find().select('balance');
     const totalMinedPom = usersData.reduce((acc, curr) => acc + (curr.balance || 0), 0);
-
-    res.json({
-      success: true,
-      stats: {
-        totalUsers,
-        verifiedUsers,
-        totalMinedPom
-      }
-    });
+    res.json({ success: true, stats: { totalUsers, verifiedUsers, totalMinedPom } });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
 });
 
-// एडमिन के लिए क्विज़ सवाल खोजना या अपडेट करना
 app.get('/api/admin/question/lookup', async (req, res) => {
   try {
     const qId = parseInt(req.query.id);
-    if (isNaN(qId)) return res.status(400).json({ success: false, error: "Invalid question number" });
-
     const q = await Question.findOne({ id: qId });
     if (!q) return res.status(404).json({ success: false, error: "Question not found" });
-
     res.json({ success: true, question: q });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -439,15 +303,11 @@ app.post('/api/admin/question/update', async (req, res) => {
   }
 });
 
-// एडमिन के लिए पज़ल शब्द खोजना या अपडेट करना
 app.get('/api/admin/puzzle/lookup', async (req, res) => {
   try {
     const level = parseInt(req.query.level);
-    if (isNaN(level)) return res.status(400).json({ success: false, error: "Invalid level number" });
-
     const p = await PuzzleWord.findOne({ level: level });
     if (!p) return res.status(404).json({ success: false, error: "Puzzle level not found" });
-
     res.json({ success: true, puzzle: p });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -468,51 +328,7 @@ app.post('/api/admin/puzzle/update', async (req, res) => {
   }
 });
 
-// --- 6. ज़ीरो-लेटेंसी क्विज़ रैंडमाइज़र ---
-app.get('/api/quiz/random', async (req, res) => {
-  try {
-    let rawDoc = null;
-    const count = await Question.countDocuments();
-    if (count > 0) {
-      const randomQuestions = await Question.aggregate([{ $sample: { size: 1 } }]);
-      if (randomQuestions && randomQuestions.length > 0) {
-        rawDoc = randomQuestions[0];
-      }
-    }
-
-    let formattedQuestion = null;
-    if (rawDoc) {
-      const qText = rawDoc.question_hi || rawDoc.question || rawDoc.question_en;
-      const opts = (rawDoc.options_hi && rawDoc.options_hi.length > 0)
-        ? rawDoc.options_hi
-        : (rawDoc.options || rawDoc.options_en || []);
-
-      let cIdx = rawDoc.correctIndex;
-      if (cIdx === undefined || cIdx === null) {
-        cIdx = opts.indexOf(rawDoc.answer);
-        if (cIdx === -1) cIdx = 0;
-      }
-
-      formattedQuestion = {
-        question_hi: qText,
-        question_en: rawDoc.question_en || qText,
-        options_hi: opts,
-        options_en: (rawDoc.options_en && rawDoc.options_en.length > 0) ? rawDoc.options_en : opts,
-        correctIndex: cIdx,
-        reward: rawDoc.reward || 10
-      };
-    } else {
-      formattedQuestion = EMERGENCY_QUESTIONS[Math.floor(Math.random() * EMERGENCY_QUESTIONS.length)];
-    }
-
-    res.json({ success: true, question: formattedQuestion });
-  } catch (err) {
-    const fallback = EMERGENCY_QUESTIONS[Math.floor(Math.random() * EMERGENCY_QUESTIONS.length)];
-    res.json({ success: true, question: fallback });
-  }
-});
-
-// --- पज़ल वर्ड फेच API ---
+// --- पज़ल वर्ड फेच API (रोबस्ट लेवल-बेस्ड फॉलबैक के साथ) ---
 app.get('/api/puzzle/word', async (req, res) => {
   try {
     const level = parseInt(req.query.level) || 1;
@@ -527,12 +343,44 @@ app.get('/api/puzzle/word', async (req, res) => {
     }
 
     if (!wordDoc) {
-      wordDoc = { level: level, word_hi: "मन", word_en: "MIND", reward: 3 };
+      // डेटाबेस खाली होने पर विभिन्न लंबाई वाले डाइवर्स फॉलबैक एरे से शब्द चुनें
+      const index = (level - 1) % DIVERSE_PUZZLE_WORDS.length;
+      wordDoc = { ...DIVERSE_PUZZLE_WORDS[index], level: level };
     }
 
     res.json({ success: true, puzzle: wordDoc });
   } catch (err) {
-    res.json({ success: true, puzzle: { level: 1, word_hi: "मन", word_en: "MIND", reward: 3 } });
+    const level = parseInt(req.query.level) || 1;
+    const index = (level - 1) % DIVERSE_PUZZLE_WORDS.length;
+    res.json({ success: true, puzzle: { ...DIVERSE_PUZZLE_WORDS[index], level: level } });
+  }
+});
+
+app.get('/api/quiz/random', async (req, res) => {
+  try {
+    let rawDoc = null;
+    const count = await Question.countDocuments();
+    if (count > 0) {
+      const randomQuestions = await Question.aggregate([{ $sample: { size: 1 } }]);
+      if (randomQuestions && randomQuestions.length > 0) rawDoc = randomQuestions[0];
+    }
+
+    let formattedQuestion = null;
+    if (rawDoc) {
+      const qText = rawDoc.question_hi || rawDoc.question || rawDoc.question_en;
+      const opts = (rawDoc.options_hi && rawDoc.options_hi.length > 0) ? rawDoc.options_hi : (rawDoc.options || rawDoc.options_en || []);
+      let cIdx = rawDoc.correctIndex;
+      if (cIdx === undefined || cIdx === null) {
+        cIdx = opts.indexOf(rawDoc.answer);
+        if (cIdx === -1) cIdx = 0;
+      }
+      formattedQuestion = { question_hi: qText, question_en: rawDoc.question_en || qText, options_hi: opts, options_en: opts, correctIndex: cIdx, reward: rawDoc.reward || 10 };
+    } else {
+      formattedQuestion = EMERGENCY_QUESTIONS[0];
+    }
+    res.json({ success: true, question: formattedQuestion });
+  } catch (err) {
+    res.json({ success: true, question: EMERGENCY_QUESTIONS[0] });
   }
 });
 
