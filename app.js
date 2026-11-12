@@ -23,6 +23,9 @@ let state = {
   tier1Users: 0,
   tier2Users: 0,
   tier3Users: 0,
+  tier1Details: [],
+  tier2Details: [],
+  tier3Details: [],
   unclaimedCommission: 0,
   tonConnected: false,
   tonAddress: null,
@@ -44,7 +47,7 @@ let quizRemainingTime = 25;
 let isSubmittingAnswer = false;
 let isClaimingCommission = false;
 
-// --- TON एड्रेस कनवर्टर (0:... को UQ... में बदलना) ---
+// --- TON एड्रेस कनवर्टर ---
 function convertTonToUserFriendly(rawAddress) {
   if (!rawAddress || typeof rawAddress !== 'string') return rawAddress;
   if (!rawAddress.includes(':')) return rawAddress;
@@ -90,7 +93,6 @@ function convertTonToUserFriendly(rawAddress) {
   }
 }
 
-// --- बैकअप सवाल ---
 const FALLBACK_QUESTIONS = [
   {
     question_hi: "Proof of Mind (POM) किस प्रकार की सर्वसम्मति पर आधारित है?",
@@ -108,7 +110,6 @@ const FALLBACK_QUESTIONS = [
   }
 ];
 
-// --- स्टोरेज पर्सीस्टेंस ---
 function loadSavedState() {
   try {
     const saved = localStorage.getItem('POM_USER_STATE');
@@ -167,7 +168,7 @@ function showToast(message, icon = "ℹ️") {
   }, 2200);
 }
 
-// --- भाषा बदलना ---
+// --- ग्लोबल मल्टी-भाषा सिंक इंजन ---
 function changeLanguage(lang) {
   state.lang = lang;
   saveActiveState();
@@ -177,7 +178,7 @@ function changeLanguage(lang) {
   if (!document.getElementById('tabQuiz').classList.contains('hidden')) {
     startQuizRound();
   }
-  showToast(`Language: ${document.getElementById('languageSelect')?.selectedOptions[0]?.text || lang}`, "🌐");
+  showToast(`Language updated: ${lang.toUpperCase()}`, "🌐");
 }
 
 function applyCurrentLanguage() {
@@ -229,9 +230,7 @@ function stopQuizTimer() {
 // --- टैब नेविगेशन ---
 function switchTab(tabId) {
   try {
-    if (tabId !== 'tabQuiz') {
-      stopQuizTimer();
-    }
+    if (tabId !== 'tabQuiz') stopQuizTimer();
 
     const tabs = ['tabMine', 'tabQuiz', 'tabTasks', 'tabFriends', 'tabWallet'];
     tabs.forEach(id => {
@@ -416,9 +415,7 @@ async function submitMiningBlock() {
     clearSelectedLetters();
   }
 
-  if (state.energy <= 0) {
-    openEnergyModal();
-  }
+  if (state.energy <= 0) openEnergyModal();
 }
 
 // --- क्विज़ इंजन ---
@@ -428,13 +425,10 @@ async function prefetchQuizQ() {
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 2000);
-
     const res = await fetch(`${CONFIG.BACKEND_API_URL}/api/quiz/random`, { signal: controller.signal });
     clearTimeout(timeoutId);
     const data = await res.json();
-    if (data && data.success && data.question) {
-      nextQuizQ = data.question;
-    }
+    if (data && data.success && data.question) nextQuizQ = data.question;
   } catch (e) {}
 }
 
@@ -452,19 +446,14 @@ async function startQuizRound() {
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 1500);
-
       const res = await fetch(`${CONFIG.BACKEND_API_URL}/api/quiz/random`, { signal: controller.signal });
       clearTimeout(timeoutId);
       const data = await res.json();
-      if (data && data.success && data.question) {
-        rawData = data.question;
-      }
+      if (data && data.success && data.question) rawData = data.question;
     } catch (e) {}
   }
 
-  if (!rawData) {
-    rawData = FALLBACK_QUESTIONS[Math.floor(Math.random() * FALLBACK_QUESTIONS.length)];
-  }
+  if (!rawData) rawData = FALLBACK_QUESTIONS[Math.floor(Math.random() * FALLBACK_QUESTIONS.length)];
 
   prefetchQuizQ();
 
@@ -477,11 +466,7 @@ async function startQuizRound() {
     if (correctIdx === -1) correctIdx = 0;
   }
 
-  const currentQ = {
-    q: qText,
-    options: optsList,
-    correct: correctIdx
-  };
+  const currentQ = { q: qText, options: optsList, correct: correctIdx };
 
   if (questionEl) questionEl.innerText = currentQ.q;
   if (!optsContainer) return;
@@ -572,22 +557,15 @@ function submitQuizAnswer(selectedIdx, correctIdx, btnElement) {
   }, 600);
 }
 
-// --- आउट-ऑफ-एनर्जी पॉपअप ---
-function openEnergyModal() {
-  document.getElementById('energyModal')?.classList.remove('hidden');
-}
-
-function closeEnergyModal() {
-  document.getElementById('energyModal')?.classList.add('hidden');
-}
+// --- ऊर्जा मोडल ---
+function openEnergyModal() { document.getElementById('energyModal')?.classList.remove('hidden'); }
+function closeEnergyModal() { document.getElementById('energyModal')?.classList.add('hidden'); }
 
 function watchAdAndRefill(amount) {
   const blockId = CONFIG.ADSGRAM_BLOCK_ID || "57910";
-
   if (window.Adsgram) {
     showToast("Loading Ad...", "⏳");
     const AdController = window.Adsgram.init({ blockId: blockId, debug: false });
-    
     AdController.show().then(() => {
       state.energy = 5;
       saveActiveState();
@@ -651,11 +629,8 @@ function renderTasks() {
 
 function startTask(idx) {
   const link = state.tasks[idx].link;
-  if (window.Telegram?.WebApp?.openLink) {
-    window.Telegram.WebApp.openLink(link);
-  } else {
-    window.open(link, '_blank');
-  }
+  if (window.Telegram?.WebApp?.openLink) window.Telegram.WebApp.openLink(link);
+  else window.open(link, '_blank');
   state.tasks[idx].started = true;
   saveActiveState();
   renderTasks();
@@ -677,11 +652,7 @@ async function claimTaskReward(idx) {
       const res = await fetch(`${CONFIG.BACKEND_API_URL}/api/task/claim`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          telegram_id: state.telegram_id,
-          taskId: task.id,
-          reward: task.reward
-        })
+        body: JSON.stringify({ telegram_id: state.telegram_id, taskId: task.id, reward: task.reward })
       });
       const data = await res.json();
       if (data && data.success && data.balance !== undefined) {
@@ -689,20 +660,13 @@ async function claimTaskReward(idx) {
         saveActiveState();
         updateHUD();
       }
-    } catch (e) {
-      console.warn("Task sync error:", e);
-    }
+    } catch (e) {}
   }
 }
 
-// --- रेफरल सिस्टम (सर्वर परमानेंट सेव के साथ फिक्स) ---
+// --- रेफरल सिस्टम (यूज़र लिस्ट मोडल के साथ) ---
 function getReferralLink() {
   return `https://t.me/${CONFIG.BOT_USERNAME}/${CONFIG.APP_SHORT_NAME}?startapp=ref_${state.telegram_id}`;
-}
-
-function creditReferralCommission(amount) {
-  // रेफरल कमीशन बैकएंड द्वारा अपलाइन के खाते में जोड़ा जाता है
-  safeSetText('unclaimedCommissionDisplay', `${(state.unclaimedCommission || 0).toFixed(1)} POM`);
 }
 
 async function claimReferralRewards() {
@@ -710,7 +674,7 @@ async function claimReferralRewards() {
 
   const claimable = Math.floor(Number(state.unclaimedCommission || 0));
   if (claimable <= 0) {
-    showToast("कम से कम 1 POM कमीशन होने पर क्लेम होगा!", "ℹ️");
+    showToast("कोई क्लेम करने योग्य कमीशन नहीं है!", "ℹ️");
     return;
   }
 
@@ -721,10 +685,7 @@ async function claimReferralRewards() {
       const res = await fetch(`${CONFIG.BACKEND_API_URL}/api/referral/claim`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          telegram_id: state.telegram_id,
-          clientUnclaimed: state.unclaimedCommission
-        })
+        body: JSON.stringify({ telegram_id: state.telegram_id, clientUnclaimed: state.unclaimedCommission })
       });
       const data = await res.json();
 
@@ -733,25 +694,13 @@ async function claimReferralRewards() {
         state.unclaimedCommission = Number(data.unclaimedCommission || 0);
         saveActiveState();
         updateHUD();
-        showToast(`+${data.claimed} POM मेन बैलेंस में स्थायी रूप से जुड़ गए!`, "💰");
+        showToast(`+${data.claimed} POM मेन बैलेंस में जुड़ गए!`, "💰");
       } else {
-        showToast(data?.error || "कोई क्लेम करने योग्य कमीशन नहीं है", "⚠️");
-        if (data?.balance !== undefined) state.balance = Number(data.balance);
-        if (data?.unclaimedCommission !== undefined) state.unclaimedCommission = Number(data.unclaimedCommission);
-        saveActiveState();
-        updateHUD();
+        showToast(data?.error || "क्लेम फेल हो गया", "⚠️");
       }
-    } else {
-      // ऑफलाइन/लोकल मोड फॉलबैक
-      state.balance += claimable;
-      state.unclaimedCommission = Math.max(0, Number((state.unclaimedCommission - claimable).toFixed(2)));
-      saveActiveState();
-      updateHUD();
-      showToast(`+${claimable} POM मेन बैलेंस में जुड़ गए!`, "💰");
     }
   } catch (err) {
-    console.error("Referral claim error:", err);
-    showToast("सर्वर कनेक्शन एरर, कृपया पुनः प्रयास करें!", "❌");
+    showToast("नेटवर्क एरर!", "❌");
   } finally {
     isClaimingCommission = false;
   }
@@ -766,11 +715,46 @@ function shareReferralToTelegram() {
   const url = encodeURIComponent(getReferralLink());
   const text = encodeURIComponent("🧠 Join Proof of Mind! Mine POM tokens with your intellect on TON & Pi Network.");
   const shareUrl = `https://t.me/share/url?url=${url}&text=${text}`;
-  if (window.Telegram?.WebApp?.openTelegramLink) {
-    window.Telegram.WebApp.openTelegramLink(shareUrl);
-  } else {
-    window.open(shareUrl, '_blank');
+  if (window.Telegram?.WebApp?.openTelegramLink) window.Telegram.WebApp.openTelegramLink(shareUrl);
+  else window.open(shareUrl, '_blank');
+}
+
+// रेफरल यूज़र लिस्ट देखने के लिए मोडल खोलें
+function openReferralListModal(tierLevel) {
+  const modal = document.getElementById('referralListModal');
+  const title = document.getElementById('refModalTitle');
+  const container = document.getElementById('refModalContentContainer');
+  if (!modal || !title || !container) return;
+
+  let list = [];
+  if (tierLevel === 1) {
+    title.innerText = "Level 1 Referred Pioneers (10%)";
+    list = state.tier1Details || [];
+  } else if (tierLevel === 2) {
+    title.innerText = "Level 2 Referred Pioneers (3%)";
+    list = state.tier2Details || [];
+  } else if (tierLevel === 3) {
+    title.innerText = "Level 3 Referred Pioneers (2%)";
+    list = state.tier3Details || [];
   }
+
+  container.innerHTML = '';
+  if (list.length === 0) {
+    container.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">No pioneers joined in this level yet.</p>`;
+  } else {
+    list.forEach((u, i) => {
+      const row = document.createElement('div');
+      row.className = "flex items-center justify-between bg-slate-800/90 p-2 rounded-xl text-xs";
+      row.innerHTML = `<span class="font-bold text-slate-200">#${i+1} ${u.name}</span><span class="text-[10px] text-sky-400 font-mono">ID: ${u.telegram_id}</span>`;
+      container.appendChild(row);
+    });
+  }
+
+  modal.classList.remove('hidden');
+}
+
+function closeReferralListModal() {
+  document.getElementById('referralListModal')?.classList.add('hidden');
 }
 
 async function fetchLatestUserData() {
@@ -792,11 +776,12 @@ async function fetchLatestUserData() {
           state.tier1Users = data.user.referrals.tier1?.length || 0;
           state.tier2Users = data.user.referrals.tier2?.length || 0;
           state.tier3Users = data.user.referrals.tier3?.length || 0;
+          state.tier1Details = data.user.referrals.tier1Details || [];
+          state.tier2Details = data.user.referrals.tier2Details || [];
+          state.tier3Details = data.user.referrals.tier3Details || [];
         }
         if (data.user.balance !== undefined) state.balance = Number(data.user.balance);
-        if (data.user.unclaimedCommission !== undefined) {
-          state.unclaimedCommission = Number(data.user.unclaimedCommission);
-        }
+        if (data.user.unclaimedCommission !== undefined) state.unclaimedCommission = Number(data.user.unclaimedCommission);
         if (Array.isArray(data.user.completedTasks)) {
           state.tasks.forEach(t => {
             if (data.user.completedTasks.includes(t.id)) {
@@ -804,17 +789,16 @@ async function fetchLatestUserData() {
               t.started = true;
             }
           });
+          renderTasks();
         }
         saveActiveState();
         updateHUD();
       }
-    } catch (e) {
-      console.warn("Silent sync error:", e);
-    }
+    } catch (e) {}
   }
 }
 
-// --- TONCONNECT & ऑन-चेन सत्यापन ---
+// --- TONCONNECT ---
 function initRealTonConnect() {
   try {
     if (window.TON_CONNECT_UI) {
@@ -844,9 +828,7 @@ function initRealTonConnect() {
 
 async function toggleTonConnection() {
   if (state.tonConnected) {
-    if (tonConnectUI) {
-      try { await tonConnectUI.disconnect(); } catch (e) {}
-    }
+    if (tonConnectUI) { try { await tonConnectUI.disconnect(); } catch (e) {} }
     state.tonConnected = false;
     state.tonAddress = null;
     saveActiveState();
@@ -884,12 +866,7 @@ async function triggerTonConnectPayment() {
   }
   const transaction = {
     validUntil: Math.floor(Date.now() / 1000) + 600,
-    messages: [
-      {
-        address: CONFIG.ADMIN_TON_WALLET,
-        amount: "300000000"
-      }
-    ]
+    messages: [{ address: CONFIG.ADMIN_TON_WALLET, amount: "300000000" }]
   };
   try {
     showToast("Opening wallet for 0.3 TON payment...", "⏳");
@@ -902,22 +879,14 @@ async function triggerTonConnectPayment() {
 
 function openTonkeeperPay() {
   const transferUrl = `https://app.tonkeeper.com/transfer/${CONFIG.ADMIN_TON_WALLET}?amount=300000000&text=POM-Verify`;
-  if (window.Telegram?.WebApp?.openLink) {
-    window.Telegram.WebApp.openLink(transferUrl);
-  } else {
-    window.open(transferUrl, '_blank');
-  }
-  showToast("Opening Tonkeeper...", "💎");
+  if (window.Telegram?.WebApp?.openLink) window.Telegram.WebApp.openLink(transferUrl);
+  else window.open(transferUrl, '_blank');
 }
 
 function openTelegramWalletPay() {
   const tgWalletUrl = `https://t.me/wallet?startattach=ton_transfer_${CONFIG.ADMIN_TON_WALLET}_300000000`;
-  if (window.Telegram?.WebApp?.openTelegramLink) {
-    window.Telegram.WebApp.openTelegramLink(tgWalletUrl);
-  } else {
-    window.open(tgWalletUrl, '_blank');
-  }
-  showToast("Opening Telegram Wallet...", "💎");
+  if (window.Telegram?.WebApp?.openTelegramLink) window.Telegram.WebApp.openTelegramLink(tgWalletUrl);
+  else window.open(tgWalletUrl, '_blank');
 }
 
 function completeTonVerificationTransaction() {
@@ -930,13 +899,9 @@ function completeTonVerificationTransaction() {
     fetch(`${CONFIG.BACKEND_API_URL}/api/wallet/verify-ton`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        telegram_id: state.telegram_id,
-        tonAddress: state.tonAddress || "Tonkeeper_Verified"
-      })
-    }).catch(e => console.warn(e));
+      body: JSON.stringify({ telegram_id: state.telegram_id, tonAddress: state.tonAddress || "Tonkeeper_Verified" })
+    }).catch(e => {});
   }
-
   showToast("0.3 TON Verification confirmed! 2x boost active.", "🛡️");
 }
 
@@ -998,9 +963,7 @@ function updateHUD() {
       saveActiveState();
     }
     let shortAddr = displayAddr;
-    if (shortAddr.length > 12) {
-      shortAddr = `${shortAddr.slice(0, 6)}...${shortAddr.slice(-4)}`;
-    }
+    if (shortAddr.length > 12) shortAddr = `${shortAddr.slice(0, 6)}...${shortAddr.slice(-4)}`;
     safeSetText('tonAddressText', `Address: ${shortAddr}`);
     const btn = document.getElementById('btnConnectTon');
     if (btn) btn.innerHTML = '<i class="fa-solid fa-link-slash mr-1"></i> Disconnect TON';
@@ -1016,9 +979,7 @@ function updateHUD() {
 function renderDocsContent() {
   const container = document.getElementById('docsBodyContainer');
   if (!container) return;
-
   const d = WHITEPAPER_DATA[state.lang] || WHITEPAPER_DATA.en || WHITEPAPER_DATA.hi;
-
   container.innerHTML = `
     <div><h4 class="text-sky-400 font-bold uppercase text-[10px] mb-1">${d.s1}</h4><p>${d.p1}</p></div>
     <div><h4 class="text-sky-400 font-bold uppercase text-[10px] mb-1">${d.s2}</h4>
@@ -1038,13 +999,10 @@ function renderDocsContent() {
   `;
 }
 
-function openDocsModal() {
-  renderDocsContent();
-  document.getElementById('docsModal')?.classList.remove('hidden');
-}
+function openDocsModal() { renderDocsContent(); document.getElementById('docsModal')?.classList.remove('hidden'); }
 function closeDocsModal() { document.getElementById('docsModal')?.classList.add('hidden'); }
 
-// --- एडमिन कंसोल ---
+// --- एडमिन कंसोल एवं उन्नत फीचर्स ---
 function openAdminModal() { document.getElementById('adminModal')?.classList.remove('hidden'); }
 function closeAdminModal() { document.getElementById('adminModal')?.classList.add('hidden'); }
 
@@ -1081,10 +1039,23 @@ function adminSaveBotHandle() {
   }
 }
 
-function refreshAdminDashboard() {
+async function refreshAdminDashboard() {
   const wordStr = currentTargetTiles.join('');
   const poolStr = currentScrambledTiles.join(', ');
-  safeSetText('adminCurrentWordHint', `Target: ${wordStr} | Tiles Pool: [ ${poolStr} ] | Current Lang: ${state.lang.toUpperCase()}`);
+  safeSetText('adminCurrentWordHint', `Target: ${wordStr} | Tiles Pool: [ ${poolStr} ] | Lang: ${state.lang.toUpperCase()}`);
+
+  // लाइव आंकड़े सर्वर से फेच करें
+  if (CONFIG.BACKEND_API_URL) {
+    try {
+      const res = await fetch(`${CONFIG.BACKEND_API_URL}/api/admin/stats`);
+      const data = await res.json();
+      if (data && data.success) {
+        safeSetText('adminTotalUsers', data.stats.totalUsers);
+        safeSetText('adminTotalMined', data.stats.totalMinedPom);
+        safeSetText('adminVerifiedUsers', data.stats.verifiedUsers);
+      }
+    } catch (e) {}
+  }
 
   const summary = document.getElementById('adminTaskListSummary');
   if (summary) {
@@ -1098,35 +1069,122 @@ function refreshAdminDashboard() {
   }
 }
 
+// एडमिन पैनल: क्विज़ प्रश्न नंबर द्वारा खोजना और देखना
+async function adminLookupQuiz() {
+  const qNum = document.getElementById('adminQuizSearchNum').value;
+  const resultBox = document.getElementById('adminQuizEditContainer');
+  if (!qNum || !resultBox) return;
+
+  try {
+    const res = await fetch(`${CONFIG.BACKEND_API_URL}/api/admin/question/lookup?id=${qNum}`);
+    const data = await res.json();
+    if (data && data.success && data.question) {
+      const q = data.question;
+      document.getElementById('editQuizId').value = q.id || qNum;
+      document.getElementById('editQuizHi').value = q.question_hi || q.question || '';
+      document.getElementById('editQuizEn').value = q.question_en || '';
+      document.getElementById('editQuizOptsHi').value = (q.options_hi || q.options || []).join(' | ');
+      document.getElementById('editQuizCorrect').value = q.correctIndex !== undefined ? q.correctIndex : 0;
+      resultBox.classList.remove('hidden');
+      showToast(`Quiz Question #${qNum} loaded`, "✨");
+    } else {
+      showToast("Question not found", "❌");
+    }
+  } catch (e) {
+    showToast("Lookup error", "❌");
+  }
+}
+
+async function adminSaveQuizUpdate() {
+  const id = document.getElementById('editQuizId').value;
+  const question_hi = document.getElementById('editQuizHi').value;
+  const question_en = document.getElementById('editQuizEn').value;
+  const optionsArr = document.getElementById('editQuizOptsHi').value.split('|').map(s => s.trim());
+  const correctIndex = document.getElementById('editQuizCorrect').value;
+
+  try {
+    const res = await fetch(`${CONFIG.BACKEND_API_URL}/api/admin/question/update`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, question_hi, question_en, options_hi: optionsArr, options_en: optionsArr, correctIndex })
+    });
+    const data = await res.json();
+    if (data && data.success) {
+      showToast("Quiz updated successfully!", "✔");
+    } else {
+      showToast("Update failed", "❌");
+    }
+  } catch (e) {
+    showToast("Server error", "❌");
+  }
+}
+
+// एडमिन पैनल: पज़ल लेवल द्वारा खोजना और देखना
+async function adminLookupPuzzle() {
+  const pLevel = document.getElementById('adminPuzzleSearchLevel').value;
+  const resultBox = document.getElementById('adminPuzzleEditContainer');
+  if (!pLevel || !resultBox) return;
+
+  try {
+    const res = await fetch(`${CONFIG.BACKEND_API_URL}/api/admin/puzzle/lookup?level=${pLevel}`);
+    const data = await res.json();
+    if (data && data.success && data.puzzle) {
+      const p = data.puzzle;
+      document.getElementById('editPuzzleLevel').value = p.level || pLevel;
+      document.getElementById('editPuzzleHi').value = p.word_hi || '';
+      document.getElementById('editPuzzleEn').value = p.word_en || '';
+      document.getElementById('editPuzzleReward').value = p.reward || 3;
+      resultBox.classList.remove('hidden');
+      showToast(`Puzzle Level #${pLevel} loaded`, "✨");
+    } else {
+      showToast("Puzzle level not found", "❌");
+    }
+  } catch (e) {
+    showToast("Lookup error", "❌");
+  }
+}
+
+async function adminSavePuzzleUpdate() {
+  const level = document.getElementById('editPuzzleLevel').value;
+  const word_hi = document.getElementById('editPuzzleHi').value;
+  const word_en = document.getElementById('editPuzzleEn').value;
+  const reward = document.getElementById('editPuzzleReward').value;
+
+  try {
+    const res = await fetch(`${CONFIG.BACKEND_API_URL}/api/admin/puzzle/update`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ level, word_hi, word_en, reward })
+    });
+    const data = await res.json();
+    if (data && data.success) {
+      showToast("Puzzle updated successfully!", "✔");
+    } else {
+      showToast("Update failed", "❌");
+    }
+  } catch (e) {
+    showToast("Server error", "❌");
+  }
+}
+
 function copyTelegramChannelHint() {
   const postText = `🧠 Proof of Mind (POM) Community Intellect Drop!\n\nSolve Level ${state.mineLevel} now.\nTarget Length: ${currentTargetTiles.length} Letters\nLetter Pool: ${currentScrambledTiles.join(' ')}\n\nMine block now 👉 https://t.me/${CONFIG.BOT_USERNAME}/${CONFIG.APP_SHORT_NAME}?startapp=ref_channel`;
   navigator.clipboard.writeText(postText);
-  showToast("Telegram post copied to clipboard!", "📋");
+  showToast("Telegram post copied!", "📋");
 }
 
 function adminAddTask() {
   const title = document.getElementById('adminNewTaskTitle').value;
   const link = document.getElementById('adminNewTaskLink').value;
   const reward = parseInt(document.getElementById('adminNewTaskReward').value) || 50;
-  if (!title || !link) {
-    showToast("Fill title & link", "⚠️");
-    return;
-  }
-  state.tasks.push({
-    id: "task_" + Date.now(),
-    title: title,
-    link: link,
-    reward: reward,
-    started: false,
-    completed: false,
-    icon: "fa-solid fa-star"
-  });
+  if (!title || !link) { showToast("Fill title & link", "⚠️"); return; }
+  state.tasks.push({ id: "task_" + Date.now(), title, link, reward, started: false, completed: false, icon: "fa-solid fa-star" });
   saveActiveState();
   renderTasks();
   refreshAdminDashboard();
   document.getElementById('adminNewTaskTitle').value = '';
   document.getElementById('adminNewTaskLink').value = '';
-  showToast("Task dispatched live!", "🚀");
+  showToast("Task dispatched!", "🚀");
 }
 
 function adminRemoveTask(index) {
@@ -1137,57 +1195,17 @@ function adminRemoveTask(index) {
   showToast("Task removed", "🗑️");
 }
 
-function adminDevBoostPOM(amt) {
-  state.balance += amt;
-  saveActiveState();
-  updateHUD();
-  showToast(`Added +${amt} POM!`, "💰");
-}
-
-function adminDevBoostLevel(levels) {
-  state.mineLevel += levels;
-  state.quizLevel += levels;
-  saveActiveState();
-  initCurrentPuzzle();
-  showToast(`Advanced +${levels} Levels!`, "⚡");
-}
-
-function adminDevRefillHearts() {
-  state.energy = 5;
-  saveActiveState();
-  updateHUD();
-  showToast("Hearts refilled to 5 ❤️!", "❤️");
-}
-
-function adminDevToggleVerify() {
-  state.isVerified = !state.isVerified;
-  saveActiveState();
-  updateHUD();
-  showToast(`2x Boost is now ${state.isVerified ? 'ENABLED' : 'DISABLED'}`, "🛡️");
-}
-
-function adminSimulateReferral() {
-  state.tier1Users += 1;
-  saveActiveState();
-  updateHUD();
-  showToast("Added +1 Tier 1 Referral!", "👥");
-}
+function adminDevBoostPOM(amt) { state.balance += amt; saveActiveState(); updateHUD(); showToast(`Added +${amt} POM!`, "💰"); }
+function adminDevBoostLevel(levels) { state.mineLevel += levels; state.quizLevel += levels; saveActiveState(); initCurrentPuzzle(); showToast(`Advanced +${levels} Levels!`, "⚡"); }
+function adminDevRefillHearts() { state.energy = 5; saveActiveState(); updateHUD(); showToast("Hearts refilled to 5 ❤️!", "❤️"); }
+function adminDevToggleVerify() { state.isVerified = !state.isVerified; saveActiveState(); updateHUD(); showToast(`2x Boost is now ${state.isVerified ? 'ENABLED' : 'DISABLED'}`, "🛡️"); }
+function adminSimulateReferral() { state.tier1Users += 1; saveActiveState(); updateHUD(); showToast("Added +1 Tier 1 Referral!", "👥"); }
 
 function adminResetAllData() {
   localStorage.removeItem('POM_USER_STATE');
-  state.balance = 130;
-  state.mineLevel = 1;
-  state.quizLevel = 1;
-  state.energy = 5;
-  state.isVerified = false;
-  state.tier1Users = 0;
-  state.tier2Users = 0;
-  state.tier3Users = 0;
-  state.unclaimedCommission = 0;
-  initCurrentPuzzle();
-  renderTasks();
-  updateHUD();
-  refreshAdminDashboard();
+  state.balance = 130; state.mineLevel = 1; state.quizLevel = 1; state.energy = 5; state.isVerified = false;
+  state.tier1Users = 0; state.tier2Users = 0; state.tier3Users = 0; state.unclaimedCommission = 0;
+  initCurrentPuzzle(); renderTasks(); updateHUD(); refreshAdminDashboard();
   showToast("State reset to defaults", "🔄");
 }
 
@@ -1201,13 +1219,9 @@ async function startApp() {
   if (window.Telegram?.WebApp) {
     window.Telegram.WebApp.ready();
     window.Telegram.WebApp.expand();
-
     tgUser = window.Telegram.WebApp.initDataUnsafe?.user;
     startParam = window.Telegram.WebApp.initDataUnsafe?.start_param || "";
-
-    if (tgUser && tgUser.id) {
-      state.telegram_id = String(tgUser.id);
-    }
+    if (tgUser && tgUser.id) state.telegram_id = String(tgUser.id);
   }
 
   applyCurrentLanguage();
@@ -1235,20 +1249,18 @@ async function startApp() {
           state.tier1Users = data.user.referrals.tier1?.length || 0;
           state.tier2Users = data.user.referrals.tier2?.length || 0;
           state.tier3Users = data.user.referrals.tier3?.length || 0;
+          state.tier1Details = data.user.referrals.tier1Details || [];
+          state.tier2Details = data.user.referrals.tier2Details || [];
+          state.tier3Details = data.user.referrals.tier3Details || [];
         }
         if (data.user.balance !== undefined) state.balance = Number(data.user.balance);
         if (data.user.mineLevel !== undefined) state.mineLevel = Number(data.user.mineLevel);
         if (data.user.quizLevel !== undefined) state.quizLevel = Number(data.user.quizLevel);
         if (data.user.isVerified !== undefined) state.isVerified = Boolean(data.user.isVerified);
-        if (data.user.unclaimedCommission !== undefined) {
-          state.unclaimedCommission = Number(data.user.unclaimedCommission);
-        }
+        if (data.user.unclaimedCommission !== undefined) state.unclaimedCommission = Number(data.user.unclaimedCommission);
         if (Array.isArray(data.user.completedTasks)) {
           state.tasks.forEach(t => {
-            if (data.user.completedTasks.includes(t.id)) {
-              t.completed = true;
-              t.started = true;
-            }
+            if (data.user.completedTasks.includes(t.id)) { t.completed = true; t.started = true; }
           });
           renderTasks();
         }
@@ -1256,9 +1268,7 @@ async function startApp() {
         updateHUD();
         initCurrentPuzzle();
       }
-    } catch (err) {
-      console.warn("Backend sync note:", err);
-    }
+    } catch (err) {}
   }
 }
 
@@ -1275,7 +1285,6 @@ function checkAdminAccess() {
   const ADMIN_ID = "8760962244";
   const currentUserId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
   const adminBtn = document.getElementById('adminBtn');
-
   if (adminBtn && String(currentUserId) === ADMIN_ID) {
     adminBtn.style.display = 'inline-flex';
   }
@@ -1291,12 +1300,6 @@ const prevOpenAdminModal = window.openAdminModal || (typeof openAdminModal === '
 window.openAdminModal = function() {
   const ADMIN_ID = "8760962244";
   const currentUserId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
-  
-  if (String(currentUserId) !== ADMIN_ID) {
-    console.warn("Unauthorized admin access attempt");
-    return;
-  }
-  if (prevOpenAdminModal) {
-    prevOpenAdminModal();
-  }
+  if (String(currentUserId) !== ADMIN_ID) return;
+  if (prevOpenAdminModal) prevOpenAdminModal();
 };
