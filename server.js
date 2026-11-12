@@ -50,7 +50,6 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model('User', userSchema);
 
-// दोनों पुराने और नए (1150+ सवालों) फॉर्मेट को सपोर्ट करने वाला स्कीमा
 const questionSchema = new mongoose.Schema({
   id: { type: Number },
   question: { type: String },
@@ -127,12 +126,8 @@ app.post('/api/user/sync', async (req, res) => {
         user.referrer_id = inviterId;
         isNewReferral = true;
       }
-      if (username && user.username !== username) {
-        user.username = username;
-      }
-      if (first_name && user.first_name !== first_name) {
-        user.first_name = first_name;
-      }
+      if (username && user.username !== username) user.username = username;
+      if (first_name && user.first_name !== first_name) user.first_name = first_name;
       await user.save();
     }
 
@@ -161,6 +156,20 @@ app.post('/api/user/sync', async (req, res) => {
 
     const freshUser = await User.findOne({ telegram_id: tidStr });
 
+    // टियर 1, 2, 3 के यूज़रनेम/नाम फेच करना ताकि फ्रेंड टैब में लिस्ट दिखे
+    async function resolveNames(ids) {
+      if (!ids || ids.length === 0) return [];
+      const found = await User.find({ telegram_id: { $in: ids } }).select('telegram_id username first_name createdAt');
+      return found.map(f => ({
+        telegram_id: f.telegram_id,
+        name: f.first_name || f.username || `Pioneer_${f.telegram_id.slice(-4)}`
+      }));
+    }
+
+    const t1Details = await resolveNames(freshUser.referrals?.tier1);
+    const t2Details = await resolveNames(freshUser.referrals?.tier2);
+    const t3Details = await resolveNames(freshUser.referrals?.tier3);
+
     res.json({
       success: true,
       user: {
@@ -173,7 +182,14 @@ app.post('/api/user/sync', async (req, res) => {
         tonAddress: freshUser.tonAddress,
         unclaimedCommission: Number(freshUser.unclaimedCommission || 0),
         completedTasks: freshUser.completedTasks || [],
-        referrals: freshUser.referrals || { tier1: [], tier2: [], tier3: [] }
+        referrals: {
+          tier1: freshUser.referrals?.tier1 || [],
+          tier2: freshUser.referrals?.tier2 || [],
+          tier3: freshUser.referrals?.tier3 || [],
+          tier1Details: t1Details,
+          tier2Details: t2Details,
+          tier3Details: t3Details
+        }
       }
     });
   } catch (err) {
@@ -286,31 +302,21 @@ app.post('/api/game/quiz-reward', async (req, res) => {
   }
 });
 
-// --- 3B. रेफरल कमीशन स्थायी क्लेम API (बग फिक्स) ---
+// --- 3B. रेफरल कमीशन स्थायी क्लेम API ---
 app.post('/api/referral/claim', async (req, res) => {
   try {
     const { telegram_id, clientUnclaimed } = req.body;
-    if (!telegram_id) {
-      return res.status(400).json({ success: false, error: "telegram_id required" });
-    }
+    if (!telegram_id) return res.status(400).json({ success: false, error: "telegram_id required" });
 
     const user = await User.findOne({ telegram_id: String(telegram_id) });
-    if (!user) {
-      return res.status(404).json({ success: false, error: "User not found" });
-    }
+    if (!user) return res.status(404).json({ success: false, error: "User not found" });
 
     const dbUnclaimed = Number(user.unclaimedCommission || 0);
-    // यदि पहले के लोकल सेशन का कुछ कमीशन बचा हो तो उसे या सर्वर के कमीशन को लें
     const rawClaimAmount = dbUnclaimed > 0 ? dbUnclaimed : Number(clientUnclaimed || 0);
     const claimable = Math.floor(rawClaimAmount);
 
     if (claimable <= 0) {
-      return res.status(400).json({
-        success: false,
-        error: "कम से कम 1 POM कमीशन होने पर ही क्लेम होगा",
-        balance: user.balance,
-        unclaimedCommission: dbUnclaimed
-      });
+      return res.status(400).json({ success: false, error: "कोई क्लेम करने योग्य कमीशन नहीं है" });
     }
 
     const remainder = Math.max(0, Number((dbUnclaimed - claimable).toFixed(2)));
@@ -340,20 +346,13 @@ app.post('/api/referral/claim', async (req, res) => {
 app.post('/api/task/claim', async (req, res) => {
   try {
     const { telegram_id, taskId, reward } = req.body;
-    if (!telegram_id || !taskId) {
-      return res.status(400).json({ success: false, error: "Missing parameters" });
-    }
+    if (!telegram_id || !taskId) return res.status(400).json({ success: false, error: "Missing parameters" });
 
     const user = await User.findOne({ telegram_id: String(telegram_id) });
     if (!user) return res.status(404).json({ success: false, error: "User not found" });
 
     if (user.completedTasks && user.completedTasks.includes(taskId)) {
-      return res.json({
-        success: true,
-        alreadyClaimed: true,
-        balance: user.balance,
-        completedTasks: user.completedTasks
-      });
+      return res.json({ success: true, alreadyClaimed: true, balance: user.balance });
     }
 
     const rewardAmount = Number(reward) || 50;
@@ -366,11 +365,7 @@ app.post('/api/task/claim', async (req, res) => {
       { new: true }
     );
 
-    res.json({
-      success: true,
-      balance: updatedUser.balance,
-      completedTasks: updatedUser.completedTasks
-    });
+    res.json({ success: true, balance: updatedUser.balance, completedTasks: updatedUser.completedTasks });
   } catch (err) {
     console.error("Task claim error:", err);
     res.status(500).json({ success: false, error: err.message });
@@ -394,7 +389,86 @@ app.post('/api/wallet/verify-ton', async (req, res) => {
   }
 });
 
-// --- 5. ज़ीरो-लेटेंसी क्विज़ रैंडमाइज़र (दोनों स्कीमा फॉर्मेट के साथ कम्पैटिबल) ---
+// --- 5. एडमिन डैशबोर्ड स्टेट्स एवं क्विज़/पज़ल लुकअप API ---
+app.get('/api/admin/stats', async (req, res) => {
+  try {
+    const totalUsers = await User.countDocuments();
+    const verifiedUsers = await User.countDocuments({ isVerified: true });
+    const usersData = await User.find().select('balance');
+    const totalMinedPom = usersData.reduce((acc, curr) => acc + (curr.balance || 0), 0);
+
+    res.json({
+      success: true,
+      stats: {
+        totalUsers,
+        verifiedUsers,
+        totalMinedPom
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// एडमिन के लिए क्विज़ सवाल खोजना या अपडेट करना
+app.get('/api/admin/question/lookup', async (req, res) => {
+  try {
+    const qId = parseInt(req.query.id);
+    if (isNaN(qId)) return res.status(400).json({ success: false, error: "Invalid question number" });
+
+    const q = await Question.findOne({ id: qId });
+    if (!q) return res.status(404).json({ success: false, error: "Question not found" });
+
+    res.json({ success: true, question: q });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post('/api/admin/question/update', async (req, res) => {
+  try {
+    const { id, question_hi, question_en, options_hi, options_en, correctIndex } = req.body;
+    const updated = await Question.findOneAndUpdate(
+      { id: Number(id) },
+      { $set: { question_hi, question_en, options_hi, options_en, correctIndex: Number(correctIndex) } },
+      { new: true, upsert: true }
+    );
+    res.json({ success: true, question: updated });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// एडमिन के लिए पज़ल शब्द खोजना या अपडेट करना
+app.get('/api/admin/puzzle/lookup', async (req, res) => {
+  try {
+    const level = parseInt(req.query.level);
+    if (isNaN(level)) return res.status(400).json({ success: false, error: "Invalid level number" });
+
+    const p = await PuzzleWord.findOne({ level: level });
+    if (!p) return res.status(404).json({ success: false, error: "Puzzle level not found" });
+
+    res.json({ success: true, puzzle: p });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post('/api/admin/puzzle/update', async (req, res) => {
+  try {
+    const { level, word_hi, word_en, reward } = req.body;
+    const updated = await PuzzleWord.findOneAndUpdate(
+      { level: Number(level) },
+      { $set: { word_hi, word_en, reward: Number(reward) || 3 } },
+      { new: true, upsert: true }
+    );
+    res.json({ success: true, puzzle: updated });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// --- 6. ज़ीरो-लेटेंसी क्विज़ रैंडमाइज़र ---
 app.get('/api/quiz/random', async (req, res) => {
   try {
     let rawDoc = null;
